@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="fas fa-user-slash me-2"></i>Usuarios Bloqueados</h4>
+        </div>
+        <div class="card-body">
+            {% if blocked_users %}
+            <div class="list-group">
+                {% for blocked in blocked_users %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img src="{% static 'img/avatars/' %}{{ blocked.avatar }}" class="rounded-circle me-3"
+                            style="width: 50px; height: 50px; object-fit: cover;">
+                        <div>
+                            <h5 class="mb-0">{{ blocked.username }}</h5>
+                            <small class="text-muted">Bloqueado</small>
+                        </div>
+                    </div>
+
+                    <form action="{% url 'unblock_user' blocked.username %}" method="POST">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="next" value="{{ request.path }}">
+
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-unlock me-1"></i> Desbloquear
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <p class="text-muted">No has bloqueado a ningún usuario.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

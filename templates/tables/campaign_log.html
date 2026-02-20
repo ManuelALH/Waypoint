@@ -1,0 +1,458 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 30px auto;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h2 style="margin: 0;">Bitácora Completa: {{ table.name }}</h2>
+            <a href="{% url 'table_detail' table.id %}" style="color: #7f8c8d; text-decoration: none;">&larr; Volver a
+                la Mesa</a>
+        </div>
+        {% if is_dm %}
+        <button onclick="openLogModal()" class="btn btn-primary btn-dynamic-hover"
+            style="background: {{ table_color }}; border: none; padding: 10px 20px; border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
+            <i class="fas fa-feather-alt"></i> &nbsp;Añadir Entrada a Bitácora
+        </button>
+        {% endif %}
+    </div>
+
+    <form method="GET"
+        style="background: #f8f9fa; padding: 15px; border-radius: 8px; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; border: 1px solid #e9ecef;">
+
+        <select name="type" class="form-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ced4da;">
+            <option value="">📂 Todos los Tipos</option>
+            <option value="FREE" {% if current_type == 'FREE' %}selected{% endif %}>📝 Notas Libres</option>
+            {% if is_dm %}
+            <option value="FREE_DM"" {% if current_type == 'FREE_DM' %}selected{% endif %}>
+            🔒 Solo Notas Privadas (DM)
+            </option>
+            <option value="FREE_PUBLIC"" {% if current_type == 'FREE_PUBLIC' %}selected{% endif %}>
+            🌍 Solo Notas Públicas (Jugadores)
+            </option>
+            {% endif %}
+            <option value="PROGRESSION" {% if current_type == 'PROGRESSION' %}selected{% endif %}>⬆️ Progresión</option>
+            <option value="ACHIEVEMENT" {% if current_type == 'ACHIEVEMENT' %}selected{% endif %}>⭐ Logros</option>
+            <option value="ITEM" {% if current_type == 'ITEM' %}selected{% endif %}>💎 Objetos</option>
+            <option value="DEATH" {% if current_type == 'DEATH' %}selected{% endif %}>💀 Muertes</option>
+        </select>
+
+        <select name="character" class="form-select"
+            style="padding: 8px; border-radius: 4px; border: 1px solid #ced4da;">
+            <option value="">Todos los Personajes</option>
+            {% for char in characters %}
+            <option value="{{ char.id }}" {% if current_char|add:"0" == char.id %}selected{% endif %}>{{ char.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <select name="sort" class="form-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ced4da;">
+            <option value="desc" {% if current_sort == 'desc' %}selected{% endif %}>Más recientes primero</option>
+            <option value="asc" {% if current_sort == 'asc' %}selected{% endif %}>Más antiguas primero</option>
+        </select>
+
+        <button type="submit"
+            style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+            <i class="fas fa-filter"></i> Filtrar
+        </button>
+
+        <a href="{% url 'campaign_log' table.id %}"
+            style="padding: 8px 15px; color: #e74c3c; text-decoration: none; align-self: center;">Limpiar</a>
+    </form>
+
+    <div class="timeline-container" style="border-left: 2px solid #e0e0e0; padding-left: 20px;">
+        {% for log in logs %}
+        <div class="timeline-item" style="margin-bottom: 25px; position: relative;">
+
+            <div style="position: absolute; left: -29px; top: 15px; width: 16px; height: 16px; border-radius: 50%; background: 
+                {% if log.entry_type == 'DEATH' %}#e74c3c
+                {% elif log.entry_type == 'ACHIEVEMENT' %}#f1c40f
+                {% elif log.entry_type == 'ITEM' %}#3498db
+                {% elif log.entry_type == 'PROGRESSION' %}#2ecc71
+                {% else %}#95a5a6{% endif %}; border: 3px solid white; box-shadow: 0 0 3px rgba(0,0,0,0.2);"></div>
+
+            <div class="timeline-content"
+                style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid #f1f1f1; padding-bottom: 10px;">
+                    <div>
+                        <strong style="color: #2c3e50; font-size: 1.1em;">{{ log.get_entry_type_display }}</strong>
+
+                        <div style="font-size: 0.85em; color: #7f8c8d; margin-top: 3px;">
+                            <i class="fas fa-user-edit"></i> {{ log.author.username }} &nbsp;|&nbsp;
+                            <i class="far fa-clock"></i> {{ log.created_at|date:"d M Y, H:i" }}
+
+                            {% if log.was_edited %}
+                            <span
+                                style="background: #ecf0f1; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; margin-left: 5px; color: #95a5a6;">
+                                <i class="fas fa-pen"></i> editada
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                        {% if is_dm %}
+                        <div style="display: flex; gap: 5px;">
+                        <button type="button" onclick="openEditMode(
+                            '{{ log.id }}', 
+                            '{{ log.entry_type }}', 
+                            '{{ log.content|escapejs }}', 
+                            '{{ log.target_character.id|default_if_none:"" }}', 
+                            '{{ log.is_public|yesno:"true,false" }}')"
+                             title="Editar" 
+                             style="background: none; border: none; color: #f39c12; cursor: pointer; padding: 5px;">
+                             <i class="fas fa-edit"></i>
+                        </button>
+
+                        <form action="{% url 'delete_log_entry' log.id %}" method="POST"
+                            onsubmit="return confirm('¿Eliminar esta entrada permanentemente?');"
+                            style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" title="Eliminar"
+                                style="background: none; border: none; color: #e74c3c; cursor: pointer; padding: 5px;"><i
+                                    class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="timeline-body">
+                    {% if log.entry_type != 'FREE' and log.target_character %}
+                    <p style="margin: 0; color: #34495e;">
+                        <strong style="color: #2980b9;">{{ log.target_character.name }}</strong> {{ log.content }}
+                    </p>
+                    {% else %}
+                    <p style="margin: 0; color: #34495e;">{{ log.content|linebreaksbr }}</p>
+                    {% endif %}
+
+                    {% if not log.is_public %}
+                    <div style="margin-top: 10px; font-size: 0.8em; color: #e74c3c; font-style: italic;">
+                        <i class="fas fa-eye-slash"></i> Visible solo para DM
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; color: #95a5a6;">
+            <i class="fas fa-book-open" style="font-size: 3em; margin-bottom: 15px;"></i>
+            <p>No se encontraron entradas con estos filtros.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if logs.has_other_pages %}
+    <div class="pagination-container" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+    
+        {% if logs.has_previous %}
+            <a href="?page={{ logs.previous_page_number }}&type={{ current_type|default_if_none:'' }}&character={{ current_char|default_if_none:'' }}&sort={{ current_sort|default_if_none:'desc' }}" 
+                class="page-link">
+                &larr; Anterior
+            </a>
+        {% else %}
+            <span class="page-link disabled">&larr; Anterior</span>
+        {% endif %}
+
+        <span class="current-page">
+            Página <strong>{{ logs.number }}</strong> de {{ logs.paginator.num_pages }}
+        </span>
+
+        {% if logs.has_next %}
+        <a href="?page={{ logs.next_page_number }}&type={{ current_type|default_if_none:'' }}&character={{ current_char|default_if_none:'' }}&sort={{ current_sort|default_if_none:'desc' }}" 
+           class="page-link">
+           Siguiente &rarr;
+        </a>
+        {% else %}
+            <span class="page-link disabled">Siguiente &rarr;</span>
+        {% endif %}
+
+     </div>
+    {% endif %}
+</div>
+
+<div id="logModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="modal-content" style="background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+        
+        <h3 id="modalTitle" style="margin-top: 0;">Nueva Entrada</h3>
+        
+        <form id="logForm" action="" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="campaign_log">
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo de Entrada</label>
+                <select name="entry_type" id="logType" onchange="updateLogForm()" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="FREE">Libre (Notas DM)</option>
+                    <option value="PROGRESSION">Progresión</option>
+                    <option value="ACHIEVEMENT">Logro</option>
+                    <option value="ITEM">Objeto</option>
+                    <option value="DEATH">Muerte</option>
+                </select>
+            </div>
+
+            <div id="charField" style="margin-bottom: 15px; display: none;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Personaje Relacionado</label>
+                <select name="character_id" id="logChar" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="">-- Selecciona un personaje --</option>
+                    {% for char in table.characters.all %}
+                        <option value="{{ char.id }}">{{ char.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="textField" style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descripción</label>
+                <textarea name="content" id="logContent" rows="4" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit;"></textarea>
+            </div>
+
+            <div id="publicCheckField" style="margin-bottom: 20px; display: none;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" name="is_public" id="logIsPublic" style="margin-right: 10px; transform: scale(1.2);">
+                    <span style="font-weight: bold; color: #2c3e50;">Mostrar a jugadores</span>
+                </label>
+                <small style="color: #7f8c8d; display: block; margin-top: 5px; margin-left: 24px;">
+                    Si no marcas esta casilla, la nota será privada solo para ti.
+                </small>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeLogModal()" style="padding: 8px 15px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer;">Cancelar</button>
+                <button type="submit" id="submitBtn" style="padding: 8px 15px; border: none; background: #2ecc71; color: white; border-radius: 4px; cursor: pointer;">Publicar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Estilos del Botón y Modal */
+    .btn-choose-char {
+        background-color: #8e44ad;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+
+    .btn-choose-char:hover {
+        background-color: #732d91;
+    }
+
+    /* Estilos del Botón y Modal */
+    .btn-dynamic-hover {
+        transition: box-shadow 0.2s ease, transform 0.1s;
+    }
+    .btn-dynamic-hover:hover {
+        box-shadow: inset 0 0 100px 100px rgba(0, 0, 0, 0.2);
+    }
+    .btn-dynamic-hover:active {
+        transform: scale(0.98);
+    }
+
+    .char-modal-box {
+        max-width: 500px;
+        text-align: left;
+        /* Sobrescribe el center del modal anterior */
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .close-modal {
+        font-size: 24px;
+        cursor: pointer;
+        color: #aaa;
+    }
+
+    /* Lista de selección de personajes */
+    .char-selection-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+
+    .char-option {
+        cursor: pointer;
+        position: relative;
+    }
+
+    .char-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .char-option-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border: 2px solid #eee;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .char-option input:checked+.char-option-content {
+        border-color: #3498db;
+        background-color: #ebf5fb;
+    }
+
+    .char-option:hover .char-option-content {
+        border-color: #bdc3c7;
+    }
+
+    .char-icon {
+        font-size: 1.2em;
+    }
+
+    .char-name {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .no-chars-warning {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    /* Estilos de Paginación */
+    .pagination-container {
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #7f8c8d;
+     }
+
+    .page-link {
+        padding: 8px 16px;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #3498db;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .page-link:hover {
+        background-color: #3498db;
+        color: white;
+        border-color: #3498db;
+     }
+
+    .page-link.disabled {
+        color: #bdc3c7;
+        border-color: #ecf0f1;
+        cursor: default;
+        background-color: #f9f9f9;
+     }
+
+    .page-link.disabled:hover {
+        background-color: #f9f9f9;
+        color: #bdc3c7; /* Sin cambios al hover */
+     }
+
+    .current-page {
+        font-size: 0.95em;
+        letter-spacing: 0.5px;
+     }
+</style>
+
+<script>
+    // URLs base
+    const ADD_URL = "{% url 'add_log_entry' table.id %}";
+    const EDIT_URL_PATTERN = "{% url 'edit_log_entry' 0 %}";
+
+    const placeholders = {
+        'FREE': 'Escribe aquí tus notas de campaña como DM...',
+        'PROGRESSION': 'Subidas de nivel, obtención de Experiencia, misión completada...',
+        'ACHIEVEMENT': 'Monstruo derrotado, campaña terminada, jefe derrocado...',
+        'ITEM': 'Monedas de oro ganadas, arma comprada, objeto mágico encontrado...',
+        'DEATH': 'Describe cómo ocurrió el trágico final de este personaje...'
+    };
+
+    // 1. ABRIR EN MODO "NUEVO"
+    function openLogModal() { 
+        const modal = document.getElementById('logModal');
+        const form = document.getElementById('logForm');
+        
+        // Resetear formulario
+        form.reset();
+        
+        // Configurar para AÑADIR (Acción apunta a ADD_URL)
+        document.getElementById('modalTitle').innerText = "Nueva Entrada de Bitácora";
+        document.getElementById('submitBtn').innerText = "Publicar";
+        document.getElementById('submitBtn').style.background = "#2ecc71"; // Verde
+        form.action = ADD_URL;
+        
+        modal.style.display = 'flex';
+        updateLogForm();
+    }
+
+    // 2. ABRIR EN MODO "EDITAR"
+    function openEditMode(id, type, content, charId, isPublicStr) {
+        const modal = document.getElementById('logModal');
+        const form = document.getElementById('logForm');
+
+        // ... (la parte de llenar los campos sigue igual) ...
+        document.getElementById('logType').value = type;
+        document.getElementById('logContent').value = content;
+        document.getElementById('logChar').value = charId;
+        const isPublic = (isPublicStr === 'true');
+        document.getElementById('logIsPublic').checked = isPublic;
+
+        // Configurar Títulos y Botones
+        document.getElementById('modalTitle').innerText = "Editar Entrada";
+        document.getElementById('submitBtn').innerText = "Guardar Cambios";
+        document.getElementById('submitBtn').style.background = "#f39c12";
+
+        // --- AQUÍ ESTÁ EL CAMBIO CLAVE ---
+        // Reemplazamos el '0' de la plantilla por el ID real de este log
+        form.action = EDIT_URL_PATTERN.replace('/0/', '/' + id + '/');
+
+        // Mostrar el modal
+        modal.style.display = 'flex';
+        updateLogForm();
+    }
+
+    function closeLogModal() {
+        document.getElementById('logModal').style.display = 'none';
+    }
+
+    // Cerrar al hacer click fuera
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('logModal')) {
+            closeLogModal();
+        }
+    }
+
+    function updateLogForm() {
+        const type = document.getElementById('logType').value;
+        const charField = document.getElementById('charField');
+        const textField = document.getElementById('logContent');
+        const publicCheck = document.getElementById('publicCheckField');
+
+        // Placeholder
+        textField.placeholder = placeholders[type] || 'Escribe los detalles aquí...';
+
+        // Visibilidad
+        if (type === 'FREE') {
+            charField.style.display = 'none';
+            publicCheck.style.display = 'block';
+        } else {
+            charField.style.display = 'block';
+            publicCheck.style.display = 'none';
+        }
+    }
+</script>
+
+{% endblock %}

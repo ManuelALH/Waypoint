@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header text-white text-center py-3" style="background-color: #20c997;">
+                    <h4 class="mb-0"><i class="fas fa-life-ring me-2"></i>Soporte de Waypoint</h4>
+                </div>
+
+                <div class="card-body p-4 bg-light">
+                    <p class="text-muted text-center mb-4">Envíanos tus dudas, reportes de errores o sugerencias.
+                        Solicita nuevos sistemas de juegos. Si necesitas agregar imagenes por favor usa un Enlace
+                        Acortador (Google Drive, etc). El
+                        administrador te responderá a través de la mensajería interna.</p>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="subject" class="form-label fw-bold">Asunto</label>
+                            <select class="form-select border-secondary" id="subject" name="subject" required>
+                                <option value="" disabled selected>-- Selecciona el motivo de tu mensaje --</option>
+                                <option value="Reportar problema / Bug">🐛 Reportar problema en la página / Bug</option>
+                                <option value="Soporte de usuario">❓ Soporte de usuario (Dudas de la plataforma)
+                                </option>
+                                <option value="Nuevo Sistema">🎲 Solicitar un nuevo Sistema de Juego</option>
+                                <option value="Sugerencia / Feedback">💡 Sugerencia de mejora / Feedback</option>
+                                <option value="Otro">💬 Otro motivo</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="body" class="form-label fw-bold">Detalles de la situación</label>
+                            <textarea class="form-control border-secondary" id="body" name="body" rows="6"
+                                maxlength="255" placeholder="Describe la situación con el mayor detalle posible..."
+                                required></textarea>
+                            <div class="form-text text-end fw-bold" id="charCount" style="color: #20c997;">0 / 255
+                                caracteres</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-lg text-white" style="background-color: #20c997;">
+                                <i class="fas fa-paper-plane me-1"></i> Enviar a Soporte
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const textarea = document.getElementById('body');
+    const charCount = document.getElementById('charCount');
+
+    textarea.addEventListener('input', function () {
+        const currentLength = this.value.length;
+        charCount.textContent = currentLength + " / 255 caracteres";
+
+        // Cambiar a color rojo si se acerca al límite
+        if (currentLength > 950) {
+            charCount.classList.add('text-danger');
+        } else {
+            charCount.classList.remove('text-danger');
+        }
+    });
+</script>
+{% endblock %}

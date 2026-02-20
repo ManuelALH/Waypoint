@@ -1,0 +1,1043 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 900px;">
+    
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body text-center pt-5 pb-4">
+            
+            <div class="position-relative d-inline-block mb-3">
+                <img src="{% static 'img/avatars/' %}{{ profile_user.avatar }}" 
+                     alt="Avatar" 
+                     class="rounded-circle border border-4 border-white shadow"
+                     style="width: 140px; height: 140px; object-fit: cover;">
+                
+                {% if is_owner %}
+                <button class="btn btn-sm btn-circle btn-primary position-absolute bottom-0 end-0 translate-middle-x mb-2" 
+                        onclick="toggleEdit('avatar')" 
+                        title="Cambiar Avatar"
+                        style="width: 35px; height: 35px; border-radius: 50%;">
+                    <i class="fas fa-camera"></i>
+                </button>
+                {% endif %}
+            </div>
+
+            {% if is_owner %}
+            <form method="post" id="avatar-edit" style="display: none;" class="mb-4 bg-light p-4 rounded shadow-sm">
+                {% csrf_token %}
+                <input type="hidden" name="edit_type" value="avatar">
+                <label class="form-label fw-bold mb-3 text-center w-100">Elige tu nuevo avatar:</label>
+    
+                <div class="d-flex flex-wrap justify-content-center gap-3 px-3">
+                    {% for avatar in avatars %}
+                    <label class="position-relative">
+                        <input type="radio" name="avatar" value="{{ avatar }}" class="d-none" 
+                               {% if profile_user.avatar == avatar %}checked{% endif %}>
+            
+                        <img src="{% static 'img/avatars/' %}{{ avatar }}" 
+                             class="rounded-circle avatar-selectable"
+                             alt="Opción de avatar">
+                    </label>
+                    {% endfor %}
+                </div>
+    
+                <div class="mt-4 text-center">
+                    <button type="submit" class="btn btn-success me-2"><i class="fas fa-check me-1"></i> Guardar</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleEdit('avatar')"><i class="fas fa-times me-1"></i> Cancelar</button>
+                </div>
+            </form>
+            {% endif %}
+
+            <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                <h2 class="fw-bold mb-0">{{ profile_user.username }}</h2>
+                
+                {% if user.is_authenticated and not is_owner %}
+                    <div class="dropdown">
+                        <button class="btn btn-link text-secondary p-0" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v fa-lg"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% if is_blocked %}
+                                <li><button class="dropdown-item text-success" data-bs-toggle="modal" data-bs-target="#confirmUnblockModal"><i class="fas fa-unlock me-2"></i>Desbloquear</button></li>
+                            {% else %}
+                                <li><a class="dropdown-item" href="{% url 'chat_room' profile_user.username %}"><i class="fas fa-envelope me-2"></i>Enviar Mensaje</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class="dropdown-item text-warning" data-bs-toggle="modal" data-bs-target="#reportUserModal"><i class="fas fa-flag me-2"></i>Reportar</button></li>
+                                <li><button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#confirmBlockModal"><i class="fas fa-ban me-2"></i>Bloquear</button></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if i_am_blocked %}
+        <div class="alert alert-secondary text-center py-5 rounded-3 shadow-sm">
+            <i class="fas fa-user-slash fa-4x mb-3 text-muted"></i>
+            <h4>Perfil Restringido</h4>
+            <p>No puedes ver la información de este usuario debido a su configuración de privacidad.</p>
+        </div>
+    {% else %}
+
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-primary"><i class="fas fa-book-open me-2"></i>Biografía</h5>
+                        {% if is_owner %}
+                            <button class="btn btn-sm btn-light text-primary" onclick="toggleEdit('bio')"><i class="fas fa-edit"></i></button>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div id="bio-view">
+                            {% if profile_user.bio %}
+                                <p class="card-text" style="white-space: pre-line;">{{ profile_user.bio }}</p>
+                            {% else %}
+                                <p class="text-muted fst-italic">Sin biografía aún...</p>
+                            {% endif %}
+                        </div>
+
+                        {% if is_owner %}
+                        <form method="post" id="bio-edit" style="display: none;">
+                            {% csrf_token %}
+                            <input type="hidden" name="edit_type" value="bio">
+                            <textarea name="bio" class="form-control mb-2" rows="5">{{ profile_user.bio }}</textarea>
+                            <button type="submit" class="btn btn-success btn-sm">Guardar</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEdit('bio')">Cancelar</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 text-purple"><i class="fas fa-dice-d20 me-2"></i>Perfil de Jugador</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-muted fw-bold">Experiencia</label>
+                                <div class="d-flex justify-content-between">
+                                    <span>{{ profile_user.get_experience_level_display }}</span>
+                                    {% if is_owner %}<button class="btn btn-link p-0 text-muted" onclick="toggleEdit('xp')"><i class="fas fa-pen small"></i></button>{% endif %}
+                                </div>
+                                {% if is_owner %}
+                                    <form method="post" id="xp-edit" style="display:none;" class="mt-2">
+                                        {% csrf_token %} <input type="hidden" name="edit_type" value="experience_level">
+                                        <select name="experience_level" class="form-select form-select-sm mb-1">
+                                            <option value="beginner">Principiante</option>
+                                            <option value="intermediate">Intermedio</option>
+                                            <option value="veteran">Veterano</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-xs btn-success">OK</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="small text-muted fw-bold">Estilo de Juego</label>
+                                <div class="d-flex justify-content-between">
+                                    <span>{{ profile_user.get_play_style_display }}</span>
+                                    {% if is_owner %}<button class="btn btn-link p-0 text-muted" onclick="toggleEdit('style')"><i class="fas fa-pen small"></i></button>{% endif %}
+                                </div>
+                                {% if is_owner %}
+                                    <form method="post" id="style-edit" style="display:none;" class="mt-2">
+                                        {% csrf_token %} <input type="hidden" name="edit_type" value="play_style">
+                                        <select name="play_style" class="form-select form-select-sm mb-1">
+                                            <option value="roleplay">Roleplay</option>
+                                            <option value="combat">Combate</option>
+                                            <option value="balanced">Balanceado</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-xs btn-success">OK</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="small text-muted fw-bold">Sistema Favorito</label>
+  
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>
+                                        {% if profile_user.favorite_system %}
+                                            <i class="fas fa-book text-primary me-1"></i> {{ profile_user.favorite_system.name }}
+                                        {% else %}
+                                            <span class="text-muted fst-italic">Sin especificar</span>
+                                        {% endif %}
+                                    </span>
+        
+                                    {% if is_owner %}
+                                        <button class="btn btn-link p-0 text-muted" onclick="toggleEdit('fav_sys')">
+                                            <i class="fas fa-pen small"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+
+                                {% if is_owner %}
+                                    <form method="post" id="fav_sys-edit" style="display:none;" class="mt-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="edit_type" value="favorite_system">
+            
+                                        <div class="input-group input-group-sm">
+                                            <select name="favorite_system" class="form-select">
+                                                <option value="">-- Selecciona un sistema --</option>
+                                                {% for system in game_systems %}
+                                                    <option value="{{ system.id }}" 
+                                                        {% if profile_user.favorite_system.id == system.id %}selected{% endif %}>
+                                                        {{ system.name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-success"><i class="fas fa-check"></i></button>
+                                            <button type="button" class="btn btn-secondary" onclick="toggleEdit('fav_sys')"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if is_owner %}
+                <div class="d-grid gap-2 mt-4 mb-4">
+                    <a href="{% url 'blocked_list' %}" class="btn btn-outline-danger">
+                        <i class="fas fa-user-slash me-1"></i> Usuarios Bloqueados
+                    </a>
+                    <button type="button" class="btn btn-outline-warning" onclick="startPasswordReset()">
+                        <i class="fas fa-key me-1"></i> Cambiar Contraseña
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 text-dark"><i class="fas fa-id-card me-2"></i>Información</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="text-muted fw-bold">Correo</small>
+                        {% if is_owner %}
+                            <div>
+                                <button class="btn btn-link p-0 me-2 text-muted" onclick="startEmailChangeFlow()">
+                                    <i class="fas fa-pen small"></i>
+                                </button>
+
+                                <form method="post" action="{% url 'toggle_privacy' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="field" value="is_email_public">
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit" class="btn p-0 border-0 bg-transparent" title="Cambiar privacidad">
+                                    {% if profile_user.is_email_public %}
+                                        <i class="fas fa-eye text-success"></i>
+                                    {% else %}
+                                        <i class="fas fa-eye-slash text-danger"></i>
+                                    {% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <span id="email-view">
+                        {% if is_owner or profile_user.is_email_public %}
+                            <div class="text-break">{{ profile_user.email }}</div>
+                        {% else %}
+                            <span class="text-muted fst-italic small">Privado</span>
+                        {% endif %}
+                            </span>
+                </li>
+
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-bold">Teléfono</small>
+                                {% if is_owner %}
+                                    <div>
+                                        <button class="btn btn-link p-0 me-2 text-muted" onclick="toggleEdit('phone')"><i class="fas fa-pen small"></i></button>
+                                        <form method="post" action="{% url 'toggle_privacy' %}" class="d-inline">
+                                            {% csrf_token %} <input type="hidden" name="field" value="is_phone_public">
+                                            <input type="hidden" name="next" value="{{ request.path }}">
+                                            <button type="submit" class="btn p-0 border-0 bg-transparent">
+                                                {% if profile_user.is_phone_public %}<i class="fas fa-eye text-success"></i>{% else %}<i class="fas fa-eye-slash text-danger"></i>{% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if is_owner %}
+                                <form method="post" id="phone-edit" style="display:none;" class="mb-2">
+                                    {% csrf_token %} <input type="hidden" name="edit_type" value="phone_number">
+                                    <input type="text" name="phone_number" value="{{ profile_user.phone_number }}" class="form-control form-control-sm mb-1">
+                                    <button type="submit" class="btn btn-xs btn-success">Guardar</button>
+                                </form>
+                            {% endif %}
+
+                            {% if is_owner or profile_user.is_phone_public %}
+                                <div>{{ profile_user.phone_number|default:"No registrado" }}</div>
+                            {% else %}
+                                <span class="text-muted fst-italic small">Privado</span>
+                            {% endif %}
+                        </li>
+
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-bold">Ubicación</small>
+                                {% if is_owner %}
+                                    <div>
+                                        <button class="btn btn-link p-0 me-2 text-muted" onclick="toggleEdit('location')"><i class="fas fa-pen small"></i></button>
+                                        <form method="post" action="{% url 'toggle_privacy' %}" class="d-inline">
+                                            {% csrf_token %} <input type="hidden" name="field" value="is_location_public">
+                                            <input type="hidden" name="next" value="{{ request.path }}">
+                                            <button type="submit" class="btn p-0 border-0 bg-transparent">
+                                                {% if profile_user.is_location_public %}<i class="fas fa-eye text-success"></i>{% else %}<i class="fas fa-eye-slash text-danger"></i>{% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if is_owner %}
+                                <form method="post" id="location-edit" style="display: none;" class="mb-2">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="edit_type" value="location">
+                                    <select id="country-select" class="form-select form-select-sm mb-2" onchange="loadStates()"><option value="">País</option></select>
+                                    <select id="state-select" class="form-select form-select-sm mb-2" onchange="loadCities()" disabled><option value="">Estado</option></select>
+                                    <select id="city-select" class="form-select form-select-sm mb-2" disabled onchange="updateFinalLocation()"><option value="">Ciudad</option></select>
+                                    <input type="hidden" name="location" id="final_location_input" value="{{ profile_user.location }}">
+                                    <button type="submit" class="btn btn-success btn-sm">Guardar</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEdit('location')">X</button>
+                                </form>
+                            {% endif %}
+
+                            {% if is_owner or profile_user.is_location_public %}
+                                <div>{{ profile_user.location|default:"Desconocida" }}</div>
+                            {% else %}
+                                <span class="text-muted fst-italic small">Privado</span>
+                            {% endif %}
+                        </li>
+
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-bold">Género</small>
+                                {% if is_owner %}
+                                    <div>
+                                        <button class="btn btn-link p-0 me-2 text-muted" onclick="toggleEdit('gender')"><i class="fas fa-pen small"></i></button>
+                                        <form method="post" action="{% url 'toggle_privacy' %}" class="d-inline">
+                                            {% csrf_token %} <input type="hidden" name="field" value="is_gender_public">
+                                            <input type="hidden" name="next" value="{{ request.path }}">
+                                            <button type="submit" class="btn p-0 border-0 bg-transparent">
+                                                {% if profile_user.is_gender_public %}<i class="fas fa-eye text-success"></i>{% else %}<i class="fas fa-eye-slash text-danger"></i>{% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if is_owner %}
+                                <form method="post" id="gender-edit" style="display:none;" class="mb-2">
+                                    {% csrf_token %} <input type="hidden" name="edit_type" value="gender">
+                                    <select name="gender" class="form-select form-select-sm mb-1">
+                                        <option value="M">Masculino</option>
+                                        <option value="F">Femenino</option>
+                                        <option value="NB">No Binario</option>
+                                        <option value="GF">Género Fluido</option>
+                                        <option value="AG">Agénero</option>
+                                        <option value="O">Otro</option>
+                                        <option value="P">Prefiero no decir</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-xs btn-success">OK</button>
+                                </form>
+                            {% endif %}
+
+                            {% if is_owner or profile_user.is_gender_public %}
+                                <div>{{ profile_user.get_gender_display|default:"-" }}</div>
+                            {% else %}
+                                <span class="text-muted fst-italic small">Privado</span>
+                            {% endif %}
+                        </li>
+
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted fw-bold">Cumpleaños</small>
+                                {% if is_owner %}
+                                    <div>
+                                        <button class="btn btn-link p-0 me-2 text-muted" onclick="toggleEdit('dob')"><i class="fas fa-pen small"></i></button>
+                                        <form method="post" action="{% url 'toggle_privacy' %}" class="d-inline">
+                                            {% csrf_token %} <input type="hidden" name="field" value="is_birth_date_public">
+                                            <input type="hidden" name="next" value="{{ request.path }}">
+                                            <button type="submit" class="btn p-0 border-0 bg-transparent">
+                                                {% if profile_user.is_birth_date_public %}<i class="fas fa-eye text-success"></i>{% else %}<i class="fas fa-eye-slash text-danger"></i>{% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if is_owner %}
+                                <form method="post" id="dob-edit" style="display:none;" class="mb-2">
+                                    {% csrf_token %} <input type="hidden" name="edit_type" value="birth_date">
+                                    <input type="date" name="birth_date" value="{{ profile_user.birth_date|date:'Y-m-d' }}" class="form-control form-control-sm mb-1">
+                                    <button type="submit" class="btn btn-xs btn-success">OK</button>
+                                </form>
+                            {% endif %}
+
+                            {% if is_owner or profile_user.is_birth_date_public %}
+                                <div>{{ profile_user.birth_date|date:"d \d\e F"|default:"-" }}</div>
+                            {% else %}
+                                <span class="text-muted fst-italic small">Privado</span>
+                            {% endif %}
+                        </li>
+
+                        <li class="list-group-item bg-light">
+                            <div class="row text-center small">
+                                <div class="col-6 border-end">
+                                    <div class="fw-bold text-muted">Miembro desde</div>
+                                    <div>{{ profile_user.date_joined|date:"M Y" }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-bold text-muted">
+                                        Última vez
+                                        {% if is_owner %}
+                                         <form method="post" action="{% url 'toggle_privacy' %}" class="d-inline ms-1">
+                                            {% csrf_token %} <input type="hidden" name="field" value="is_last_login_public">
+                                            <input type="hidden" name="next" value="{{ request.path }}">
+                                            <button type="submit" class="btn p-0 border-0 bg-transparent">
+                                                {% if profile_user.is_last_login_public %}<i class="fas fa-eye text-success"></i>{% else %}<i class="fas fa-eye-slash text-danger"></i>{% endif %}
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                    {% if is_owner or profile_user.is_last_login_public %}
+                                        <div>{{ profile_user.last_login|naturaltime }}</div>
+                                    {% else %}
+                                        <div class="text-muted">-</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    {% endif %} 
+</div> 
+
+{% if not is_owner %}
+    <div class="modal fade" id="reportUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{% url 'report_user' profile_user.username %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    
+                    <div class="modal-header">
+                        <h5 class="modal-title">Reportar a {{ profile_user.username }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea class="form-control" name="reason" rows="4" required placeholder="Motivo del reporte..."></textarea>
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" name="block_user" id="blk">
+                            <label class="form-check-label" for="blk">Bloquear también</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning">Enviar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmBlockModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">¿Bloquear usuario?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Seguro que deseas bloquear a {{ profile_user.username }}?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form action="{% url 'block_user' profile_user.username %}" method="POST">
+                        {% csrf_token %}  <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" class="btn btn-danger">Bloquear</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmUnblockModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Desbloquear usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>¿Desbloquear a {{ profile_user.username }}?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form action="{% url 'unblock_user' profile_user.username %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" class="btn btn-success">Confirmar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if is_owner %}
+    <div class="modal fade" id="otpModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <i class="fas fa-envelope-open-text fa-3x text-primary mb-3"></i>
+                    <h5 class="fw-bold">Verifica tu correo</h5>
+                    <p class="text-muted small">Hemos enviado un código de 6 dígitos a <strong>{{ profile_user.email }}</strong>. Caduca en 5 minutos.</p>
+                    
+                    <div class="d-flex justify-content-center gap-2 mb-3 mt-4" id="otp-inputs">
+                        <input type="text" maxlength="1" class="form-control text-center otp-input border-primary fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;" autofocus>
+                        <input type="text" maxlength="1" class="form-control text-center otp-input border-primary fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                        <input type="text" maxlength="1" class="form-control text-center otp-input border-primary fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                        <input type="text" maxlength="1" class="form-control text-center otp-input border-primary fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                        <input type="text" maxlength="1" class="form-control text-center otp-input border-primary fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                        <input type="text" maxlength="1" class="form-control text-center otp-input border-primary fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                    </div>
+                    
+                    <div id="otp-error" class="text-danger small fw-bold mb-3" style="display:none;"></div>
+                    
+                    <button type="button" class="btn btn-primary w-100" id="btn-verify-otp" onclick="verifyOTP()">
+                        Verificar Código
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="newPasswordModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="fas fa-lock me-2"></i>Nueva Contraseña</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nueva Contraseña</label>
+                        <input type="password" id="new_pwd1" class="form-control" placeholder="Mínimo 8 caracteres">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Confirmar Contraseña</label>
+                        <input type="password" id="new_pwd2" class="form-control" placeholder="Repite la contraseña">
+                    </div>
+                    
+                    <div id="pwd-error" class="alert alert-danger py-2" style="display:none; font-size: 0.85rem;"></div>
+                    <div id="pwd-success" class="alert alert-success py-2" style="display:none; font-size: 0.85rem;">
+                        ¡Contraseña cambiada con éxito!
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success w-100" id="btn-save-pwd" onclick="saveNewPassword()">Guardar Contraseña</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if is_owner %}
+    <div class="modal fade" id="masterEmailModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-header border-0 pb-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body pb-4">
+                    
+                    <div id="email-step-1">
+                        <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                        <h5 class="fw-bold">Verificación de Seguridad</h5>
+                        <p class="text-muted small">Por seguridad, enviamos un código a <strong>{{ profile_user.email }}</strong>.</p>
+                        
+                        <div class="d-flex justify-content-center gap-2 mb-3 mt-4" id="old-otp-inputs">
+                            <input type="text" maxlength="1" class="form-control text-center old-otp border-warning fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;" autofocus>
+                            <input type="text" maxlength="1" class="form-control text-center old-otp border-warning fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                            <input type="text" maxlength="1" class="form-control text-center old-otp border-warning fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                            <input type="text" maxlength="1" class="form-control text-center old-otp border-warning fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                            <input type="text" maxlength="1" class="form-control text-center old-otp border-warning fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                            <input type="text" maxlength="1" class="form-control text-center old-otp border-warning fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                        </div>
+                        <div id="error-step-1" class="text-danger small fw-bold mb-3" style="display:none;"></div>
+                        <button class="btn btn-warning w-100" id="btn-verify-old" onclick="verifyOldEmailOTP()">Siguiente <i class="fas fa-arrow-right"></i></button>
+                    </div>
+
+                    <div id="email-step-2" style="display: none;">
+                        <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                        <h5 class="fw-bold">Ingresa tu nuevo correo</h5>
+                        <p class="text-muted small">Escribe la nueva dirección que quieres usar.</p>
+                        
+                        <div class="mb-3 mt-4 text-start">
+                            <label class="form-label fw-bold">Nuevo Correo Electrónico</label>
+                            <input type="email" id="input-new-email" class="form-control form-control-lg" placeholder="ejemplo@correo.com">
+                        </div>
+                        <div id="error-step-2" class="text-danger small fw-bold mb-3" style="display:none;"></div>
+                        <button class="btn btn-primary w-100" id="btn-send-new" onclick="sendNewEmailOTP()">Enviar Código de Verificación</button>
+                    </div>
+
+                    <div id="email-step-3" style="display: none;">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="fw-bold">Confirma tu nuevo correo</h5>
+                        <p class="text-muted small">Ingresa el código que acabamos de enviar a <strong id="lbl-new-email" class="text-primary"></strong>.</p>
+                        
+                        <div class="d-flex justify-content-center gap-2 mb-3 mt-4" id="new-otp-inputs">
+                            <input type="text" maxlength="1" class="form-control text-center new-otp border-success fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;" autofocus>
+                            <input type="text" maxlength="1" class="form-control text-center new-otp border-success fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                            <input type="text" maxlength="1" class="form-control text-center new-otp border-success fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                            <input type="text" maxlength="1" class="form-control text-center new-otp border-success fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                            <input type="text" maxlength="1" class="form-control text-center new-otp border-success fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                            <input type="text" maxlength="1" class="form-control text-center new-otp border-success fw-bold" style="width: 40px; height: 50px; font-size: 1.5rem;">
+                        </div>
+                        <div id="error-step-3" class="text-danger small fw-bold mb-3" style="display:none;"></div>
+                        <button class="btn btn-success w-100" id="btn-verify-final" onclick="verifyFinalOTP()">Guardar Cambio</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    function toggleEdit(field) {
+        var viewDiv = document.getElementById(field + '-view') || document.getElementById(field + '-display'); // Manejo de fallback
+        var editForm = document.getElementById(field + '-edit');
+        
+        // Si no existe viewDiv (casos donde el div no tiene id específico), buscamos el padre y ocultamos/mostramos
+        if (editForm.style.display === 'none') {
+            editForm.style.display = 'block';
+            // Lógica para location API
+            if (field === 'location') loadCountries();
+        } else {
+            editForm.style.display = 'none';
+        }
+    }
+    
+    // Configuración de la API
+    const API_BASE = "https://countriesnow.space/api/v0.1/countries";
+    // 1. Cargar Países al iniciar (o al abrir editar)
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch(API_BASE)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    const countrySelect = document.getElementById('country-select');
+                    // Ordenamos alfabéticamente
+                    const sortedCountries = data.data.sort((a, b) => a.country.localeCompare(b.country));
+                    
+                    sortedCountries.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.country;
+                        option.text = item.country;
+                        countrySelect.add(option);
+                    });
+                }
+            })
+            .catch(error => console.error('Error cargando países:', error));
+    });
+
+    // 2. Cargar Estados cuando se elige País
+    function loadStates() {
+        const countryName = document.getElementById('country-select').value;
+        const stateSelect = document.getElementById('state-select');
+        const citySelect = document.getElementById('city-select');
+        
+        // Resetear selects dependientes
+        stateSelect.innerHTML = '<option value="">Cargando...</option>';
+        stateSelect.disabled = true;
+        citySelect.innerHTML = '<option value="">Selecciona Ciudad</option>';
+        citySelect.disabled = true;
+
+        if (countryName) {
+            fetch(`${API_BASE}/states`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                stateSelect.innerHTML = '<option value="">Selecciona Estado</option>';
+                if (!data.error && data.data.states.length > 0) {
+                    stateSelect.disabled = false;
+                    data.data.states.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state.name; // Usamos el nombre del estado
+                        option.text = state.name;
+                        stateSelect.add(option);
+                    });
+                } else {
+                    stateSelect.innerHTML = '<option value="">Sin estados disponibles</option>';
+                    // Si no hay estados, habilitamos manual o saltamos a ciudad (depende de la API)
+                }
+            });
+        }
+    }
+
+    // 3. Cargar Ciudades cuando se elige Estado
+    function loadCities() {
+        const countryName = document.getElementById('country-select').value;
+        const stateName = document.getElementById('state-select').value;
+        const citySelect = document.getElementById('city-select');
+
+        citySelect.innerHTML = '<option value="">Cargando...</option>';
+        citySelect.disabled = true;
+
+        if (countryName && stateName) {
+            fetch(`${API_BASE}/state/cities`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName, state: stateName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                citySelect.innerHTML = '<option value="">Selecciona Ciudad</option>';
+                if (!data.error && data.data.length > 0) {
+                    citySelect.disabled = false;
+                    data.data.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city;
+                        option.text = city;
+                        citySelect.add(option);
+                    });
+                } else {
+                    citySelect.innerHTML = '<option value="">Sin ciudades disponibles</option>';
+                }
+            });
+        }
+    }
+
+    // 4. Actualizar el input oculto que Django guardará
+    function updateFinalLocation() {
+        const country = document.getElementById('country-select').value;
+        const state = document.getElementById('state-select').value;
+        const city = document.getElementById('city-select').value;
+
+        if (country && state && city) {
+            // Formato: "Guadalajara, Jalisco, Mexico"
+            const finalString = `${city}, ${state}, ${country}`;
+            document.getElementById('final_location_input').value = finalString;
+            console.log("Ubicación lista para guardar:", finalString);
+        }
+    }
+
+{% if is_owner %}
+// Obtener el token CSRF para usarlo en las peticiones de AJAX
+const csrfToken = '{{ csrf_token }}';
+
+// Función 1: Pedir el código e inicializar el Modal
+function startPasswordReset() {
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    btn.disabled = true;
+
+    fetch("{% url 'send_otp_email' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        if (data.success) {
+            var myModal = new bootstrap.Modal(document.getElementById('otpModal'));
+            myModal.show();
+            document.querySelectorAll('.otp-input').forEach(i => i.value = ''); // Limpiar inputs
+            document.querySelector('.otp-input').focus();
+        } else {
+            alert("Error al enviar el correo: " + data.error);
+        }
+    });
+}
+
+// Lógica para que los 6 cuadritos del PIN avancen solos
+const otpInputs = document.querySelectorAll('.otp-input');
+otpInputs.forEach((input, index) => {
+    input.addEventListener('input', (e) => {
+        // Solo permitir números
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        if(e.target.value && index < 5) {
+            otpInputs[index+1].focus();
+        }
+    });
+    input.addEventListener('keydown', (e) => {
+        if(e.key === 'Backspace' && !e.target.value && index > 0) {
+            otpInputs[index-1].focus();
+        }
+    });
+});
+
+// Función 2: Verificar el PIN
+function verifyOTP() {
+    let code = '';
+    otpInputs.forEach(input => code += input.value);
+    
+    if(code.length !== 6) {
+        document.getElementById('otp-error').innerText = "Ingresa los 6 dígitos.";
+        document.getElementById('otp-error').style.display = 'block';
+        return;
+    }
+
+    const btn = document.getElementById('btn-verify-otp');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+
+    fetch("{% url 'verify_otp' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `otp=${code}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.innerHTML = 'Verificar Código';
+        if (data.success) {
+            // Ocultar modal OTP y mostrar el de Nueva Contraseña
+            bootstrap.Modal.getInstance(document.getElementById('otpModal')).hide();
+            var newPwdModal = new bootstrap.Modal(document.getElementById('newPasswordModal'));
+            newPwdModal.show();
+        } else {
+            document.getElementById('otp-error').innerText = data.error;
+            document.getElementById('otp-error').style.display = 'block';
+        }
+    });
+}
+
+// Función 3: Guardar la nueva contraseña
+function saveNewPassword() {
+    const pwd1 = document.getElementById('new_pwd1').value;
+    const pwd2 = document.getElementById('new_pwd2').value;
+    const errorDiv = document.getElementById('pwd-error');
+    
+    errorDiv.style.display = 'none';
+
+    if(!pwd1 || !pwd2) {
+        errorDiv.innerHTML = "Llena ambos campos.";
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    const btn = document.getElementById('btn-save-pwd');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    fetch("{% url 'set_new_password' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `pwd1=${encodeURIComponent(pwd1)}&pwd2=${encodeURIComponent(pwd2)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.innerHTML = 'Guardar Contraseña';
+        if (data.success) {
+            document.getElementById('pwd-success').style.display = 'block';
+            btn.style.display = 'none';
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('newPasswordModal')).hide();
+                window.location.reload(); // Recargar para limpiar todo
+            }, 2000);
+        } else {
+            errorDiv.innerHTML = data.error; // Aquí Django nos dirá si es muy corta, etc.
+            errorDiv.style.display = 'block';
+        }
+    });
+}
+{% endif %}
+
+{% if is_owner %}
+// --- LÓGICA DE CAMBIO DE CORREO 3 PASOS ---
+
+function startEmailChangeFlow() {
+    // Restaurar modal a estado inicial
+    document.getElementById('email-step-1').style.display = 'block';
+    document.getElementById('email-step-2').style.display = 'none';
+    document.getElementById('email-step-3').style.display = 'none';
+    document.querySelectorAll('.old-otp, .new-otp').forEach(i => i.value = '');
+    
+    // Abrir Modal
+    var myModal = new bootstrap.Modal(document.getElementById('masterEmailModal'));
+    myModal.show();
+
+    // Disparar envío de correo al instante
+    fetch("{% url 'send_current_email_otp' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken }
+    });
+}
+
+function verifyOldEmailOTP() {
+    let code = Array.from(document.querySelectorAll('.old-otp')).map(i => i.value).join('');
+    if(code.length !== 6) return alert("Ingresa los 6 dígitos");
+
+    const btn = document.getElementById('btn-verify-old');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch("{% url 'verify_current_email_otp' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/x-www-form-urlencoded" },
+        body: `otp=${code}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+        if(data.success) {
+            // Avanzar al Paso 2
+            document.getElementById('email-step-1').style.display = 'none';
+            document.getElementById('email-step-2').style.display = 'block';
+        } else {
+            document.getElementById('error-step-1').innerText = data.error;
+            document.getElementById('error-step-1').style.display = 'block';
+        }
+    });
+}
+
+function sendNewEmailOTP() {
+    const newEmail = document.getElementById('input-new-email').value;
+    if(!newEmail) return alert("Ingresa un correo");
+
+    const btn = document.getElementById('btn-send-new');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch("{% url 'send_new_email_otp' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/x-www-form-urlencoded" },
+        body: `new_email=${encodeURIComponent(newEmail)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.innerHTML = 'Enviar Código de Verificación';
+        if(data.success) {
+            // Avanzar al Paso 3
+            document.getElementById('lbl-new-email').innerText = newEmail;
+            document.getElementById('email-step-2').style.display = 'none';
+            document.getElementById('email-step-3').style.display = 'block';
+        } else {
+            document.getElementById('error-step-2').innerText = data.error;
+            document.getElementById('error-step-2').style.display = 'block';
+        }
+    });
+}
+
+function verifyFinalOTP() {
+    let code = Array.from(document.querySelectorAll('.new-otp')).map(i => i.value).join('');
+    if(code.length !== 6) return alert("Ingresa los 6 dígitos");
+
+    const btn = document.getElementById('btn-verify-final');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch("{% url 'verify_and_save_new_email' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/x-www-form-urlencoded" },
+        body: `otp=${code}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            window.location.reload(); // Éxito total!
+        } else {
+            btn.innerHTML = 'Guardar Cambio';
+            document.getElementById('error-step-3').innerText = data.error;
+            document.getElementById('error-step-3').style.display = 'block';
+        }
+    });
+}
+
+// Configurar salto automático de casillas PIN (sirve para ambos pasos)
+document.querySelectorAll('.old-otp, .new-otp').forEach((input, index, list) => {
+    input.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        // Determinar si es del grupo 'old' o 'new' para no saltar entre ellos
+        let isOld = e.target.classList.contains('old-otp');
+        let currentGroup = isOld ? document.querySelectorAll('.old-otp') : document.querySelectorAll('.new-otp');
+        let localIndex = Array.from(currentGroup).indexOf(e.target);
+        
+        if(e.target.value && localIndex < 5) currentGroup[localIndex+1].focus();
+    });
+    input.addEventListener('keydown', (e) => {
+        let isOld = e.target.classList.contains('old-otp');
+        let currentGroup = isOld ? document.querySelectorAll('.old-otp') : document.querySelectorAll('.new-otp');
+        let localIndex = Array.from(currentGroup).indexOf(e.target);
+        
+        if(e.key === 'Backspace' && !e.target.value && localIndex > 0) currentGroup[localIndex-1].focus();
+    });
+});
+{% endif %}
+
+</script>
+
+<style>
+/* =========================================
+   ESTILOS PARA EL SELECTOR DE AVATAR
+========================================= */
+
+/* 1. ESTADO BASE (No seleccionado, sin mouse encima) */
+.avatar-selectable {
+    width: 65px;           /* Tamaño base */
+    height: 65px;
+    object-fit: cover;
+    border-radius: 50%;    /* Completamente redondo */
+    
+    /* Truco: Borde transparente de 3px para reservar el espacio 
+       y que la imagen no "salte" cuando aparezca el borde azul */
+    border: 3px solid transparent; 
+    
+    opacity: 0.5;          /* Semicompletamente transparente por defecto */
+    cursor: pointer;       /* Manita al pasar el mouse */
+    
+    /* Suaviza todas las animaciones (crecer, color, opacidad) */
+    transition: all 0.25s ease-in-out;
+}
+
+/* 2. ESTADO HOVER (Pasar el mouse por encima) */
+/* Cuando pasamos el mouse sobre la etiqueta <label> contenedora, la imagen cambia */
+#avatar-edit label:hover .avatar-selectable {
+    opacity: 1;            /* Se vuelve completamente visible */
+    transform: scale(1.15);/* Crece un 15% (Zoom effect) */
+    z-index: 10;           /* Se pone por encima de los demás si se solapan ligeramente */
+}
+
+/* 3. ESTADO SELECCIONADO (Click / Checked) */
+/* El selector '+' busca la imagen que es "hermana directa" de un radio button marcado */
+#avatar-edit input[type="radio"]:checked + .avatar-selectable {
+    opacity: 1;            /* Completamente visible */
+    border-color: #0d6efd; /* Color Azul Primario (Bootstrap blue) */
+    transform: scale(1.1); /* Se mantiene un poco grande para destacar */
+    
+    /* Opcional: Añade un ligero resplandor azul */
+    box-shadow: 0 0 10px rgba(13, 110, 253, 0.3); 
+}
+</style>
+{% endblock %}

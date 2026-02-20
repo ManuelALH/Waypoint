@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="character-sheet-container">
+
+    <div class="sheet-header">
+        <div class="header-content">
+            <h1 class="char-title" style="color: {{ character_color }}">{{ character.name }}</h1>
+            <span class="system-tag" style="background: {{ character_color }};">{{ character.system.name }}</span>
+        </div>
+
+        <div class="header-actions">
+            {% if request.user == character.owner %}
+            <button onclick="openDeleteModal1()" class="btn-delete">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+            <a href="{% url 'edit_character' character.pk %}" class="btn-edit"
+                style="text-decoration: none; display: inline-block;">
+                Editar
+            </a>
+            {% endif %}
+            <a href="{% url 'my_characters' %}" class="btn-back">
+                &larr; Volver
+            </a>
+        </div>
+    </div>
+
+    <hr style="border: 0; border-top: 2px solid #eee; margin: 20px 0;">
+
+    <div class="attributes-grid">
+        {% for key, value in character.data.items %}
+        <div class="attr-card">
+            <div class="attr-label">{{ key|title }}</div>
+
+            <div class="attr-value">
+                {{ value }}
+            </div>
+        </div>
+        {% empty %}
+        <p style="color: #999;">No hay datos registrados para este personaje.</p>
+        {% endfor %}
+    </div>
+
+    <div class="sheet-footer">
+        Registrado el: {{ character.created_at|date:"d F Y, H:i" }}
+    </div>
+
+</div>
+
+<div class="container" style="max-width: 900px; margin: 40px auto;">
+
+    <h3 style="border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; color: #2c3e50;">
+        <i class="fas fa-history"></i> Acciones Recientes
+    </h3>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
+        <a href="{% url 'character_full_log' character.id %}" class="btn-log-filter" style="background: #95a5a6;">
+            📂 Todo
+        </a>
+        <a href="{% url 'character_full_log' character.id %}?type=PROGRESSION" class="btn-log-filter"
+            style="background: #2ecc71;">
+            ⬆️ Progresión
+        </a>
+        <a href="{% url 'character_full_log' character.id %}?type=ACHIEVEMENT" class="btn-log-filter"
+            style="background: #f1c40f; color: #333;">
+            ⭐ Logros
+        </a>
+        <a href="{% url 'character_full_log' character.id %}?type=ITEM" class="btn-log-filter"
+            style="background: #3498db;">
+            💎 Objetos
+        </a>
+        <a href="{% url 'character_full_log' character.id %}?type=DEATH" class="btn-log-filter"
+            style="background: #e74c3c;">
+            💀 Muertes
+        </a>
+    </div>
+
+    <div class="timeline-container" style="border-left: 2px solid #e0e0e0; padding-left: 20px;">
+        {% for log in recent_logs %}
+        <div class="timeline-item" style="margin-bottom: 25px; position: relative;">
+
+            <div style="position: absolute; left: -29px; top: 15px; width: 16px; height: 16px; border-radius: 50%; background: 
+                {% if log.entry_type == 'DEATH' %}#e74c3c
+                {% elif log.entry_type == 'ACHIEVEMENT' %}#f1c40f
+                {% elif log.entry_type == 'ITEM' %}#3498db
+                {% elif log.entry_type == 'PROGRESSION' %}#2ecc71
+                {% else %}#95a5a6{% endif %}; border: 3px solid white; box-shadow: 0 0 3px rgba(0,0,0,0.2);"></div>
+
+            <div class="timeline-content"
+                style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9em;">
+                    <div>
+                        <strong style="color: #2c3e50;">{{ log.get_entry_type_display }}</strong>
+                        {% if log.author %}
+                        <span style="font-size: 0.85em; color: #7f8c8d;">
+                            <i class="fas fa-user-edit"></i> {{ log.author.username }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <span style="color: #7f8c8d;">{{ log.created_at|date:"d M Y" }}</span>
+                </div>
+
+                <p style="margin: 0; color: #34495e;">{{ log.content|truncatechars:150 }}</p>
+
+                {% if log.table %}
+                <div style="margin-top: 8px; font-size: 0.85em; color: #7f8c8d; font-weight: 600;">
+                    <i class="fas fa-dungeon"></i> Campaña: {{ log.table.name }}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p style="color: #95a5a6; font-style: italic;">No hay registros recientes para este personaje.</p>
+            {% endfor %}
+        </div>
+
+        {% if recent_logs %}
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'character_full_log' character.id %}"
+                style="text-decoration: none; color: #3498db; font-weight: bold;">
+                Ver historial completo &rarr;
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if request.user == character.user %}
+    <div id="deleteModal1" class="modal-overlay">
+        <div class="modal-box">
+            <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+            <h3 style="color: #f39c12; margin-top: 0;">¿Estás seguro?</h3>
+            <p>Estás a punto de eliminar a <strong>{{ character.name }}</strong>.</p>
+
+            <button onclick="closeModals()" class="modal-btn" style="background: #95a5a6; color: white;">
+                Cancelar
+            </button>
+            <button onclick="openDeleteModal2()" class="modal-btn" style="background: #f39c12; color: white;">
+                Sí, continuar
+            </button>
+        </div>
+    </div>
+
+    <div id="deleteModal2" class="modal-overlay">
+        <div class="modal-box" style="border: 2px solid #c0392b;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🛑</div>
+            <h3 style="color: #c0392b; margin-top: 0;">¡Esta acción es irreversible!</h3>
+            <p>Si eliminas este personaje, se perderán todos sus datos para siempre.</p>
+
+            <form action="{% url 'delete_character' character.pk %}" method="POST" style="display: inline;">
+                {% csrf_token %}
+                <button type="button" onclick="closeModals()" class="modal-btn"
+                    style="background: #95a5a6; color: white;">
+                    Me arrepentí
+                </button>
+                <button type="submit" class="modal-btn" style="background: #c0392b; color: white;">
+                    CONFIRMAR ELIMINACIÓN
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        // Referencias a los modales
+        const modal1 = document.getElementById('deleteModal1');
+        const modal2 = document.getElementById('deleteModal2');
+
+        // Función para abrir el primer modal (Advertencia)
+        function openDeleteModal1() {
+            modal1.style.display = "flex";
+        }
+
+        // Función para pasar del modal 1 al 2 (Peligro)
+        function openDeleteModal2() {
+            modal1.style.display = "none"; // Cerramos el 1
+            modal2.style.display = "flex"; // Abrimos el 2
+        }
+
+        // Función para cerrar todo
+        function closeModals() {
+            modal1.style.display = "none";
+            modal2.style.display = "none";
+        }
+
+        // Cerrar si se hace clic fuera de la caja blanca
+        window.onclick = function (event) {
+            if (event.target == modal1 || event.target == modal2) {
+                closeModals();
+            }
+        }
+    </script>
+
+    <style>
+        .character-sheet-container {
+            background: white;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e0e0;
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-title {
+            margin: 0;
+            /* Quitamos el color fijo para que funcione el estilo inline */
+            font-size: 2.5em;
+        }
+
+        /* 3. Estilo tipo CÁPSULA (igual que en table_detail) */
+        .system-tag {
+            display: inline-block;
+            color: white;
+            padding: 4px 12px;
+            /* Más padding lateral */
+            border-radius: 20px;
+            /* Borde redondeado completo */
+            font-weight: bold;
+            font-size: 0.9em;
+            /* Ajuste de tamaño */
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: #7f8c8d;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .btn-edit {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Grid de datos */
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .attr-card {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .attr-label {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .attr-value {
+            font-size: 1.2em;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .sheet-footer {
+            margin-top: 40px;
+            text-align: right;
+            color: #bdc3c7;
+            font-size: 0.8em;
+            font-style: italic;
+        }
+
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+
+        /* Estilos del Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            margin: 10px 5px 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-log-filter {
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-log-filter:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+            color: white;
+        }
+    </style>
+    {% endblock %}

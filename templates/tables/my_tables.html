@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="padding: 20px;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
+            Mis Mesas
+        </h2>
+        <a href="{% url 'create_table' %}" class="btn-create">
+            <i class="fas fa-plus"></i> Nueva Mesa
+        </a>
+    </div>
+
+    <div class="tables-grid">
+        {% for table in tables %}
+        <div class="table-card">
+
+            <div class="card-header" style="background-color: {{ table.color }};">
+                <span class="system-badge">{{ table.system.name }}</span>
+            </div>
+
+            <div class="card-body">
+                <h3 class="table-name">{{ table.name }}</h3>
+
+                <div class="table-info">
+                    <div class="info-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>{{ table.play_days }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ table.start_time|time:"H:i" }} - {{ table.end_time|time:"H:i" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-sync-alt"></i>
+                        <span style="text-transform: capitalize;">{{ table.frequency }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ table.location|default:"No especificada" }}</span>
+                    </div>
+                    {% if table.address %}
+                    <div class="info-item">
+                        <i class="fas fa-directions"></i> {{ table.address }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <a href="{% url 'table_detail' table.pk %}" class="btn-view"
+                    style="color: {{ table.color }}; border-color: {{ table.color }};">
+                    Ver Mesa
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #7f8c8d;">
+            <h3>No tienes mesas activas</h3>
+            <p>¡Crea una campaña y comienza la aventura!</p>
+            <a href="{% url 'create_table' %}" class="btn-create" style="display: inline-block; margin-top: 10px;">
+                Crear mi primera mesa
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<style>
+    /* Estilos Generales */
+    .btn-create {
+        background-color: #27ae60;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    .btn-create:hover {
+        background-color: #219150;
+    }
+
+    /* Grid Layout */
+    .tables-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    /* Diseño de la Tarjeta */
+    .table-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .table-card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Cabecera de Color */
+    .card-header {
+        height: 60px;
+        /* Un poco más delgado que el de personajes si no hay foto */
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 15px;
+    }
+
+    .system-badge {
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    /* Cuerpo de la Tarjeta */
+    .card-body {
+        padding: 20px;
+        text-align: center;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .table-name {
+        margin: 0 0 15px 0;
+        color: #2c3e50;
+        font-size: 1.4rem;
+    }
+
+    /* Sección de info (Días, Horas) */
+    .table-info {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: left;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 5px;
+    }
+
+    .info-item i {
+        width: 20px;
+        text-align: center;
+        color: #7f8c8d;
+    }
+
+    /* Botón Ver */
+    .btn-view {
+        margin-top: auto;
+        /* Empuja el botón al final */
+        display: block;
+        padding: 10px;
+        border: 2px solid;
+        /* El color se define inline */
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    .btn-view:hover {
+        background-color: #f4f4f4;
+    }
+</style>
+{% endblock %}

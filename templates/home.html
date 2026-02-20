@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-5">
+
+    {% if user.is_authenticated %}
+
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">Bienvenido, {{ user.username }}</h1>
+        <p class="lead text-muted">Tu centro de mando para aventuras de rol.</p>
+    </div>
+
+    {% if pending_invitations %}
+    <div class="card border-warning mb-5 shadow-sm">
+        <div class="card-header bg-warning text-dark bg-opacity-25 border-warning">
+            <h4 class="mb-0"><i class="fas fa-envelope-open-text"></i> Tienes Invitaciones Pendientes</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                {% for invite in pending_invitations %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-secondary">
+                        <div class="card-body">
+                            <p class="card-text mb-2"><strong>{{ invite.table.dm.username }}</strong> te invita a:</p>
+                            <h5 class="card-title text-primary">{{ invite.table.name }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ invite.table.system.name }}</h6>
+
+                            <p class="small text-muted mb-3">
+                                <i class="far fa-calendar-alt"></i> {{ invite.table.play_days }} <br>
+                                <i class="far fa-clock"></i> {{ invite.table.start_time|time:"H:i" }} - {{
+                                invite.table.end_time|time:"H:i" }} <br>
+                                <i class="fas fa-map-marker-alt"></i> {{ invite.table.location|default:"No especificada"
+                                }} <br>
+                                {% if invite.table.address %}
+                                <i class="fas fa-directions"></i> {{ invite.table.address }}
+                                {% endif %}
+                            </p>
+
+                            <div class="d-flex gap-2">
+                                <form action="{% url 'respond_invitation' invite.pk 'accept' %}" method="POST"
+                                    class="flex-fill">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('¿Unirte a esta mesa?')"
+                                        class="btn btn-success btn-sm w-100">
+                                        <i class="fas fa-check"></i> Aceptar
+                                    </button>
+                                </form>
+
+                                <form action="{% url 'respond_invitation' invite.pk 'reject' %}" method="POST"
+                                    class="flex-fill">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('¿Rechazar invitación?')"
+                                        class="btn btn-danger btn-sm w-100">
+                                        <i class="fas fa-times"></i> Rechazar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-5 justify-content-center">
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-primary">
+                        <i class="fas fa-hat-wizard fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Crear Personaje</h5>
+                    <p class="card-text text-muted small">Diseña un nuevo héroe desde cero.</p>
+                    <a href="{% url 'create_character' %}"
+                        class="btn btn-outline-primary mt-auto stretched-link">Empezar</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-success">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Mis Personajes</h5>
+                    <p class="card-text text-muted small">Gestiona tu lista de héroes.</p>
+                    <a href="{% url 'my_characters' %}" class="btn btn-outline-success mt-auto stretched-link">Ver
+                        Todos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-danger">
+                        <i class="fas fa-dice-d20 fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Crear Mesa</h5>
+                    <p class="card-text text-muted small">Organiza una nueva partida.</p>
+                    <a href="{% url 'create_table' %}" class="btn btn-outline-danger mt-auto stretched-link">Crear</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-warning">
+                        <i class="fas fa-dungeon fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Mis Mesas</h5>
+                    <p class="card-text text-muted small">Gestiona tus campañas activas.</p>
+                    <a href="{% url 'my_tables' %}" class="btn btn-outline-warning mt-auto stretched-link">Explorar</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-info"> <i class="fas fa-search fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Buscar Mesas</h5>
+                    <p class="card-text text-muted small">Encuentra partidas públicas y únete.</p>
+                    <a href="{% url 'find_table' %}" class="btn btn-outline-info mt-auto stretched-link">Buscar</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-purple">
+                        <i class="fas fa-comments fa-3x"></i>
+                    </div>
+                    <h5 class="card-title position-relative d-inline-block">
+                        Mensajería
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            style="font-size: 0.6em;" hx-get="{% url 'hx_unread_count' %}" hx-trigger="load, every 15s"
+                            hx-swap="innerHTML">
+                            -
+                        </span>
+                    </h5>
+                    <p class="card-text text-muted small">Revisa tus conversaciones privadas.</p>
+                    <a href="{% url 'inbox' %}" class="btn btn-outline-dark mt-auto stretched-link"
+                        style="border-color: #6f42c1; color: #6f42c1;"
+                        onmouseover="this.style.backgroundColor='#6f42c1'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#6f42c1';">
+                        Entrar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-teal">
+                        <i class="fas fa-headset fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Soporte Técnico</h5>
+                    <p class="card-text text-muted small">Reporta problemas o contáctanos.</p>
+                    <a href="{% url 'support_ticket' %}" class="btn mt-auto stretched-link"
+                        style="border: 1px solid #20c997; color: #20c997;"
+                        onmouseover="this.style.backgroundColor='#20c997'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#20c997';">
+                        Contactar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {% else %}
+    <div class="p-5 mb-4 bg-light rounded-3 text-center border shadow-sm">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold text-dark">Waypoint TTRPG</h1>
+            <p class="col-md-8 fs-4 mx-auto text-secondary">
+                Gestiona tus personajes, crea mesas de juego y encuentra tu camino en tu próxima aventura de rol.
+            </p>
+            <div class="mt-4">
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 me-2">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-secondary btn-lg px-4">
+                    <i class="fas fa-user-plus"></i> Registrarse
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+    /* Header personalizado */
+    .action-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #fff;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* Al pasar el mouse, cambia el color del icono */
+    .action-card:hover .text-primary {
+        color: #0056b3 !important;
+    }
+
+    .action-card:hover .text-success {
+        color: #1e7e34 !important;
+    }
+
+    .action-card:hover .text-danger {
+        color: #bd2130 !important;
+    }
+
+    .action-card:hover .text-warning {
+        color: #d39e00 !important;
+    }
+
+    /* NUEVO ESTILO PARA LA TARJETA INFO */
+    .action-card:hover .text-info {
+        color: #0dcaf0 !important;
+    }
+
+    /* NUEVO ESTILO PARA LA TARJETA PÚRPURA (INBOX) */
+    .text-purple {
+        color: #6f42c1 !important;
+        /* Púrpura Bootstrap */
+    }
+
+    .action-card:hover .text-purple {
+        color: #59359a !important;
+        /* Púrpura más oscuro para hover */
+    }
+
+    /* NUEVO ESTILO PARA LA TARJETA TEAL (SOPORTE) */
+    .text-teal {
+        color: #20c997 !important;
+    }
+
+    .action-card:hover .text-teal {
+        color: #17a2b8 !important;
+        /* Un tono un poco más oscuro al pasar el mouse */
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function toggleNav() {
+        var sidebar = document.getElementById("mySidebar");
+        var main = document.getElementById("main");
+        if (sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            main.classList.remove('shifted');
+        } else {
+            sidebar.classList.add('open');
+            main.classList.add('shifted');
+        }
+    }
+</script>
+
+{% endblock %}

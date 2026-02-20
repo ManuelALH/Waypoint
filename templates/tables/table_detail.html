@@ -1,0 +1,1261 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% if access_denied %}
+<div class="container d-flex flex-column align-items-center justify-content-center"
+    style="min-height: 60vh; text-align: center;">
+
+    <div style="position: relative; margin-bottom: 20px;">
+        <img src="{% static 'img/beholder_guardian.png' %}" alt="Beholder Guardián"
+            style="max-width: 300px; filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));">
+    </div>
+
+    <h1 style="font-family: 'Cinzel', serif; color: #c0392b; font-size: 3rem;">
+        ALTO AHÍ, VIAJERO
+    </h1>
+
+    <div class="alert alert-dark mt-3" style="max-width: 500px;">
+        <p class="lead mb-0">
+            Has tropezado con la entrada de <strong> UNA MAZMORRA</strong>,
+            pero un hechizo de protección bloquea tu paso.
+        </p>
+        <hr>
+        <p class="small text-muted">Esta es una mesa privada.</p>
+    </div>
+
+    <a href="{% url 'find_table' %}" class="btn btn-dungeon-back mt-4">
+        <i class="fas fa-arrow-left"></i> Volver a la Taberna (Buscar Mesas)
+    </a>
+
+</div>
+
+<style>
+    .btn-dungeon-back {
+        background-color: #c0392b;
+        /* Tu rojo original */
+        border-color: #c0392b;
+        color: white;
+        transition: all 0.3s ease;
+        /* Hace que el cambio de color sea suave */
+    }
+
+    .btn-dungeon-back:hover {
+        background-color: #922b21;
+        /* Un rojo sangre más oscuro */
+        border-color: #80261d;
+        color: #fff;
+        transform: translateY(-2px);
+        /* Pequeño efecto de elevación (opcional) */
+        box-shadow: 0 4px 8px rgba(192, 57, 43, 0.4);
+        /* Resplandor rojo suave */
+    }
+</style>
+
+{% else %}
+
+<div class="detail-container">
+
+    <div class="detail-header">
+        <div class="title-section">
+            <a href="{% url 'my_tables' %}" class="btn-back">&larr; Volver</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h1 style="color: {{ table_color }}; margin: 10px 0;">{{ table.name }}</h1>
+                {% if table.is_private %}
+                <i class="fas fa-lock" title="Mesa Privada" style="color: #95a5a6; font-size: 1.2rem;"></i>
+                {% endif %}
+            </div>
+            <span class="system-tag" style="background: {{ table_color }};">{{ table.system.name }}</span>
+        </div>
+
+        {% if is_guest %}
+        <button onclick="openMessageModal()" class="btn-contact-dm btn-dynamic-hover"
+            style="background-color: {{ table_color }};">
+            <i class="fas fa-envelope"></i> Contactar al DM
+        </button>
+        {% endif %}
+
+        {% if request.user == table.dm %}
+        <div class="header-actions">
+            <button onclick="openDeleteModal1()" class="btn-action btn-delete">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+
+            <a href="{% url 'edit_table' table.pk %}" class="btn-action btn-edit">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+
+    <div class="detail-grid">
+
+        <div class="info-sidebar">
+            <div class="info-card">
+                <h3>Detalles de la Sesión</h3>
+
+                <div class="info-row">
+                    <i class="fas fa-layer-group" style="color: {{ table_color }}"></i>
+                    <div>
+                        <strong>Nivel:</strong><br>
+                        {{ table.get_experience_level_display }}
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <i class="fas fa-theater-masks" style="color: {{ table_color }}"></i>
+                    <div>
+                        <strong>Estilo:</strong><br>
+                        {{ table.get_play_style_display }}
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <i class="fas fa-coins" style="color: {{ table_color }}"></i>
+                    <div>
+                        <strong>Precio:</strong><br>
+                        {{ table.get_price_type_display }}
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <i class="fas fa-globe" style="color: {{ table_color }}"></i>
+                    <div>
+                        <strong>Modalidad:</strong><br>
+                        {{ table.get_modality_display }}
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <i class="fas fa-map-marker-alt" style="color: {{ table_color }}"></i>
+                    <div>
+                        <strong>Ubicación:</strong><br>
+                        {{ table.location|default:"No especificada" }}
+
+                        {% if table.address %}
+                        <div style="font-size: 0.85em; margin-top: 4px;">
+                            <i class="fas fa-directions" style="color: {{ table_color }}"></i> {{ table.address }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class=" info-row">
+                    <i class="fas fa-sync-alt" style="color: {{ table_color }}"></i>
+                    <div>
+                        <strong>Frecuencia:</strong><br>
+                        <span style="text-transform: capitalize;">{{ table.get_frequency_display }}</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <i class="fas fa-calendar-check" style="color: {{ table_color }}"></i>
+                    <div>
+                        <strong>Días:</strong><br>
+                        {{ table.play_days }}
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <i class="fas fa-clock" style="color: {{ table_color }}"></i>
+                    <div>
+                        <strong>Horario:</strong><br>
+                        {{ table.start_time|time:"H:i" }} - {{ table.end_time|time:"H:i" }}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="info-card" style="margin-top: 20px;">
+                <h4 style="margin: 0; color: #7f8c8d; font-size: 0.8rem; letter-spacing: 1px;">DIRECTOR DE JUEGO
+                </h4>
+                <div class="dm-display">
+                    <a href="{% url 'user_profile' table.dm.username %}"
+                        class="text-decoration-none player-hover-scale gap-2" style="color: #2c3e50;"
+                        onmouseover="this.style.color='{{ table_color }}'" onmouseout="this.style.color='#2c3e50'">
+
+                        <i class="fas fa-crown" style="color: #f1c40f;"></i>
+                        <span style="font-weight: bold;">{{ table.dm.username }}</span>
+                    </a>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 style="margin: 0; color: #7f8c8d; font-size: 0.8rem; letter-spacing: 1px;">
+                        JUGADORES ({{ table.players.count }}/{{ max_players }})
+                    </h4>
+
+                    {% if request.user == table.dm %}
+                    <button onclick="openInviteModal()" class="btn-icon-add" title="Invitar Jugador">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    {% endif %}
+                </div>
+
+                <ul class="player-list">
+                    {% for player in table.players.all %}
+                    <li class="player-item d-flex justify-content-between align-items-center mb-3">
+
+                        <div class="player-info">
+                            <a href="{% url 'user_profile' player.username %}"
+                                class="text-decoration-none text-dark fw-bold player-hover-scale gap-2"
+                                title="Ver perfil de {{ player.username }}"
+                                onmouseover="this.style.color='{{ table_color }}'"
+                                onmouseout="this.style.color='#212529'">
+
+                                <img src="{% static 'img/avatars/' %}{{ player.avatar }}"
+                                    class="rounded-circle shadow-sm"
+                                    style="width: 32px; height: 32px; object-fit: cover; border: 2px solid {{ table_color }};"
+                                    alt="Avatar de {{ player.username }}">
+
+                                <span>{{ player.username }}</span>
+                            </a>
+                        </div>
+
+
+                        <div class="player-controls d-flex align-items-center gap-2">
+                            {% if request.user == table.dm %}
+                            <form action="{% url 'promote_player' table.pk player.pk %}" method="POST"
+                                style="margin: 0 !important; padding: 0 !important; display: flex; align-items: center;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-warning player-hover-scale"
+                                    title="Ascender a DM"
+                                    style="width: 35px; height: 35px; border-radius: 8px; display: flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; margin-top: 0 !important;"
+                                    onclick="return confirm('¿Hacer DM a este usuario?')">
+                                    <i class="fas fa-crown"></i>
+                                </button>
+                            </form>
+
+                            <button onclick="openKickModal('{{ player.pk }}', '{{ player.username }}')"
+                                class="btn btn-outline-danger p-0 d-flex align-items-center justify-content-center shadow-sm player-hover-scale"
+                                title="Expulsar" style="width: 35px; height: 35px; border-radius: 8px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+
+                            {% elif request.user == player %}
+                            <form action="{% url 'leave_table' table.pk %}" method="POST"
+                                style="margin: 0; padding: 0; display: flex; align-items: center;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger player-hover-scale"
+                                    title="Abandonar Mesa"
+                                    style="width: 35px; height: 35px; border-radius: 8px; display: flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; margin-top: 0 !important;"
+                                    onclick="return confirm('¿Estás seguro de que quieres abandonar esta mesa? Tus personajes también serán retirados.')">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </li>
+
+                    {% empty %}
+
+                    {% if table.invitations.count == 0 %}
+                    <li
+                        style="color: #bdc3c7; font-size: 0.9em; font-style: italic; text-align: center; margin-top: 10px;">
+                        La mesa está vacía.
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if request.user == table.dm %}
+                    {% for invite in table.invitations.all %}
+                    <li class="player-item pending">
+                        <div class="player-info">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ invite.receiver.username }}</span>
+                        </div>
+
+                        <form action="{% url 'cancel_invitation' invite.pk %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="ctrl-btn kick" title="Cancelar Invitación">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="main-content">
+
+            <div class="description-section">
+                <h3>Sobre la campaña</h3>
+                <p>{{ table.description|linebreaks }}</p>
+
+                {% if is_player %}
+                <div class="player-actions"
+                    style="margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+
+                    {% if user_character %}
+                    <div class="current-char-panel">
+                        <h4 style="margin-top: 0; color: #2c3e50;">
+                            <i class="fas fa-chess-pawn" style="color: {{ table_color }};"></i> Jugando como:
+                            <strong>{{ user_character.name }}</strong>
+                        </h4>
+
+                        <div class="action-buttons"
+                            style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+                            <a href="{% url 'character_sheet' user_character.id %}" class="btn btn-info btn-sm"
+                                style="background: #3498db; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px;">
+                                <i class="fas fa-file-alt"></i> Ver Hoja
+                            </a>
+
+                            <button onclick="openCharModal()" class="btn btn-warning btn-sm"
+                                style="background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-exchange-alt"></i> Cambiar
+                            </button>
+
+                            <form action="{% url 'leave_table_character' table.id %}" method="POST"
+                                style="display:inline;"
+                                onsubmit="return confirm('¿Seguro que quieres retirar a este personaje de la mesa?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                    style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-sign-out-alt"></i> Retirar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    {% if is_guest %}
+                    <button onclick="openCharModal()" class="btn-choose-char btn-dynamic-hover"
+                        style="background-color: {{ table_color }};">
+                        <i class="fas fa-search"></i> Ver Personajes Compatibles
+                    </button>
+                    {% else %}
+                    <button onclick="openCharModal()" class="btn-choose-char btn-dynamic-hover"
+                        style="background-color: {{ table_color }};">
+                        <i class="fas fa-plus-circle"></i> Unirse con un Personaje
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="party-members-section" style="margin-top: 40px;">
+                <h3 class="section-title">
+                    Miembros del Grupo
+                    <span style="font-size: 0.6em; color: #7f8c8d; font-weight: normal;">({{ table.characters.count }})</span>
+                </h3>
+
+                {% if table.characters.count > 0 %}
+                <div class="members-grid">
+                    {% for char in table.characters.all %}
+                    <a href="{% url 'character_sheet' char.id %}" class="member-card">
+                        <div class="member-avatar" style="background: {{ table_color }};">
+                            <span>{{ char.name|slice:":1" }}</span>
+                        </div>
+                        <div class="member-info">
+                            <span class="member-name">{{ char.name }}</span>
+                            <span class="player-name">Jugador: {{ char.owner.username }}</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty-state">Aún no hay aventureros en esta mesa.</p>
+                {% endif %}
+            </div>
+
+
+            {% if request.user == table.dm or is_player %}
+
+            {% if request.user == table.dm %}
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="openLogModal()" class="btn btn-primary btn-dynamic-hover"
+                    style="background: {{ table_color }}; border: none; padding: 10px 20px; border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
+                    <i class="fas fa-feather-alt"></i> &nbsp;Añadir Entrada a Bitácora
+                </button>
+            </div>
+            {% endif %}
+
+            <div class="campaign-timeline" style="margin-top: 40px; position: relative; padding-left: 20px;">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="section-title" style="margin: 0;">Bitácora de Campaña</h3>
+
+                    <a href="{% url 'campaign_log' table.id %}" class="btn btn-primary btn-dynamic-hover"
+                        style="background: {{ table_color }}; border: none; padding: 10px 20px; border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
+                        Ver Bitácora Completa &nbsp;<i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="timeline-container" style="border-left: 2px solid #e0e0e0; padding-left: 20px;">
+                    {% for log in logs %}
+                    <div class="timeline-item" style="margin-bottom: 25px; position: relative;">
+                        <div style="position: absolute; left: -29px; top: 5px; width: 16px; height: 16px; border-radius: 50%; background: 
+                                {% if log.entry_type == 'DEATH' %}#e74c3c
+                                {% elif log.entry_type == 'ACHIEVEMENT' %}#f1c40f
+                                {% elif log.entry_type == 'ITEM' %}#3498db
+                                {% elif log.entry_type == 'PROGRESSION' %}#2ecc71
+                                {% else %}#95a5a6{% endif %}; 
+                                border: 3px solid white;"></div>
+
+                        <div class="timeline-content"
+                            style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                            <div class="timeline-header"
+                                style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-weight: bold; font-size: 0.9em; color: #7f8c8d;">
+                                    {{ log.get_entry_type_display }}
+                                </span>
+                                <span style="font-size: 0.8em; color: #bdc3c7;">
+                                    {{ log.created_at|date:"d M Y, H:i" }}
+                                </span>
+                            </div>
+
+                            <div class="timeline-body">
+                                {% if log.entry_type == 'FREE' %}
+                                <p style="margin: 0;">{{ log.content }}</p>
+                                {% else %}
+                                <p style="margin: 0;">
+                                    {% if log.target_character %}
+                                    <strong style="color: #2c3e50;">
+                                        {{ log.target_character.name }}
+                                    </strong>
+                                    {% endif %}
+                                    {{ log.content }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="color: #95a5a6; font-style: italic;">
+                        La historia aún no ha comenzado a escribirse...
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="logModal" class="modal-overlay"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div class="modal-content"
+                style="background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <h3 style="margin-top: 0;">Nueva Entrada de Bitácora</h3>
+
+                <form action="{% url 'add_log_entry' table.id %}" method="POST">
+                    {% csrf_token %}
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo de
+                            Entrada</label>
+                        <select name="entry_type" id="logType" onchange="updateLogForm()"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="FREE">Libre (Notas DM)</option>
+                            <option value="PROGRESSION">Progresión</option>
+                            <option value="ACHIEVEMENT">Logro</option>
+                            <option value="ITEM">Objeto</option>
+                            <option value="DEATH">Muerte</option>
+                        </select>
+                    </div>
+
+                    <div id="charField" style="margin-bottom: 15px; display: none;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Personaje
+                            Relacionado</label>
+                        <select name="character_id"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">-- Selecciona un personaje --</option>
+                            {% for char in table.characters.all %}
+                            <option value="{{ char.id }}">{{ char.name }} ({{ char.owner.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="textField" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Descripción</label>
+                        <textarea name="content" id="logContent" rows="4"
+                            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit;"></textarea>
+                    </div>
+
+                    <div id="publicCheckField" style="margin-bottom: 20px; display: none;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" name="is_public" style="margin-right: 10px; transform: scale(1.2);">
+                            <span style="font-weight: bold; color: #2c3e50;">Mostrar a jugadores</span>
+                        </label>
+                        <small style="color: #7f8c8d; display: block; margin-top: 5px; margin-left: 24px;">
+                            Si no marcas esta casilla, la nota será privada solo para ti.
+                        </small>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button type="button" onclick="closeLogModal()"
+                            style="padding: 8px 15px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer;">Cancelar</button>
+                        <button type="submit"
+                            style="padding: 8px 15px; border: none; background: #2ecc71; color: white; border-radius: 4px; cursor: pointer;">Publicar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="charModal" class="modal-overlay">
+        <div class="modal-box char-modal-box">
+            <div class="modal-header">
+                <h3>
+                    {% if is_guest %}Personajes Compatibles{% else %}Elige a tu Héroe{% endif %}
+                </h3>
+                <span class="close-modal" onclick="closeCharModal()">&times;</span>
+            </div>
+
+            <p style="color: #666; margin-bottom: 20px;">
+                Mostrando tus personajes para el sistema: <strong>{{ table.system }}</strong>
+            </p>
+
+            {% if available_characters %}
+
+            {% if is_guest %}
+            <div class="char-selection-list">
+                {% for char in available_characters %}
+                <div class="char-option-content" style="border: 1px solid #eee; background: #f9f9f9;">
+                    <span class="char-icon">♟️</span>
+                    <span class="char-name">{{ char.name }}</span>
+                    <small style="margin-left: auto; color: #7f8c8d;">Nvl {{ char.level|default:"1" }}</small>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="alert alert-info"
+                style="font-size: 0.9em; background-color: #e8f4f8; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                <i class="fas fa-info-circle"></i> Debes ser invitado por el DM para jugar con uno de estos
+                personajes.
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" onclick="closeCharModal()" class="modal-btn"
+                    style="background: #95a5a6; color: white;">
+                    Entendido
+                </button>
+            </div>
+
+            {% else %}
+            <form method="post" action="{% url 'join_table_character' table.id %}">
+                {% csrf_token %}
+                <div class="char-selection-list">
+                    {% for char in available_characters %}
+                    <label class="char-option">
+                        <input type="radio" name="character_id" value="{{ char.id }}" required>
+                        <div class="char-option-content">
+                            <span class="char-icon">♟️</span>
+                            <span class="char-name">{{ char.name }}</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn btn-dynamic-style"
+                        style="background-color: {{ table_color }}; width: 100%;">
+                        Unirse a la Aventura
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+
+            {% else %}
+            <div class="no-chars-warning">
+                <p>No tienes personajes creados para el sistema <em>{{ table.get_system_display }}</em>.</p>
+                <a href="{% url 'create_character' %}" class="modal-btn btn-secondary"
+                    style="display:inline-block; text-decoration:none;">Crear Personaje Nuevo</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+</div>
+
+{% endif %}
+
+<div id="deleteModal1" class="modal-overlay">
+    <div class="modal-box">
+        <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+        <h3 style="color: #f39c12; margin-top: 0;">¿Borrar Mesa?</h3>
+        <p>Estás a punto de eliminar la campaña <strong>{{ table.name }}</strong>.</p>
+
+        <button onclick="closeModals()" class="modal-btn" style="background: #95a5a6; color: white;">Cancelar</button>
+        <button onclick="openDeleteModal2()" class="modal-btn" style="background: #f39c12; color: white;">Sí,
+            continuar</button>
+    </div>
+</div>
+
+<div id="deleteModal2" class="modal-overlay">
+    <div class="modal-box" style="border: 2px solid #c0392b;">
+        <div style="font-size: 40px; margin-bottom: 10px;">🛑</div>
+        <h3 style="color: #c0392b; margin-top: 0;">Acción Irreversible</h3>
+        <p>Se perderán todos los datos de la mesa y la agenda.</p>
+
+        <form action="{% url 'delete_table' table.pk %}" method="POST">
+            {% csrf_token %}
+            <button type="button" onclick="closeModals()" class="modal-btn"
+                style="background: #95a5a6; color: white;">Me arrepentí</button>
+            <button type="submit" class="modal-btn" style="background: #c0392b; color: white;">CONFIRMAR
+                ELIMINACIÓN</button>
+        </form>
+    </div>
+</div>
+
+<div id="messageModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-feather-alt"></i> Enviar mensaje </h3>
+            <span class="close-modal" onclick="closeMessageModal()">&times;</span>
+        </div>
+
+        <form method="post" action="{% url 'send_message' %}?table_id={{ table.id }}">
+            {% csrf_token %}
+
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #444;">Asunto</label>
+                    <input type="text" name="subject" required placeholder="Duda sobre la partida..."
+                        style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: inherit;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #444;">Mensaje</label>
+                    <textarea name="body" rows="5" required placeholder="Estimado DM..."
+                        style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+
+                <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeMessageModal()" class="modal-btn"
+                        style="background-color: #95a5a6; color: white;">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="modal-btn btn-dynamic-hover"
+                        style="background-color: {{ table_color }}; width: auto; padding: 0 30px;">
+                        <i class="fas fa-paper-plane"></i> Enviar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Scripts para abrir/cerrar este modal específico
+    function openMessageModal() {
+        document.getElementById('messageModal').style.display = 'flex';
+    }
+
+    function closeMessageModal() {
+        document.getElementById('messageModal').style.display = 'none';
+    }
+
+    // Cerrar si se hace clic fuera del modal
+    window.addEventListener('click', function (event) {
+        const modal = document.getElementById('messageModal');
+        if (event.target == modal) {
+            closeMessageModal();
+        }
+    });
+</script>
+
+<style>
+    .detail-container {
+        max-width: 1000px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    /* Header */
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .btn-back {
+        color: #7f8c8d;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .system-tag {
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+    /* Botones Acción */
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+    }
+
+    .btn-edit {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: #2980b9;
+    }
+
+    .btn-delete {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #c0392b;
+    }
+
+    /* Grid Layout */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 30px;
+    }
+
+    /* Sidebar Info */
+    .info-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+
+    .info-card h3 {
+        margin-top: 0;
+        color: #34495e;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 10px;
+        font-size: 1.1em;
+    }
+
+    .info-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        align-items: flex-start;
+    }
+
+    .info-row i {
+        margin-top: 4px;
+        width: 20px;
+        text-align: center;
+        font-size: 1.1em;
+    }
+
+    /* Main Content */
+    .description-box {
+        background: white;
+        padding: 0;
+    }
+
+    .text-content {
+        line-height: 1.6;
+        color: #2c3e50;
+        font-size: 1.1em;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .btn-action {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+
+    /* Modals (Mismos estilos que personajes) */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        max-width: 400px;
+        animation: fadeIn 0.3s;
+    }
+
+    .modal-btn {
+        padding: 10px 20px;
+        margin: 10px 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Estilos para la lista de jugadores */
+    .dm-display {
+        margin-top: 8px;
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .player-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .player-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.95em;
+    }
+
+    .player-item:last-child {
+        border-bottom: none;
+    }
+
+    .player-item.pending {
+        color: #95a5a6;
+        font-style: italic;
+    }
+
+    .player-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Botones pequeños */
+    .btn-icon-add {
+        background: none;
+        border: none;
+        color: #27ae60;
+        cursor: pointer;
+        font-size: 1em;
+        transition: transform 0.2s;
+    }
+
+    .btn-icon-add:hover {
+        transform: scale(1.2);
+        color: #2ecc71;
+    }
+
+    .ctrl-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9em;
+        padding: 2px 5px;
+        opacity: 0.7;
+        transition: 0.2s;
+    }
+
+    .ctrl-btn:hover {
+        opacity: 1;
+    }
+
+    .promote {
+        color: #f39c12;
+    }
+
+    .kick {
+        color: #e74c3c;
+    }
+
+    /* Estilos para la sección de Miembros */
+    .party-members-section {
+        margin-top: 40px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+    }
+
+    .members-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .member-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .member-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        border-color: #3498db;
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        background: #34495e;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2em;
+        flex-shrink: 0;
+    }
+
+    .member-info {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .member-name {
+        font-weight: bold;
+        color: #2c3e50;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .player-name {
+        font-size: 0.8em;
+        color: #7f8c8d;
+    }
+
+    /* Estilos del Botón y Modal */
+    .btn-choose-char {
+        background-color: #8e44ad;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+
+    .btn-choose-char:hover {
+        background-color: #732d91;
+    }
+
+    .char-modal-box {
+        max-width: 500px;
+        text-align: left;
+        /* Sobrescribe el center del modal anterior */
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .close-modal {
+        font-size: 24px;
+        cursor: pointer;
+        color: #aaa;
+    }
+
+    /* Lista de selección de personajes */
+    .char-selection-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+
+    .char-option {
+        cursor: pointer;
+        position: relative;
+    }
+
+    .char-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .char-option-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border: 2px solid #eee;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .char-option input:checked+.char-option-content {
+        border-color: #3498db;
+        background-color: #ebf5fb;
+    }
+
+    .char-option:hover .char-option-content {
+        border-color: #bdc3c7;
+    }
+
+    .char-icon {
+        font-size: 1.2em;
+    }
+
+    .char-name {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .no-chars-warning {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    /* Clase para botones con color dinámico */
+    .btn-dynamic-hover {
+        /* Transición suave para la sombra */
+        transition: box-shadow 0.2s ease, transform 0.1s;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-dynamic-hover:hover {
+        /* TRUCO: Una sombra interior negra semitransparente (0.2) 
+           hace que el fondo parezca más oscuro, pero el texto sigue siendo blanco puro */
+        box-shadow: inset 0 0 100px 100px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-dynamic-hover:active {
+        transform: scale(0.98);
+    }
+
+    /* Estilo para el botón de regreso de la mazmorra */
+    .btn-dungeon-back {
+        background-color: #c0392b;
+        /* Tu rojo original */
+        border-color: #c0392b;
+        color: white;
+        transition: all 0.3s ease;
+        /* Hace que el cambio de color sea suave */
+    }
+
+    .btn-dungeon-back:hover {
+        background-color: #922b21;
+        /* Un rojo sangre más oscuro */
+        border-color: #80261d;
+        color: #fff;
+        transform: translateY(-2px);
+        /* Pequeño efecto de elevación (opcional) */
+        box-shadow: 0 4px 8px rgba(192, 57, 43, 0.4);
+        /* Resplandor rojo suave */
+    }
+
+    /* Clase para animar el crecimiento al pasar el mouse */
+    .player-hover-scale {
+        transition: transform 0.2s ease-in-out;
+        /* Hace que la animación sea suave */
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .player-hover-scale:hover {
+        transform: scale(1.1);
+        /* Hace que crezca un 10% */
+    }
+</style>
+
+<script>
+    const modal1 = document.getElementById('deleteModal1');
+    const modal2 = document.getElementById('deleteModal2');
+
+    function openDeleteModal1() { modal1.style.display = "flex"; }
+    function openDeleteModal2() { modal1.style.display = "none"; modal2.style.display = "flex"; }
+    function closeModals() { modal1.style.display = "none"; modal2.style.display = "none"; }
+
+    window.onclick = function (e) { if (e.target == modal1 || e.target == modal2) closeModals(); }
+</script>
+
+<div id="inviteModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Invitar Aventurero</h3>
+        <p>Introduce el nombre de usuario exacto:</p>
+        <form action="{% url 'invite_player' table.pk %}" method="POST">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Ej: Gandalf" required
+                style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px;">
+
+            <div style="display:flex; justify-content: center; gap: 10px; margin-top: 10px;">
+                <button type="button" onclick="closeInviteModal()" class="modal-btn"
+                    style="background: #95a5a6; color:white;">Cancelar</button>
+                <button type="submit" class="modal-btn" style="background: #3498db; color:white;">Enviar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="kickModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>¿Expulsar Jugador?</h3>
+        <p>¿Seguro que quieres eliminar a <strong id="kickPlayerName" style="color:#e74c3c;"></strong>?</p>
+
+        <form id="kickForm" method="POST">
+            {% csrf_token %}
+            <div style="display:flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                <button type="button" onclick="document.getElementById('kickModal').style.display='none'"
+                    class="modal-btn" style="background: #95a5a6; color:white;">Cancelar</button>
+                <button type="submit" class="modal-btn" style="background: #e74c3c; color:white;">Sí,
+                    Expulsar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // JS para manejar los Modals
+    function openInviteModal() { document.getElementById('inviteModal').style.display = 'flex'; }
+    function closeInviteModal() { document.getElementById('inviteModal').style.display = 'none'; }
+
+    function openKickModal(playerId, username) {
+        document.getElementById('kickPlayerName').innerText = username;
+        // Construimos la URL dinámicamente reemplazando el '0'
+        let url = "{% url 'remove_player' table.pk 0 %}".replace('0', playerId);
+        document.getElementById('kickForm').action = url;
+        document.getElementById('kickModal').style.display = 'flex';
+    }
+
+    // Cerrar al hacer clic fuera
+    window.onclick = function (e) {
+        if (e.target == document.getElementById('inviteModal')) closeInviteModal();
+        if (e.target == document.getElementById('kickModal')) document.getElementById('kickModal').style.display = 'none';
+    }
+</script>
+
+<script>
+    function openCharModal() {
+        document.getElementById('charModal').style.display = 'flex';
+    }
+
+    function closeCharModal() {
+        document.getElementById('charModal').style.display = 'none';
+    }
+
+    // Cerrar modal si se hace clic fuera de la caja
+    window.onclick = function (event) {
+        const modal = document.getElementById('charModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
+<script>
+    // Configuración de los Placeholders
+    const placeholders = {
+        'FREE': 'Escribe aquí tus notas de campaña como DM...',
+        'PROGRESSION': 'Subidas de nivel, obtención de Experiencia, misión completada...',
+        'ACHIEVEMENT': 'Monstruo derrotado, campaña terminada, jefe derrocado...',
+        'ITEM': 'Monedas de oro ganadas, arma comprada, objeto mágico encontrado...',
+        'DEATH': 'Describe cómo ocurrió el trágico final de este personaje...'
+    };
+
+    function openLogModal() {
+        document.getElementById('logModal').style.display = 'flex'; // Usamos flex para centrar
+        updateLogForm(); // Inicializar estado
+    }
+
+    function closeLogModal() {
+        document.getElementById('logModal').style.display = 'none';
+    }
+
+    window.onclick = function (event) {
+        if (event.target == document.getElementById('logModal')) {
+            closeLogModal();
+        }
+    }
+
+    function updateLogForm() {
+        const type = document.getElementById('logType').value;
+        const charField = document.getElementById('charField');
+        const textField = document.getElementById('logContent');
+        const publicCheck = document.getElementById('publicCheckField');
+
+        // 1. Actualizar Placeholder
+        textField.placeholder = placeholders[type] || 'Escribe los detalles aquí...';
+
+        // 2. Lógica de visibilidad de campos
+        if (type === 'FREE') {
+            // Caso Libre: Ocultar selector de personaje, Mostrar Checkbox
+            charField.style.display = 'none';
+            publicCheck.style.display = 'block';
+        } else {
+            // Otros casos (incluido Muerte): Mostrar personaje, Ocultar Checkbox (es público forzoso)
+            charField.style.display = 'block';
+            publicCheck.style.display = 'none';
+        }
+    }
+</script>
+
+{% endblock %}

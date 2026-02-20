@@ -1,0 +1,29 @@
+{% load static %}
+
+{% for chat in chat_list %}
+<a href="{% url 'chat_room' chat.user.username %}"
+    class="chat-item {% if chat.user.username == other_user_name %}active{% endif %}">
+
+    <img src="{% static 'img/avatars/' %}{{ chat.user.avatar }}" alt="{{ chat.user.username }}" class="avatar-circle">
+
+    <div class="chat-info">
+        <div class="d-flex justify-content-between">
+            <span class="chat-name">{{ chat.user.username }}</span>
+            <span class="chat-date">{{ chat.last_message.created_at|date:"d M" }}</span>
+        </div>
+        <div class="d-flex justify-content-between">
+            <span class="chat-preview text-truncate">
+                {% if chat.last_message.sender == request.user %}
+                <i class="fas fa-reply small"></i>
+                {% endif %}
+                {{ chat.last_message.body|truncatechars:25 }}
+            </span>
+            {% if chat.unread_count > 0 %}
+            <span class="badge bg-danger rounded-pill">{{ chat.unread_count }}</span>
+            {% endif %}
+        </div>
+    </div>
+</a>
+{% empty %}
+<p class="text-center p-3 text-muted">Sin chats.</p>
+{% endfor %}

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 30px auto;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h2 style="margin: 0;">Bitácora: {{ character.name }}</h2>
+            <div style="color: #7f8c8d; margin-top: 5px;">
+                {% if current_type %}
+                Filtro activo: <strong>{{ current_type }}</strong>
+                {% else %}
+                Mostrando todas las entradas
+                {% endif %}
+            </div>
+        </div>
+        <a href="{% url 'character_sheet' character.id %}"
+            style="color: #3498db; text-decoration: none; font-weight: bold;">
+            &larr; Volver a la Hoja de Personaje
+        </a>
+    </div>
+
+    <div
+        style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+        <a href="?type=" class="btn-log-filter"
+            style="background: #95a5a6; {% if not current_type %}box-shadow: 0 0 0 2px #2c3e50;{% endif %}">📂 Todo</a>
+        <a href="?type=PROGRESSION" class="btn-log-filter"
+            style="background: #2ecc71; {% if current_type == 'PROGRESSION' %}box-shadow: 0 0 0 2px #2c3e50;{% endif %}">⬆️
+            Progresión</a>
+        <a href="?type=ACHIEVEMENT" class="btn-log-filter"
+            style="background: #f1c40f; color: #333; {% if current_type == 'ACHIEVEMENT' %}box-shadow: 0 0 0 2px #2c3e50;{% endif %}">⭐
+            Logros</a>
+        <a href="?type=ITEM" class="btn-log-filter"
+            style="background: #3498db; {% if current_type == 'ITEM' %}box-shadow: 0 0 0 2px #2c3e50;{% endif %}">💎
+            Objetos</a>
+        <a href="?type=DEATH" class="btn-log-filter"
+            style="background: #e74c3c; {% if current_type == 'DEATH' %}box-shadow: 0 0 0 2px #2c3e50;{% endif %}">💀
+            Muertes</a>
+        <a href="?type={{ current_type|default_if_none:'' }}&sort={% if current_sort == 'desc' %}asc{% else %}desc{% endif %}"
+            class="btn-log-filter" style="background: #9b59b6; color: white; margin-left: auto;">
+            {% if current_sort == 'desc' %}
+            ⏳ Ver más antiguas
+            {% else %}
+            ⌛ Ver más recientes
+            {% endif %}
+        </a>
+    </div>
+
+    <div class="timeline-container" style="border-left: 2px solid #e0e0e0; padding-left: 20px;">
+        {% for log in logs %}
+        <div class="timeline-item" style="margin-bottom: 25px; position: relative;">
+
+            <div style="position: absolute; left: -29px; top: 15px; width: 16px; height: 16px; border-radius: 50%; background: 
+                {% if log.entry_type == 'DEATH' %}#e74c3c
+                {% elif log.entry_type == 'ACHIEVEMENT' %}#f1c40f
+                {% elif log.entry_type == 'ITEM' %}#3498db
+                {% elif log.entry_type == 'PROGRESSION' %}#2ecc71
+                {% else %}#95a5a6{% endif %}; border: 3px solid white; box-shadow: 0 0 3px rgba(0,0,0,0.2);"></div>
+
+            <div class="timeline-content"
+                style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+
+                <div
+                    style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #f1f1f1; padding-bottom: 10px;">
+                    <div>
+                        <strong style="color: #2c3e50; font-size: 1.1em;">{{ log.get_entry_type_display }}</strong>
+                        <div
+                            style="font-size: 0.85em; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+
+                            <span style="color: #7f8c8d; font-weight: 600;">
+                                <i class="fas fa-user-edit"></i> {{ log.author.username }}
+                            </span>
+
+                            <span style="color: #ccc;">|</span>
+
+                            {% if log.table %}
+                            <span style="color: #7f8c8d; font-weight: 600;">
+                                <i class="fas fa-dungeon"></i> {{ log.table.name }}
+                            </span>
+                            <span style="color: #ccc;">|</span>
+                            {% endif %}
+
+                            <span>
+                                <i class="far fa-clock"></i> {{ log.created_at|date:"d M Y, H:i" }}
+                            </span>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-body">
+                    <p style="margin: 0; color: #34495e;">{{ log.content|linebreaksbr }}</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; color: #95a5a6;">
+            <i class="fas fa-book-open" style="font-size: 3em; margin-bottom: 15px;"></i>
+            <p>No se encontraron entradas con este filtro.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if logs.has_other_pages %}
+    <div class="pagination-container" style="display: flex; justify-content: center; margin-top: 30px; gap: 15px;">
+
+        {% if logs.has_previous %}
+        <a href="?page={{ logs.previous_page_number }}&type={{ current_type|default_if_none:'' }}&sort={{ current_sort|default_if_none:'desc' }}"
+            class="page-link">
+            &larr; Anterior
+        </a>
+        {% else %}
+        <span class="page-link disabled" style="opacity: 0.5; pointer-events: none;">&larr; Anterior</span>
+        {% endif %}
+
+        <span style="align-self: center; color: #7f8c8d;">
+            Página <strong>{{ logs.number }}</strong> de {{ logs.paginator.num_pages }}
+        </span>
+
+        {% if logs.has_next %}
+        <a href="?page={{ logs.next_page_number }}&type={{ current_type|default_if_none:'' }}&sort={{ current_sort|default_if_none:'desc' }}"
+            class="page-link">
+            Siguiente &rarr;
+        </a>
+        {% else %}
+        <span class="page-link disabled" style="opacity: 0.5; pointer-events: none;">Siguiente &rarr;</span>
+        {% endif %}
+
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+    .btn-log-filter {
+        padding: 8px 15px;
+        border-radius: 20px;
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: opacity 0.2s;
+        border: none;
+        font-weight: 500;
+    }
+
+    .btn-log-filter:hover {
+        opacity: 0.8;
+        color: white;
+    }
+
+    .page-link {
+        padding: 8px 16px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        color: #3498db;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}

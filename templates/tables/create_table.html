@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="table-form-container">
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="header-row">
+            <div>
+                <h2 style="color: #2c3e50; margin-top: 0;">
+                    {% if is_edit %}
+                    Editar mesa: {{ table.name }}
+                    {% else %}
+                    Crear Nueva Mesa
+                    {% endif %}
+                </h2>
+                <p class="subtitle">Agenda tu campaña y gestiona a tus jugadores</p>
+            </div>
+            <div class="privacy-wrapper">
+                <label for="{{ form.is_private.id_for_label }}" class="privacy-label" id="privacyLabel">
+                    <span id="privacyText">Pública</span>
+                    <i class="fas fa-eye" id="eyeIcon"></i>
+                </label>
+                <div
+                    style="opacity: 0; position: absolute; pointer-events: none; height: 0; width: 0; overflow: hidden;">
+                    {{ form.is_private }}
+                </div>
+            </div>
+        </div>
+
+        <h4 class="section-title">Información General</h4>
+        <div class="form-grid">
+            <div class="col">
+                <div class="form-group">
+                    {{ form.name.label_tag }}
+                    {{ form.name }}
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    {{ form.system.label_tag }}
+                    {{ form.system }}
+
+                    {% if is_edit %}
+                    <small class="text-muted" style="font-size: 0.85em; display: block; margin-top: 5px;">
+                        <i class="fas fa-lock"></i> El sistema de juego no se puede cambiar una vez creada la mesa.
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-grid-3">
+            <div class="form-group">
+                {{ form.experience_level.label_tag }}
+                {{ form.experience_level }}
+            </div>
+            <div class="form-group">
+                {{ form.play_style.label_tag }}
+                {{ form.play_style }}
+            </div>
+            <div class="form-group">
+                {{ form.price_type.label_tag }}
+                {{ form.price_type }}
+            </div>
+        </div>
+
+        <h4 class="section-title">Ubicación y Modalidad</h4>
+        <div class="form-grid">
+            <div class="col">
+                <div class="form-group">
+                    {{ form.modality.label_tag }}
+                    {{ form.modality }}
+                </div>
+                <div class="form-group">
+                    {{ form.address.label_tag }}
+                    {{ form.address }}
+                </div>
+            </div>
+
+            <div class="col">
+                <label style="font-weight: 600; color: #34495e; margin-bottom: 8px; display:block;">Ubicación
+                    (País/Estado/Ciudad)</label>
+
+                {{ form.location }}
+
+                <div class="location-selectors">
+                    <select id="country-select" class="form-select mb-2" onchange="loadStates()">
+                        <option value="">Selecciona País</option>
+                    </select>
+
+                    <select id="state-select" class="form-select mb-2" disabled onchange="loadCities()">
+                        <option value="">Selecciona Estado</option>
+                    </select>
+
+                    <select id="city-select" class="form-select" disabled onchange="updateFinalLocation()">
+                        <option value="">Selecciona Ciudad</option>
+                    </select>
+                </div>
+
+                {% if is_edit and form.location.value %}
+                <small class="text-muted">Ubicación guardada: <strong>{{ form.location.value }}</strong>. Selecciona de
+                    nuevo arriba para cambiarla.</small>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            {{ form.description.label_tag }}
+            {{ form.description }}
+        </div>
+
+        <h4 class="section-title">Horarios</h4>
+        <div class="form-grid">
+            <div class="col">
+                <div class="form-group">
+                    {{ form.frequency.label_tag }}
+                    {{ form.frequency }}
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="time-row">
+                    <div class="form-group">
+                        {{ form.start_time.label_tag }}
+                        {{ form.start_time }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.end_time.label_tag }}
+                        {{ form.end_time }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            <label>Días de Juego:</label>
+            <div class="days-grid">
+                {% for checkbox in form.play_days %}
+                <div class="day-option">
+                    {{ checkbox.tag }}
+                    <label for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-save"></i>
+                {% if is_edit %}Actualizar{% else %}Publicar Mesa{% endif %}
+            </button>
+            <a href="{% if is_edit %}{% url 'table_detail' table.pk %}{% else %}{% url 'create_table' %}{% endif %}"
+                class="btn-cancel">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<div id="successModal" class="modal-overlay">
+    <div class="modal-box">
+        <div style="font-size: 50px; margin-bottom: 10px;">🎲</div>
+        <h3 style="color: #27ae60; margin-top: 0;">¡Mesa Creada!</h3>
+        <p>Tu mesa se ha registrado exitosamente.</p>
+        <div class="modal-actions">
+            <a href="{% url 'my_tables' %}" class="modal-btn btn-primary">Ir a Mis Mesas</a>
+            <button onclick="closeModal()" class="modal-btn btn-secondary">Crear Otra Mesa</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-form-container {
+        background: white;
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        color: #7f8c8d;
+        border-bottom: 2px solid #ecf0f1;
+        padding-bottom: 10px;
+        margin-top: 30px;
+        margin-bottom: 20px;
+        font-size: 1.1em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Grids */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+
+        .form-grid,
+        .form-grid-3 {
+            grid-template-columns: 1fr;
+        }
+
+        .header-row {
+            flex-direction: column;
+            gap: 15px;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #34495e;
+        font-size: 0.95em;
+    }
+
+    /* Estilos de inputs (para soportar las clases de Bootstrap o nativas) */
+    .form-control,
+    .form-select,
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group select,
+    .form-group textarea,
+    .form-group input[type="time"] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #bdc3c7;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 1em;
+        transition: border-color 0.3s;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #3498db;
+        outline: none;
+    }
+
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon i {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #95a5a6;
+    }
+
+    .time-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    /* Estilo Checkboxes Días */
+    .days-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .day-option {
+        background: #f8f9fa;
+        border: 1px solid #dfe6e9;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+    }
+
+    .day-option:hover {
+        background: #e1f5fe;
+        border-color: #3498db;
+    }
+
+    /* Input checkbox dentro de la píldora de día */
+    .day-option input[type="checkbox"] {
+        accent-color: #2980b9;
+    }
+
+    /* ESTILOS PRIVACIDAD (EL OJO) */
+    .privacy-wrapper {
+        display: flex;
+        align-items: center;
+    }
+
+    .privacy-label {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 15px;
+        border-radius: 20px;
+        background-color: #e8f8f5;
+        /* Verde claro por defecto */
+        color: #27ae60;
+        font-weight: bold;
+        border: 1px solid #27ae60;
+        transition: all 0.3s ease;
+    }
+
+    .privacy-label i {
+        font-size: 1.2em;
+    }
+
+    /* Clase para estado Privado (se añade con JS) */
+    .privacy-label.is-private {
+        background-color: #fadbd8;
+        /* Rojo claro */
+        color: #c0392b;
+        border-color: #c0392b;
+    }
+
+    /* Botones */
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #ecf0f1;
+    }
+
+    .btn-submit {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        flex: 1;
+        font-size: 1.1em;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+
+    .btn-submit:hover {
+        background: #219150;
+    }
+
+    .btn-cancel {
+        background: #e74c3c;
+        color: white;
+        text-decoration: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: #c0392b;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-box {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        text-align: center;
+        max-width: 450px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .modal-btn {
+        padding: 12px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        font-size: 1em;
+        display: block;
+    }
+
+    .btn-primary {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #95a5a6;
+        color: white;
+    }
+
+    /* Estilo extra para los selectores de ubicación */
+    .location-selectors select {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .form-select {
+        display: block;
+        width: 100%;
+        padding: .375rem 2.25rem .375rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+    }
+</style>
+
+<script>
+    // --- LÓGICA DE API DE UBICACIÓN ---
+    const API_BASE = "https://countriesnow.space/api/v0.1/countries";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Cargar países al iniciar
+        fetch(API_BASE)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    const countrySelect = document.getElementById('country-select');
+                    const sortedCountries = data.data.sort((a, b) => a.country.localeCompare(b.country));
+
+                    sortedCountries.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.country;
+                        option.text = item.country;
+                        countrySelect.add(option);
+                    });
+                }
+            })
+            .catch(error => console.error('Error cargando países:', error));
+
+        // Inicializar UI (Modal y Privacidad)
+        const isSuccess = "{{ success|yesno:'true,false' }}" === "true";
+        if (isSuccess) document.getElementById('successModal').style.display = 'flex';
+        updatePrivacyUI();
+    });
+
+    function loadStates() {
+        const countryName = document.getElementById('country-select').value;
+        const stateSelect = document.getElementById('state-select');
+        const citySelect = document.getElementById('city-select');
+
+        stateSelect.innerHTML = '<option value="">Cargando...</option>';
+        stateSelect.disabled = true;
+        citySelect.innerHTML = '<option value="">Selecciona Ciudad</option>';
+        citySelect.disabled = true;
+
+        if (countryName) {
+            fetch(`${API_BASE}/states`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    stateSelect.innerHTML = '<option value="">Selecciona Estado</option>';
+                    if (!data.error && data.data.states.length > 0) {
+                        stateSelect.disabled = false;
+                        data.data.states.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state.name;
+                            option.text = state.name;
+                            stateSelect.add(option);
+                        });
+                    } else {
+                        stateSelect.innerHTML = '<option value="">Sin estados</option>';
+                        // Si no hay estados, podríamos intentar cargar ciudades directamente o permitir guardar solo país
+                        updateFinalLocation();
+                    }
+                });
+        }
+        updateFinalLocation();
+    }
+
+    function loadCities() {
+        const countryName = document.getElementById('country-select').value;
+        const stateName = document.getElementById('state-select').value;
+        const citySelect = document.getElementById('city-select');
+
+        citySelect.innerHTML = '<option value="">Cargando...</option>';
+        citySelect.disabled = true;
+
+        if (countryName && stateName) {
+            fetch(`${API_BASE}/state/cities`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName, state: stateName })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    citySelect.innerHTML = '<option value="">Selecciona Ciudad</option>';
+                    if (!data.error && data.data.length > 0) {
+                        citySelect.disabled = false;
+                        data.data.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.text = city;
+                            citySelect.add(option);
+                        });
+                    } else {
+                        citySelect.innerHTML = '<option value="">Sin ciudades</option>';
+                        updateFinalLocation();
+                    }
+                });
+        }
+        updateFinalLocation();
+    }
+
+    function updateFinalLocation() {
+        const country = document.getElementById('country-select').value;
+        const state = document.getElementById('state-select').value;
+        const city = document.getElementById('city-select').value;
+
+        // El input oculto de Django suele tener el id "id_location" si el campo se llama "location"
+        const hiddenInput = document.getElementById('id_location');
+
+        if (hiddenInput) {
+            let finalString = "";
+            if (country) {
+                if (city) finalString = `${city}, ${state}, ${country}`;
+                else if (state) finalString = `${state}, ${country}`;
+                else finalString = country;
+            }
+            hiddenInput.value = finalString;
+            console.log("Ubicación guardada:", finalString);
+        }
+    }
+
+    // --- LÓGICA DE PRIVACIDAD ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('{{ form.is_private.id_for_label }}');
+        const label = document.getElementById('privacyLabel');
+        const icon = document.getElementById('eyeIcon');
+        const text = document.getElementById('privacyText');
+
+        const updatePrivacy = () => {
+            const isPrivate = input.checked;
+            label.classList.toggle('is-private', isPrivate);
+            text.textContent = isPrivate ? "Privada" : "Pública";
+            icon.className = isPrivate ? 'fas fa-eye-slash' : 'fas fa-eye';
+        };
+
+        if (input) {
+            input.addEventListener('change', updatePrivacy);
+            updatePrivacy();
+        }
+    });
+
+    function closeModal() {
+        document.getElementById('successModal').style.display = 'none';
+    }
+</script>
+
+{% endblock %}

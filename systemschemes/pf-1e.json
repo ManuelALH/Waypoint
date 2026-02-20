@@ -1,0 +1,260 @@
+{
+    "meta": {
+        "color": "#be780a",
+        "label": "Pathfinder 1e"
+    },
+    "character_name": {
+        "type": "str",
+        "label": "Character Name",
+        "help_text": "Enter the name of your character"
+    },
+    "class": {
+        "type": "choice",
+        "label": "Class",
+        "choices": [
+            [
+                "barbarian",
+                "Barbarian"
+            ],
+            [
+                "bard",
+                "Bard"
+            ],
+            [
+                "cleric",
+                "Cleric"
+            ],
+            [
+                "druid",
+                "Druid"
+            ],
+            [
+                "fighter",
+                "Fighter"
+            ],
+            [
+                "monk",
+                "Monk"
+            ],
+            [
+                "paladin",
+                "Paladin"
+            ],
+            [
+                "ranger",
+                "Ranger"
+            ],
+            [
+                "rogue",
+                "Rogue"
+            ],
+            [
+                "sorcerer",
+                "Sorcerer"
+            ],
+            [
+                "wizard",
+                "Wizard"
+            ]
+        ]
+    },
+    "race": {
+        "type": "choice",
+        "label": "Race",
+        "choices": [
+            [
+                "dwarf",
+                "Dwarf"
+            ],
+            [
+                "elf",
+                "Elf"
+            ],
+            [
+                "gnome",
+                "Gnome"
+            ],
+            [
+                "half-elf",
+                "Half-Elf"
+            ],
+            [
+                "halfling",
+                "Halfling"
+            ],
+            [
+                "half-orc",
+                "Half-Orc"
+            ],
+            [
+                "human",
+                "Human"
+            ]
+        ]
+    },
+    "alignment": {
+        "type": "choice",
+        "label": "Alignment",
+        "choices": [
+            [
+                "lawful_good",
+                "Lawful Good"
+            ],
+            [
+                "neutral_good",
+                "Neutral Good"
+            ],
+            [
+                "chaotic_good",
+                "Chaotic Good"
+            ],
+            [
+                "lawful_neutral",
+                "Lawful Neutral"
+            ],
+            [
+                "true_neutral",
+                "True Neutral"
+            ],
+            [
+                "chaotic_neutral",
+                "Chaotic Neutral"
+            ],
+            [
+                "lawful_evil",
+                "Lawful Evil"
+            ],
+            [
+                "neutral_evil",
+                "Neutral Evil"
+            ],
+            [
+                "chaotic_evil",
+                "Chaotic Evil"
+            ]
+        ]
+    },
+    "level": {
+        "type": "int",
+        "label": "Level",
+        "min_value": 1,
+        "max_value": 20,
+        "help_text": "Value between 1 and 20"
+    },
+    "experience_points": {
+        "type": "int",
+        "label": "Experience Points",
+        "min_value": 0,
+        "help_text": "Total experience points accumulated"
+    },
+    "strength": {
+        "type": "int",
+        "label": "Strength",
+        "min_value": 1,
+        "max_value": 20,
+        "help_text": "Value between 1 and 20"
+    },
+    "dexterity": {
+        "type": "int",
+        "label": "Dexterity",
+        "min_value": 1,
+        "max_value": 20,
+        "help_text": "Value between 1 and 20"
+    },
+    "constitution": {
+        "type": "int",
+        "label": "Constitution",
+        "min_value": 1,
+        "max_value": 20,
+        "help_text": "Value between 1 and 20"
+    },
+    "intelligence": {
+        "type": "int",
+        "label": "Intelligence",
+        "min_value": 1,
+        "max_value": 20,
+        "help_text": "Value between 1 and 20"
+    },
+    "wisdom": {
+        "type": "int",
+        "label": "Wisdom",
+        "min_value": 1,
+        "max_value": 20,
+        "help_text": "Value between 1 and 20"
+    },
+    "charisma": {
+        "type": "int",
+        "label": "Charisma",
+        "min_value": 1,
+        "max_value": 20,
+        "help_text": "Value between 1 and 20"
+    },
+    "mod_strength": {
+        "type": "int",
+        "label": "Strength Modifier",
+        "read_only": true,
+        "formula": "dnd5e_2014_mod",
+        "source_field": "strength"
+    },
+    "mod_dexterity": {
+        "type": "int",
+        "label": "Dexterity Modifier",
+        "read_only": true,
+        "formula": "dnd5e_2014_mod",
+        "source_field": "dexterity"
+    },
+    "mod_constitution": {
+        "type": "int",
+        "label": "Constitution Modifier",
+        "read_only": true,
+        "formula": "dnd5e_2014_mod",
+        "source_field": "constitution"
+    },
+    "mod_intelligence": {
+        "type": "int",
+        "label": "Intelligence Modifier",
+        "read_only": true,
+        "formula": "dnd5e_2014_mod",
+        "source_field": "intelligence"
+    },
+    "mod_wisdom": {
+        "type": "int",
+        "label": "Wisdom Modifier",
+        "read_only": true,
+        "formula": "dnd5e_2014_mod",
+        "source_field": "wisdom"
+    },
+    "mod_charisma": {
+        "type": "int",
+        "label": "Charisma Modifier",
+        "read_only": true,
+        "formula": "dnd5e_2014_mod",
+        "source_field": "charisma"
+    },
+    "hit_points": {
+        "type": "int",
+        "label": "Hit Points",
+        "min_value": 1,
+        "help_text": "Total hit points"
+    },
+    "hit_die": {
+        "type": "str",
+        "label": "Hit Die",
+        "read_only": true,
+        "source_field": "class",
+        "formula": "map_value",
+        "mapping": {
+            "barbarian": "d12",
+            "bard": "d8",
+            "cleric": "d8",
+            "druid": "d8",
+            "fighter": "d10",
+            "monk": "d10",
+            "paladin": "d10",
+            "ranger": "d10",
+            "rogue": "d8",
+            "sorcerer": "d6",
+            "wizard": "d6"
+        }
+    }
+}

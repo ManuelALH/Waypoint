@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <i class="fas fa-user-plus fa-3x" style="color: #2c3e50; margin-bottom: 20px;"></i>
+        <h2>Crear Cuenta</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-login">Registrarse</button>
+        </form>
+        <div class="auth-footer">
+            ¿Ya tienes cuenta?
+            <a href="{% url 'login' %}">Inicia Sesión aquí</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

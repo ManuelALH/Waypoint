@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+
+{% block content %} <div
+    style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto;">
+
+    <h2 style="color: #2c3e50; margin-top: 0;">
+        {% if is_edit %}
+        Editar Personaje: {{ character.name }}
+        {% else %}
+        Crear Nuevo Personaje
+        {% endif %}
+    </h2>
+
+    {% if not is_edit %}
+    <div style="margin-bottom: 20px;">
+        <label for="system_select" style="font-weight: bold; color: #2c3e50;">Sistema de Juego:</label>
+        <select id="system_select" onchange="location = '?system=' + this.value;"
+            style="padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-left: 10px;">
+
+            <option value="">Selecciona un sistema...</option>
+
+            {% for system in systems %}
+            <option value="{{ system.slug }}" {% if selected_system and system.slug == selected_system.slug %}selected{% endif %}>
+                {{ system.name }}
+            </option>
+            {% endfor %}
+
+        </select>
+    </div>
+    {% else %}
+    <div style="margin-bottom: 20px; color: #7f8c8d;">
+        <strong>Sistema:</strong> {{ selected_system.name }}
+    </div>
+    {% endif %}
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+    {% if form %}
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="character-form-grid">
+
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+
+                {{ field }}
+
+                {% if field.errors %}
+                <div style="color: #e74c3c; font-size: 0.8em;">
+                    {{ field.errors }}
+                </div>
+                {% endif %}
+
+                {% if field.help_text %}
+                <small class="help-text">{{ field.help_text }}</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn-login" style="width: auto; padding: 12px 50px;">
+                    <i class="fas fa-save"></i>
+                    {% if is_edit %}Actualizar{% else %}Guardar Personaje{% endif %}
+                </button>
+                <a href="{% if is_edit %}{% url 'character_sheet' character.pk %}{% else %}{% url 'create_character' %}{% endif %}"
+                    class="btn-login" style="background-color: #c0392b; 
+                    width: auto; 
+                    padding: 12px 50px; 
+                    text-decoration: none;
+                    margin-left: 15px;
+                <i class=" fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    {% endif %}
+
+</div>
+
+<style>
+    /* El fondo oscuro detras del modal */
+    .modal-overlay {
+        display: none;
+        /* Oculto por defecto */
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Negro con transparencia */
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* La caja blanca del modal */
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        font-family: sans-serif;
+    }
+
+    .modal-title {
+        font-size: 24px;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
+    .modal-body {
+        font-size: 16px;
+        margin-bottom: 25px;
+        color: #555;
+    }
+
+    /* Botones */
+    .modal-btn {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        text-decoration: none;
+        /* Para cuando sea <a> */
+        display: inline-block;
+    }
+
+    .btn-success {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .btn-primary {
+        background-color: #2980b9;
+        color: white;
+    }
+
+    .btn-warning {
+        background-color: #f39c12;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #c0392b;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #7f8c8d;
+        color: white;
+    }
+
+    .modal-btn:hover {
+        opacity: 0.9;
+    }
+</style>
+
+<div id="statusModal" class="modal-overlay">
+    <div class="modal-content">
+        <div id="modalIcon" style="font-size: 50px; margin-bottom: 10px;"></div>
+        <div id="modalTitle" class="modal-title"></div>
+        <div id="modalMessage" class="modal-body"></div>
+        <div id="modalButtons"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- VARIABLES DESDE DJANGO ---
+        // 'success' es True si se guardó bien
+        const isSuccess = "{{ success|yesno:'true,false' }}" === "true";
+
+        // 'form.errors' tendrá contenido si hubo error de validación
+        const hasErrors = {% if form.errors %}true{% else %}false{% endif %};
+
+    // Referencias al DOM
+    const modal = document.getElementById('statusModal');
+    const title = document.getElementById('modalTitle');
+    const msg = document.getElementById('modalMessage');
+    const btns = document.getElementById('modalButtons');
+    const icon = document.getElementById('modalIcon');
+
+    // URLs para redirección
+    // 'create_character' recarga la página limpia.
+    // 'home' asumimos que es tu lista de personajes.
+    const urlCreateNew = "{% url 'create_character' %}";
+    const urlMyChars = "{% url 'my_characters' %}";
+
+    // --- LÓGICA DE VISUALIZACIÓN ---
+
+    if (isSuccess) {
+        // CASO 1: ÉXITO
+        modal.style.display = "flex";
+        title.innerText = "¡Personaje Registrado!";
+        title.style.color = "#27ae60";
+        icon.innerHTML = "✅";
+        msg.innerHTML = "Tu personaje se ha guardado correctamente.";
+
+        // Botón 1: Entendido (Recarga el formulario limpio)
+        const btnNew = document.createElement('a');
+        btnNew.className = 'modal-btn btn-success';
+        btnNew.innerText = "Entendido (Nuevo)";
+        btnNew.href = urlCreateNew; // Esto hace un GET y limpia el form
+
+        // Botón 2: Ir a mis personajes
+        const btnList = document.createElement('a');
+        btnList.className = 'modal-btn btn-primary';
+        btnList.innerText = "Ir a mis personajes";
+        btnList.href = urlMyChars;
+
+        btns.appendChild(btnNew);
+        btns.appendChild(btnList);
+
+    } else if (hasErrors) {
+        // CASO 2: ERROR EN EL FORMULARIO
+        modal.style.display = "flex";
+        title.innerText = "Error al guardar";
+        title.style.color = "#c0392b";
+        icon.innerHTML = "⚠️";
+
+        // Recopilamos los errores que envía Django para mostrarlos
+        let errorText = "Por favor corrige los siguientes problemas:<br><ul style='text-align:left; display:inline-block;'>";
+        {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+        errorText += "<li><strong>{{ field|title }}:</strong> {{ error }}</li>";
+        {% endfor %}
+        {% endfor %}
+        errorText += "</ul>";
+
+        msg.innerHTML = errorText;
+
+        // Botón 1: Continuar (Cierra el modal y deja editar)
+        const btnContinue = document.createElement('button');
+        btnContinue.className = 'modal-btn btn-secondary';
+        btnContinue.innerText = "Continuar Editando";
+        btnContinue.onclick = function () {
+            modal.style.display = "none";
+        };
+
+        // Botón 2: Cancelar (Recarga el formulario en blanco)
+        // Si quieres mantener el sistema seleccionado añade: + "?system={{ selected_system.slug }}"
+        const btnCancel = document.createElement('a');
+        btnCancel.className = 'modal-btn btn-danger';
+        btnCancel.innerText = "Cancelar y Borrar";
+        btnCancel.href = urlCreateNew;
+
+        btns.appendChild(btnContinue);
+        btns.appendChild(btnCancel);
+    }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // --- MOTOR DE FÓRMULAS ---
+        const FORMULAS = {
+            // D&D: (Valor - 10) / 2, redondeado hacia abajo
+            'dnd5e_2014_mod': function (val) {
+                return Math.floor((val - 10) / 2);
+            },
+            // Recibe el valor seleccionado (ej: "wizard") y el mapa de reglas
+            'map_value': function (val, mapping) {
+                return mapping[val] || '';
+            }
+        };
+
+        // --- LÓGICA DE DETECCIÓN ---
+        const calcFields = document.querySelectorAll('.calculated-field');
+
+        calcFields.forEach(targetField => {
+            const sourceId = targetField.dataset.sourceId;
+            const formulaName = targetField.dataset.formula;
+
+            const sourceInput = document.getElementById(sourceId);
+
+            const mappingRaw = targetField.dataset.mapping;
+            const mapping = mappingRaw ? JSON.parse(mappingRaw) : null;
+
+            if (sourceInput && formulaName && FORMULAS[formulaName]) {
+
+                const updateValue = () => {
+                    const val = sourceInput.value;
+
+                    if (formulaName === 'dnd5e_2014_mod') {
+                        const num = parseInt(val);
+                        if (!isNaN(num)) {
+                            targetField.value = FORMULAS[formulaName](num);
+                        } else {
+                            targetField.value = '';
+                        }
+                    }
+                    else if (formulaName === 'map_value' && mapping) {
+                        targetField.value = FORMULAS[formulaName](val, mapping);
+                    }
+                };
+
+                sourceInput.addEventListener('input', updateValue);
+                sourceInput.addEventListener('change', updateValue);
+
+                // Ejecutar una vez al cargar por si hay valores predefinidos
+                updateValue();
+            }
+        });
+    });
+</script>
+
+{% endblock %}

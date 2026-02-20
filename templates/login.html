@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <i class="fas fa-dice-d20 fa-3x" style="color: #2c3e50; margin-bottom: 20px;"></i>
+        <h2>Iniciar Sesión</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <div style="text-align: right; margin-top: -10px; margin-bottom: 20px;">
+                <a href="{% url 'forgot_password' %}" class="text-muted"
+                    style="font-size: 0.85rem; text-decoration: none; font-weight: bold;">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
+
+            <button type="submit" class="btn-login">Ingresar</button>
+        </form>
+        <div class="auth-footer">
+            ¿No tienes cuenta? <a href="{% url 'register' %}">Regístrate aquí</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
