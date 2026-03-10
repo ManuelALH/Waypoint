@@ -170,7 +170,7 @@
             </div>
 
             <div class="info-card" style="margin-top: 20px;">
-                <h4 style="margin: 0; color: #7f8c8d; font-size: 0.8rem; letter-spacing: 1px;">DIRECTOR DE JUEGO
+                <h4 style="margin: 0; color: #7f8c8d; font-size: 0.8rem; letter-spacing: 1px;"> {{ table_dmtitle }}
                 </h4>
                 <div class="dm-display">
                     <a href="{% url 'user_profile' table.dm.username %}"
@@ -186,7 +186,7 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h4 style="margin: 0; color: #7f8c8d; font-size: 0.8rem; letter-spacing: 1px;">
-                        JUGADORES ({{ table.players.count }}/{{ max_players }})
+                        {{ table_playerstitle }} ({{ table.players.count }}/{{ max_players }})
                     </h4>
 
                     {% if request.user == table.dm %}
@@ -341,7 +341,7 @@
 
             <div class="party-members-section" style="margin-top: 40px;">
                 <h3 class="section-title">
-                    Miembros del Grupo
+                    {{ table_playerstitle }} del Grupo
                     <span style="font-size: 0.6em; color: #7f8c8d; font-weight: normal;">({{ table.characters.count }})</span>
                 </h3>
 
@@ -360,7 +360,7 @@
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="empty-state">Aún no hay aventureros en esta mesa.</p>
+                <p class="empty-state">Aún no hay {{ table_playerstitle }} en esta mesa.</p>
                 {% endif %}
             </div>
 
@@ -1140,7 +1140,7 @@
 
 <div id="inviteModal" class="modal-overlay">
     <div class="modal-box">
-        <h3>Invitar Aventurero</h3>
+        <h3>Invitar {{ table_playerstitle }} </h3>
         <p>Introduce el nombre de usuario exacto:</p>
         <form action="{% url 'invite_player' table.pk %}" method="POST">
             {% csrf_token %}

@@ -195,8 +195,6 @@
     const icon = document.getElementById('modalIcon');
 
     // URLs para redirección
-    // 'create_character' recarga la página limpia.
-    // 'home' asumimos que es tu lista de personajes.
     const urlCreateNew = "{% url 'create_character' %}";
     const urlMyChars = "{% url 'my_characters' %}";
 
@@ -266,53 +264,56 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-
-        // --- MOTOR DE FÓRMULAS ---
+        // Fórmulas genéricas y reutilizables
         const FORMULAS = {
-            // D&D: (Valor - 10) / 2, redondeado hacia abajo
-            'dnd5e_2014_mod': function (val) {
-                return Math.floor((val - 10) / 2);
-            },
-            // Recibe el valor seleccionado (ej: "wizard") y el mapa de reglas
-            'map_value': function (val, mapping) {
-                return mapping[val] || '';
-            }
+            'map_value': (val, mapping) => mapping[val] || '',
+            'half_value': val => Math.floor(val / 2),
+            'sum_values': val => Math.floor(val),
+            'dnd5e_2014_mod': val => Math.floor((val - 10) / 2),
+            'pf1e_mod': val => Math.floor((val - 10) / 2),
+            'coc7e_hp': val => Math.floor(FORMULAS['sum_values'](val) / 10),
+            'coc7e_mp': val => Math.floor(val / 5),
+            'vtm5e_healthmax': val => Math.floor(val + 3),
         };
 
-        // --- LÓGICA DE DETECCIÓN ---
-        const calcFields = document.querySelectorAll('.calculated-field');
+        const calculatedFields = document.querySelectorAll('.calculated-field');
 
-        calcFields.forEach(targetField => {
-            const sourceId = targetField.dataset.sourceId;
-            const formulaName = targetField.dataset.formula;
-
-            const sourceInput = document.getElementById(sourceId);
-
-            const mappingRaw = targetField.dataset.mapping;
+        calculatedFields.forEach(targetField => {
+            const sourceIdsRaw = targetField.getAttribute('data-source-ids');
+            const formulaName = targetField.getAttribute('data-formula');
+            const mappingRaw = targetField.getAttribute('data-mapping');
             const mapping = mappingRaw ? JSON.parse(mappingRaw) : null;
 
-            if (sourceInput && formulaName && FORMULAS[formulaName]) {
+            if (sourceIdsRaw && formulaName && FORMULAS[formulaName]) {
+                const sourceIds = JSON.parse(sourceIdsRaw);
+                const sourceInputs = sourceIds.map(id => document.getElementById(id)).filter(el => el !== null);
 
                 const updateValue = () => {
-                    const val = sourceInput.value;
+                    let totalSum = 0;
+                    let lastValue = "";
 
-                    if (formulaName === 'dnd5e_2014_mod') {
+                    sourceInputs.forEach(input => {
+                        const val = input.value;
+                        lastValue = val;
                         const num = parseInt(val);
                         if (!isNaN(num)) {
-                            targetField.value = FORMULAS[formulaName](num);
-                        } else {
-                            targetField.value = '';
+                            totalSum += num;
                         }
-                    }
-                    else if (formulaName === 'map_value' && mapping) {
-                        targetField.value = FORMULAS[formulaName](val, mapping);
+                    });
+
+                    if (formulaName === 'map_value' && mapping) {
+                        targetField.value = FORMULAS[formulaName](lastValue, mapping);
+                    } else {
+                        targetField.value = FORMULAS[formulaName](totalSum);
                     }
                 };
 
-                sourceInput.addEventListener('input', updateValue);
-                sourceInput.addEventListener('change', updateValue);
+                sourceInputs.forEach(input => {
+                    input.addEventListener('input', updateValue);
+                    input.addEventListener('change', updateValue);
+                });
 
-                // Ejecutar una vez al cargar por si hay valores predefinidos
+                // Calcular en la carga inicial
                 updateValue();
             }
         });

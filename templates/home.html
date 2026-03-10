@@ -28,10 +28,8 @@
 
                             <p class="small text-muted mb-3">
                                 <i class="far fa-calendar-alt"></i> {{ invite.table.play_days }} <br>
-                                <i class="far fa-clock"></i> {{ invite.table.start_time|time:"H:i" }} - {{
-                                invite.table.end_time|time:"H:i" }} <br>
-                                <i class="fas fa-map-marker-alt"></i> {{ invite.table.location|default:"No especificada"
-                                }} <br>
+                                <i class="far fa-clock"></i> {{ invite.table.start_time|time:"H:i" }} - {{ invite.table.end_time|time:"H:i" }} <br>
+                                <i class="fas fa-map-marker-alt"></i> {{ invite.table.location|default:"No especificada" }} <br>
                                 {% if invite.table.address %}
                                 <i class="fas fa-directions"></i> {{ invite.table.address }}
                                 {% endif %}

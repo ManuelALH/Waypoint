@@ -1,12 +1,14 @@
 {
     "meta": {
         "color": "#e74c3c",
-        "label": "Dungeons & Dragons 5e (2014)"
+        "label": "Dungeons & Dragons 5e (2014)",
+        "dm_title": "Dungeon Master",
+        "player_title": "Aventureros"
     },
     "character_name": {
         "type": "str",
         "label": "Character Name",
-        "help_text": "Enter the name of your character"
+        "help_text": "Adventurer's full name"
     },
     "class": {
         "type": "choice",
@@ -159,6 +161,10 @@
             [
                 "tiefling",
                 "Tiefling"
+            ],
+            [
+                "goblin",
+                "Goblin"
             ]
         ]
     },
@@ -301,6 +307,36 @@
         "formula": "dnd5e_2014_mod",
         "source_field": "charisma"
     },
+    "proficiency_bonus": {
+        "type": "int",
+        "label": "Proficiency Bonus",
+        "min_value": 1,
+        "help_text": "Total Proficiency Bonus"
+    },
+    "passive_perception": {
+        "type": "int",
+        "label": "Passive Perception",
+        "min_value": 1,
+        "help_text": "Total Passive Perception"
+    },
+    "initiative": {
+        "type": "int",
+        "label": "Initiative",
+        "min_value": 0,
+        "help_text": "Total Initiative"
+    },
+    "speed": {
+        "type": "int",
+        "label": "Speed",
+        "min_value": 1,
+        "help_text": "Total Speed"
+    },
+    "armor_class": {
+        "type": "int",
+        "label": "Armor Class",
+        "min_value": 1,
+        "help_text": "Total Armor Class"
+    },
     "hit_points": {
         "type": "int",
         "label": "Hit Points",
@@ -328,5 +364,40 @@
             "wizard": "d6",
             "artificer": "d8"
         }
+    },
+    "copper_pieces": {
+        "type": "int",
+        "label": "Copper Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
+    },
+    "silver_pieces": {
+        "type": "int",
+        "label": "Silver Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
+    },
+    "electrum_pieces": {
+        "type": "int",
+        "label": "Electrum Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
+    },
+    "gold_pieces": {
+        "type": "int",
+        "label": "Gold Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
+    },
+    "platinum_pieces": {
+        "type": "int",
+        "label": "Platinum Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
     }
 }

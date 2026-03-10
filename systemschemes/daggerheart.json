@@ -1,0 +1,293 @@
+{
+    "meta": {
+        "color": "#2d6cdf",
+        "label": "Daggerheart",
+        "gm_title": "Game Master",
+        "player_title": "Players"
+    },
+    "character_name": {
+        "type": "str",
+        "label": "Character Name",
+        "help_text": "Enter the name of your character"
+    },
+    "pronouns": {
+        "type": "str",
+        "label": "Character Pronouns",
+        "help_text": "Your character's pronouns"
+    },
+    "ancestry": {
+        "type": "choice",
+        "label": "Ancestry",
+        "choices": [
+            [
+                "clank",
+                "Clank"
+            ],
+            [
+                "drakona",
+                "Drakona"
+            ],
+            [
+                "dwarf",
+                "Dwarf"
+            ],
+            [
+                "elf",
+                "Elf"
+            ],
+            [
+                "faerie",
+                "Faerie"
+            ],
+            [
+                "faun",
+                "Faun"
+            ],
+            [
+                "firbolg",
+                "Firbolg"
+            ],
+            [
+                "fungril",
+                "Fungril"
+            ],
+            [
+                "galapa",
+                "Galapa"
+            ],
+            [
+                "giant",
+                "Giant"
+            ],
+            [
+                "goblin",
+                "Goblin"
+            ],
+            [
+                "halfling",
+                "Halfling"
+            ],
+            [
+                "human",
+                "Human"
+            ],
+            [
+                "infernis",
+                "Infernis"
+            ],
+            [
+                "katari",
+                "Katari"
+            ],
+            [
+                "orc",
+                "Orc"
+            ],
+            [
+                "ribbet",
+                "Ribbet"
+            ],
+            [
+                "simiah",
+                "Simiah"
+            ],
+            [
+                "mixed_ancestry",
+                "Mixed Ancestry"
+            ]
+        ]
+    },
+    "community": {
+        "type": "choice",
+        "label": "Community",
+        "choices": [
+            [
+                "highborne",
+                "Highborne"
+            ],
+            [
+                "loreborne",
+                "Loreborne"
+            ],
+            [
+                "orderborne",
+                "Orderborne"
+            ],
+            [
+                "ridgeborne",
+                "Ridgeborne"
+            ],
+            [
+                "seaborne",
+                "Seaborne"
+            ],
+            [
+                "slyborne",
+                "Slyborne"
+            ],
+            [
+                "underborne",
+                "Underborne"
+            ],
+            [
+                "wanderborne",
+                "Wanderborne"
+            ],
+            [
+                "wildborne",
+                "Wildborne"
+            ]
+        ]
+    },
+    "class": {
+        "type": "choice",
+        "label": "Class",
+        "choices": [
+            [
+                "bard",
+                "Bard"
+            ],
+            [
+                "druid",
+                "Druid"
+            ],
+            [
+                "guardian",
+                "Guardian"
+            ],
+            [
+                "ranger",
+                "Ranger"
+            ],
+            [
+                "rogue",
+                "Rogue"
+            ],
+            [
+                "seraph",
+                "Seraph"
+            ],
+            [
+                "sorcerer",
+                "Sorcerer"
+            ],
+            [
+                "warrior",
+                "Warrior"
+            ],
+            [
+                "wizard",
+                "Wizard"
+            ]
+        ]
+    },
+    "background": {
+        "type": "str",
+        "label": "Background",
+        "help_text": "Your character's background"
+    },
+    "level": {
+        "type": "int",
+        "label": "Level",
+        "min_value": 1,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "strength": {
+        "type": "int",
+        "label": "Strength",
+        "min_value": -1,
+        "max_value": 5,
+        "help_text": "Value between -1 and 5"
+    },
+    "agility": {
+        "type": "int",
+        "label": "Agility",
+        "min_value": -1,
+        "max_value": 5,
+        "help_text": "Value between -1 and 5"
+    },
+    "finesse": {
+        "type": "int",
+        "label": "Finesse",
+        "min_value": -1,
+        "max_value": 5,
+        "help_text": "Value between -1 and 5"
+    },
+    "instinct": {
+        "type": "int",
+        "label": "Instinct",
+        "min_value": -1,
+        "max_value": 5,
+        "help_text": "Value between -1 and 5"
+    },
+    "presence": {
+        "type": "int",
+        "label": "Presence",
+        "min_value": -1,
+        "max_value": 5,
+        "help_text": "Value between -1 and 5"
+    },
+    "knowledge": {
+        "type": "int",
+        "label": "Knowledge",
+        "min_value": -1,
+        "max_value": 5,
+        "help_text": "Value between -1 and 5"
+    },
+    "hit_points": {
+        "type": "int",
+        "label": "Hit Points",
+        "min_value": 1,
+        "max_value": 12,
+        "help_text": "Value between 1 and 12"
+    },
+    "stress": {
+        "type": "int",
+        "label": "Stress",
+        "min_value": 1,
+        "max_value": 12,
+        "help_text": "Value between 1 and 12"
+    },
+    "max_stress": {
+        "type": "int",
+        "label": "Max Stress",
+        "read_only": true,
+        "formula": "fixed_value",
+        "value": 6
+    },
+    "hope": {
+        "type": "int",
+        "label": "Hope",
+        "min_value": 0,
+        "max_value": 6,
+        "help_text": "Value between 0 and 6"
+    },
+    "max_hope": {
+        "type": "int",
+        "label": "Max Hope",
+        "read_only": true,
+        "formula": "fixed_value",
+        "value": 6
+    },
+    "proficiency": {
+        "type": "int",
+        "label": "Proficiency",
+        "min_value": 0,
+        "max_value": 6
+    },
+    "armor": {
+        "type": "int",
+        "label": "Armor",
+        "min_value": 0,
+        "max_value": 20,
+        "help_text": "Value between 0 and 20"
+    },
+    "evasion": {
+        "type": "int",
+        "label": "Evasion",
+        "min_value": 0,
+        "max_value": 20,
+        "help_text": "Value between 0 and 20"
+    }
+}

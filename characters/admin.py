@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models.base import Character
+from characters.models import Character
 
 @admin.register(Character)
 class CharacterAdmin(admin.ModelAdmin):

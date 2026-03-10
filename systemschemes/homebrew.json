@@ -1,0 +1,13 @@
+{
+    "meta": {
+        "color": "#c9c9c9",
+        "label": "Homebrew",
+        "dm_title": "Director de Juego",
+        "player_title": "Jugadores"
+    },
+    "character_name": {
+        "type": "str",
+        "label": "Character Name",
+        "help_text": "Enter the name of your character"
+    }
+}

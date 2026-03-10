@@ -77,8 +77,12 @@ def table_detail(request, pk):
 
     if table.system:
         table_color = table.system.primary_color
+        table_dmtitle = table.system.dm_title
+        table_playerstitle = table.system.players_title
     else:
         table_color = '#3498db'
+        table_dmtitle = 'Director de Juego'
+        table_playerstitle = 'Jugadores'
 
     user_character = None
     if is_player:
@@ -101,6 +105,8 @@ def table_detail(request, pk):
     return render(request, 'tables/table_detail.html', {
         'table': table,
         'table_color': table_color,
+        'table_dmtitle': table_dmtitle,
+        'table_playerstitle': table_playerstitle,
         'max_players': TABLE_MAX_PLAYERS,        
         'available_characters': available_characters,
         'user_character': user_character,
@@ -265,7 +271,7 @@ def promote_player(request, table_id, user_id):
         table.players.add(old_dm)
         table.save()
         
-        messages.success(request, f"Has cedido el puesto de DM a {new_dm.username}.")
+        messages.success(request, f"Has cedido el puesto de GD a {new_dm.username}.")
         return redirect('table_detail', pk=table.pk)
     
     return redirect('table_detail', pk=table.pk)

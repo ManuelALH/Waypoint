@@ -24,6 +24,7 @@ class Table(models.Model):
         PAID = 'paid', 'De pago'
 
     class Frequency(models.TextChoices):
+        ONESHOT = 'oneshot', 'Oneshot'
         WEEKLY = 'weekly', 'Semanal'
         BIWEEKLY = 'biweekly', 'Quincenal'
         MONTHLY = 'monthly', 'Mensual'

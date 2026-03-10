@@ -1,12 +1,14 @@
 {
     "meta": {
         "color": "#be780a",
-        "label": "Pathfinder 1e"
+        "label": "Pathfinder 1e",
+        "dm_title": "Game Master",
+        "player_title": "Héroes"
     },
     "character_name": {
         "type": "str",
         "label": "Character Name",
-        "help_text": "Enter the name of your character"
+        "help_text": "Hero's full name"
     },
     "class": {
         "type": "choice",
@@ -55,6 +57,74 @@
             [
                 "wizard",
                 "Wizard"
+            ],
+            [
+                "alchemist",
+                "Alchemist"
+            ],
+            [
+                "cavalier",
+                "Cavalier"
+            ],
+            [
+                "gunslinger",
+                "Gunslinger"
+            ],
+            [
+                "inquisitor",
+                "Inquisitor"
+            ],
+            [
+                "magus",
+                "Magus"
+            ],
+            [
+                "oracle",
+                "Oracle"
+            ],
+            [
+                "shifter",
+                "Shifter"
+            ],
+            [
+                "summoner",
+                "Summoner"
+            ],
+            [
+                "witch",
+                "Witch"
+            ],
+            [
+                "vigilante",
+                "Vigilante"
+            ],
+            [
+                "barbarian_unchained",
+                "Barbarian Unchained"
+            ],
+            [
+                "monk_unchained",
+                "Monk Unchained"
+            ],
+            [
+                "rogue_unchained",
+                "Rogue Unchained"
+            ],
+            [
+                "summoner_unchained",
+                "Summoner Unchained"
+            ],
+            [
+                "antipaladin",
+                "Antipaladin"
+            ],
+            [
+                "ninja",
+                "Ninja"
+            ],
+            [
+                "samurai",
+                "Samurai"
             ]
         ]
     },
@@ -89,6 +159,112 @@
             [
                 "human",
                 "Human"
+            ],
+            [
+                "aasimar",
+                "Aasimar"
+            ],
+            [
+                "catfolk",
+                "Catfolk"
+            ],
+            [
+                "dhampir",
+                "Dhampir"
+            ],
+            [
+                "drow",
+                "Drow"
+            ],
+            [
+                "fetchling",
+                "Fetchling"
+            ],
+            [
+                "goblin",
+                "Goblin"
+            ],
+            [
+                "hobgoblin",
+                "Hobgoblin"
+            ],
+            [
+                "ifrit",
+                "Ifrit"
+            ],
+            [
+                "kobold",
+                "Kobold"
+            ],
+            [
+                "orc",
+                "Orc"
+            ],
+            [
+                "odread",
+                "Odread"
+            ],
+            [
+                "ratfolk",
+                "Ratfolk"
+            ],
+            [
+                "sylph",
+                "Sylph"
+            ],
+            [
+                "tengu",
+                "Tengu"
+            ],
+            [
+                "tiefling",
+                "Tiefling"
+            ],
+            [
+                "undine",
+                "Undine"
+            ]
+        ]
+    },
+    "size": {
+        "type": "choice",
+        "label": "Size",
+        "choices": [
+            [
+                "fine",
+                "Fine"
+            ],
+            [
+                "diminutive",
+                "Diminutive"
+            ],
+            [
+                "tiny",
+                "Tiny"
+            ],
+            [
+                "small",
+                "Small"
+            ],
+            [
+                "medium",
+                "Medium"
+            ],
+            [
+                "large",
+                "Large"
+            ],
+            [
+                "huge",
+                "Huge"
+            ],
+            [
+                "gargantuan",
+                "Gargantuan"
+            ],
+            [
+                "colossal",
+                "Colossal"
             ]
         ]
     },
@@ -193,42 +369,42 @@
         "type": "int",
         "label": "Strength Modifier",
         "read_only": true,
-        "formula": "dnd5e_2014_mod",
+        "formula": "pf1e_mod",
         "source_field": "strength"
     },
     "mod_dexterity": {
         "type": "int",
         "label": "Dexterity Modifier",
         "read_only": true,
-        "formula": "dnd5e_2014_mod",
+        "formula": "pf1e_mod",
         "source_field": "dexterity"
     },
     "mod_constitution": {
         "type": "int",
         "label": "Constitution Modifier",
         "read_only": true,
-        "formula": "dnd5e_2014_mod",
+        "formula": "pf1e_mod",
         "source_field": "constitution"
     },
     "mod_intelligence": {
         "type": "int",
         "label": "Intelligence Modifier",
         "read_only": true,
-        "formula": "dnd5e_2014_mod",
+        "formula": "pf1e_mod",
         "source_field": "intelligence"
     },
     "mod_wisdom": {
         "type": "int",
         "label": "Wisdom Modifier",
         "read_only": true,
-        "formula": "dnd5e_2014_mod",
+        "formula": "pf1e_mod",
         "source_field": "wisdom"
     },
     "mod_charisma": {
         "type": "int",
         "label": "Charisma Modifier",
         "read_only": true,
-        "formula": "dnd5e_2014_mod",
+        "formula": "pf1e_mod",
         "source_field": "charisma"
     },
     "hit_points": {
@@ -254,7 +430,118 @@
             "ranger": "d10",
             "rogue": "d8",
             "sorcerer": "d6",
-            "wizard": "d6"
+            "wizard": "d6",
+            "alchemist": "d8",
+            "cavalier": "d10",
+            "gunslinger": "d10",
+            "inquisitor": "d8",
+            "magus": "d8",
+            "oracle": "d8",
+            "shifter": "d10",
+            "summoner": "d8",
+            "witch": "d6",
+            "vigilante": "d8",
+            "barbarian_unchained": "d12",
+            "monk_unchained": "d10",
+            "rogue_unchained": "d8",
+            "summoner_unchained": "d8",
+            "antipaladin": "d10",
+            "ninja": "d8",
+            "samurai": "d10"
         }
+    },
+    "speed": {
+        "type": "int",
+        "label": "Speed",
+        "min_value": 1,
+        "help_text": "Total Speed"
+    },
+    "initiative": {
+        "type": "int",
+        "label": "Initiative",
+        "min_value": 0,
+        "help_text": "Total Initiative"
+    },
+    "armor_class": {
+        "type": "int",
+        "label": "Armor Class",
+        "min_value": 1,
+        "help_text": "Total Armor Class"
+    },
+    "touch_armor_class": {
+        "type": "int",
+        "label": "Touch Armor Class",
+        "min_value": 1,
+        "help_text": "Total Touch Armor Class"
+    },
+    "flat_footed_armor_class": {
+        "type": "int",
+        "label": "Flat Footed Armor Class",
+        "min_value": 1,
+        "help_text": "Total Flat Footed Armor Class"
+    },
+    "fortitude": {
+        "type": "int",
+        "label": "Fortitude Save",
+        "min_value": 0,
+        "help_text": "Total Fortitude Save"
+    },
+    "reflex": {
+        "type": "int",
+        "label": "Reflex Save",
+        "min_value": 0,
+        "help_text": "Total Reflex Save"
+    },
+    "will": {
+        "type": "int",
+        "label": "Will Save",
+        "min_value": 0,
+        "help_text": "Total Will Save"
+    },
+    "bab": {
+        "type": "int",
+        "label": "Base Attack Bonus",
+        "min_value": 0,
+        "help_text": "Total Base Attack Bonus"
+    },
+    "cmb": {
+        "type": "int",
+        "label": "Combat Maneuver Bonus",
+        "min_value": 0,
+        "help_text": "Total Combat Maneuver Bonus"
+    },
+    "cmd": {
+        "type": "int",
+        "label": "Combat Maneuver Defenses",
+        "min_value": 0,
+        "help_text": "Total Combat Maneuver Defenses"
+    },
+    "copper_pieces": {
+        "type": "int",
+        "label": "Copper Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
+    },
+    "silver_pieces": {
+        "type": "int",
+        "label": "Silver Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
+    },
+    "gold_pieces": {
+        "type": "int",
+        "label": "Gold Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
+    },
+    "platinum_pieces": {
+        "type": "int",
+        "label": "Platinum Pieces",
+        "min_value": 0,
+        "max_value": 9999999,
+        "help_text": "Value between 0 and 9999999"
     }
 }

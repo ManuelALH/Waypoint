@@ -1,0 +1,242 @@
+{
+    "meta": {
+        "color": "#8e1b1b",
+        "label": "Vampire: The Masquerade 5e",
+        "dm_title": "Storyteller",
+        "player_title": "Kindred"
+    },
+    "character_name": {
+        "type": "str",
+        "label": "Character Name",
+        "help_text": "Kindred's full name"
+    },
+    "concept": {
+        "type": "str",
+        "label": "Concept"
+    },
+    "chronicle": {
+        "type": "str",
+        "label": "Chronicle"
+    },
+    "ambition": {
+        "type": "str",
+        "label": "Ambition"
+    },
+    "desire": {
+        "type": "str",
+        "label": "Desire"
+    },
+    "predator_type": {
+        "type": "choice",
+        "label": "Predator Type",
+        "choices": [
+            [
+                "alleycat",
+                "Alleycat"
+            ],
+            [
+                "bagger",
+                "Bagger"
+            ],
+            [
+                "blood_leech",
+                "Blood Leech"
+            ],
+            [
+                "cleaver",
+                "Cleaver"
+            ],
+            [
+                "consensualist",
+                "Consensualist"
+            ],
+            [
+                "farmer",
+                "Farmer"
+            ],
+            [
+                "osiris",
+                "Osiris"
+            ],
+            [
+                "sandman",
+                "Sandman"
+            ],
+            [
+                "scene_queen",
+                "Scene Queen"
+            ],
+            [
+                "siren",
+                "Siren"
+            ]
+        ]
+    },
+    "clan": {
+        "type": "choice",
+        "label": "Clan",
+        "choices": [
+            [
+                "brujah",
+                "Brujah"
+            ],
+            [
+                "gangrel",
+                "Gangrel"
+            ],
+            [
+                "malkavian",
+                "Malkavian"
+            ],
+            [
+                "nosferatu",
+                "Nosferatu"
+            ],
+            [
+                "toreador",
+                "Toreador"
+            ],
+            [
+                "tremere",
+                "Tremere"
+            ],
+            [
+                "ventrue",
+                "Ventrue"
+            ],
+            [
+                "caitiff",
+                "Caitiff"
+            ],
+            [
+                "thin_blood",
+                "Thin Blood"
+            ]
+        ]
+    },
+    "generation": {
+        "type": "int",
+        "label": "Generation",
+        "min_value": 4,
+        "max_value": 16,
+        "help_text": "Value between 4 and 16"
+    },
+    "sire": {
+        "type": "str",
+        "label": "Sire"
+    },
+    "experience_points": {
+        "type": "int",
+        "label": "Experience Points",
+        "min_value": 0,
+        "help_text": "Total experience points accumulated"
+    },
+    "strength": {
+        "type": "int",
+        "label": "Strength",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "dexterity": {
+        "type": "int",
+        "label": "Dexterity",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "stamina": {
+        "type": "int",
+        "label": "Stamina",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "charisma": {
+        "type": "int",
+        "label": "Charisma",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "manipulation": {
+        "type": "int",
+        "label": "Manipulation",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "composure": {
+        "type": "int",
+        "label": "Composure",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "intelligence": {
+        "type": "int",
+        "label": "Intelligence",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "wits": {
+        "type": "int",
+        "label": "Wits",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "resolve": {
+        "type": "int",
+        "label": "Resolve",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "health_max": {
+        "type": "int",
+        "label": "Health Max",
+        "read_only": true,
+        "formula": "vtm5e_healthmax",
+        "source_field": "stamina"
+    },
+    "willpower_max": {
+        "type": "int",
+        "label": "Willpower Max",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "composure",
+            "resolve"
+        ]
+    },
+    "humanity": {
+        "type": "int",
+        "label": "Humanity",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "stains": {
+        "type": "int",
+        "label": "Stains",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "hunger": {
+        "type": "int",
+        "label": "Hunger",
+        "min_value": 0,
+        "max_value": 5,
+        "help_text": "Value between 0 and 5"
+    },
+    "blood_potency": {
+        "type": "int",
+        "label": "Blood Potency",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    }
+}

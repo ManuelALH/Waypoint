@@ -11,6 +11,11 @@ class GameSystem(models.Model):
     )
     
     primary_color = models.CharField(max_length=7, default="#3498db", help_text="Código Hexadecimal")
+    dm_title = models.CharField(max_length=20, default="Director de Juego", help_text="Titulo del Director de Juego")
+    players_title = models.CharField(max_length=20, default="Jugadores", help_text="Titulo para los Jugadores")
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name

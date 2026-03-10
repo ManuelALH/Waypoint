@@ -1,0 +1,355 @@
+{
+    "meta": {
+        "color": "#4a4f57",
+        "label": "Goblin Slayer TRPG",
+        "dm_title": "Game Master",
+        "player_title": "Adventureros"
+    },
+    "character_name": {
+        "type": "str",
+        "label": "Character Name",
+        "help_text": "Full name of the Adventurer"
+    },
+    "race": {
+        "type": "choice",
+        "label": "Race",
+        "choices": [
+            [
+                "human",
+                "Human"
+            ],
+            [
+                "elf",
+                "Elf"
+            ],
+            [
+                "dwarf",
+                "Dwarf"
+            ],
+            [
+                "halfling",
+                "Halfling"
+            ]
+        ]
+    },
+    "age": {
+        "type": "int",
+        "label": "Age",
+        "min_value": 1,
+        "max_value": 99,
+        "help_text": "Value between 1 and 99"
+    },
+    "gender": {
+        "type": "str",
+        "label": "Gender"
+    },
+    "history": {
+        "type": "str",
+        "label": "History"
+    },
+    "rank": {
+        "type": "choice",
+        "label": "Rank",
+        "choices": [
+            [
+                "porcelain",
+                "Porcelain"
+            ],
+            [
+                "obsidian",
+                "Obsidian"
+            ]
+        ]
+    },
+    "strength": {
+        "type": "int",
+        "label": "Strength",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "psyche": {
+        "type": "int",
+        "label": "Psyche",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "technique": {
+        "type": "int",
+        "label": "Technique",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "intelligence": {
+        "type": "int",
+        "label": "Intelligence",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "focus": {
+        "type": "int",
+        "label": "Focus",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "endurance": {
+        "type": "int",
+        "label": "Endurance",
+        "min_value": 0,
+        "max_value": 10,
+        "help_text": "Value between 0 and 10"
+    },
+    "strength_focus": {
+        "type": "int",
+        "label": "Strength Focus",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "strength",
+            "focus"
+        ]
+    },
+    "strength_endurance": {
+        "type": "int",
+        "label": "Strength Endurance",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "strength",
+            "endurance"
+        ]
+    },
+    "strength_reflex": {
+        "type": "int",
+        "label": "Strength Reflex",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "strength",
+            "reflex"
+        ]
+    },
+    "psyche_focus": {
+        "type": "int",
+        "label": "Psyche Focus",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "psyche",
+            "focus"
+        ]
+    },
+    "psyche_endurance": {
+        "type": "int",
+        "label": "Psyche Endurance",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "psyche",
+            "endurance"
+        ]
+    },
+    "psyche_reflex": {
+        "type": "int",
+        "label": "Psyche Reflex",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "psyche",
+            "reflex"
+        ]
+    },
+    "technique_focus": {
+        "type": "int",
+        "label": "Technique Focus",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "technique",
+            "focus"
+        ]
+    },
+    "technique_endurance": {
+        "type": "int",
+        "label": "Technique Endurance",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "technique",
+            "endurance"
+        ]
+    },
+    "technique_reflex": {
+        "type": "int",
+        "label": "Technique Reflex",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "technique",
+            "reflex"
+        ]
+    },
+    "intelligence_focus": {
+        "type": "int",
+        "label": "Intelligence Focus",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "intelligence",
+            "focus"
+        ]
+    },
+    "intelligence_endurance": {
+        "type": "int",
+        "label": "Intelligence Endurance",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "intelligence",
+            "endurance"
+        ]
+    },
+    "intelligence_reflex": {
+        "type": "int",
+        "label": "Intelligence Reflex",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "intelligence",
+            "reflex"
+        ]
+    },
+    "exp_cumulative": {
+        "type": "int",
+        "label": "Cumulative Experience Points",
+        "min_value": 0,
+        "max_value": 99,
+        "help_text": "Total Experience of your Adventurer"
+    },
+    "exp_current": {
+        "type": "int",
+        "label": "Current Experience Points",
+        "min_value": 0,
+        "max_value": 99,
+        "help_text": "Actual Experience of your Adventurer"
+    },
+    "adventures_total": {
+        "type": "int",
+        "label": "Adventures",
+        "min_value": 0,
+        "max_value": 99,
+        "help_text": "Total Adventures of your Adventurer"
+    },
+    "adventures_completed": {
+        "type": "int",
+        "label": "Completed",
+        "min_value": 0,
+        "max_value": 99,
+        "help_text": "Total Completed Adventures of your Adventurer"
+    },
+    "adventurer_level": {
+        "type": "int",
+        "label": "Level",
+        "min_value": 1,
+        "max_value": 20,
+        "help_text": "Value between 1 and 20"
+    },
+    "class": {
+        "type": "choice",
+        "label": "Class",
+        "choices": [
+            [
+                "fighter",
+                "Fighter"
+            ],
+            [
+                "monk",
+                "Monk"
+            ],
+            [
+                "ranger",
+                "Ranger"
+            ],
+            [
+                "scout",
+                "Scout"
+            ],
+            [
+                "sorcerer",
+                "Sorcerer"
+            ],
+            [
+                "priest",
+                "Priest"
+            ],
+            [
+                "dragon_priest",
+                "Dragon Priest"
+            ],
+            [
+                "shaman",
+                "Shaman"
+            ]
+        ]
+    },
+    "life_force": {
+        "type": "int",
+        "label": "Life Force",
+        "read_only": true,
+        "formula": "gs_lf",
+        "source_fields": [
+            "constitution",
+            "level"
+        ],
+        "help_text": "HP = 10 + Constitution + (Level - 1) * (5 + Constitution Modifier)"
+    },
+    "attack_bonus": {
+        "type": "int",
+        "label": "Attack Bonus",
+        "read_only": true,
+        "formula": "gs_attack",
+        "source_fields": [
+            "strength",
+            "level"
+        ],
+        "help_text": "Attack Bonus = Strength Modifier + Level"
+    },
+    "defense": {
+        "type": "int",
+        "label": "Defense",
+        "read_only": true,
+        "formula": "gs_defense",
+        "source_fields": [
+            "dexterity",
+            "agility"
+        ],
+        "help_text": "Defense = 10 + Dexterity Modifier + Agility Modifier"
+    },
+    "speed": {
+        "type": "int",
+        "label": "Speed",
+        "min_value": 1,
+        "help_text": "Movement speed in meters per turn"
+    },
+    "equipment": {
+        "type": "list",
+        "label": "Equipment",
+        "help_text": "List of weapons, armor, and other items"
+    },
+    "silver_pieces": {
+        "type": "int",
+        "label": "Silver Pieces",
+        "min_value": 0,
+        "help_text": "Currency in silver"
+    },
+    "gold_pieces": {
+        "type": "int",
+        "label": "Gold Pieces",
+        "min_value": 0,
+        "help_text": "Currency in gold"
+    }
+}

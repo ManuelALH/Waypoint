@@ -1,0 +1,207 @@
+{
+    "meta": {
+        "color": "#064403",
+        "label": "Call of Cthulhu 7e",
+        "dm_title": "Keeper",
+        "player_title": "Investigadores"
+    },
+    "character_name": {
+        "type": "str",
+        "label": "Character Name",
+        "help_text": "Investigator's full name"
+    },
+    "era": {
+        "type": "choice",
+        "label": "Era",
+        "choices": [
+            [
+                "1920s",
+                "1920s Era (Classic)"
+            ],
+            [
+                "modern",
+                "Modern Era"
+            ]
+        ],
+        "help_text": "Determines available occupations and skill catalog"
+    },
+    "occupation": {
+        "type": "str",
+        "label": "Occupation",
+        "help_text": "Character profession"
+    },
+    "age": {
+        "type": "int",
+        "label": "Age",
+        "min_value": 1,
+        "max_value": 90,
+        "help_text": "Value between 1 and 90"
+    },
+    "strength": {
+        "type": "int",
+        "label": "Strength",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "constitution": {
+        "type": "int",
+        "label": "Constitution",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "dexterity": {
+        "type": "int",
+        "label": "Dexterity",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "appearance": {
+        "type": "int",
+        "label": "Appearance",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "power": {
+        "type": "int",
+        "label": "Power",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "size": {
+        "type": "int",
+        "label": "Size",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "intelligence": {
+        "type": "int",
+        "label": "Intelligence",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "education": {
+        "type": "int",
+        "label": "Education",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "hit_points": {
+        "type": "int",
+        "label": "Hit Points",
+        "read_only": true,
+        "formula": "coc7e_hp",
+        "source_fields": [
+            "constitution",
+            "size"
+        ]
+    },
+    "sanity_max": {
+        "type": "int",
+        "label": "Max Sanity",
+        "read_only": true,
+        "source_field": "power"
+    },
+    "magic_points": {
+        "type": "int",
+        "label": "Magic Points",
+        "read_only": true,
+        "formula": "coc7e_mp",
+        "source_field": "power"
+    },
+    "luck": {
+        "type": "int",
+        "label": "Luck",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Usually rolled separately (3d6 x 5)"
+    },
+    "movement_rate": {
+        "type": "int",
+        "label": "Movement Rate",
+        "read_only": true,
+        "formula": "coc7e_movement_rate",
+        "source_fields": [
+            "strength",
+            "dexterity",
+            "size"
+        ]
+    },
+    "build": {
+        "type": "int",
+        "label": "Build",
+        "read_only": true,
+        "formula": "coc7e_build",
+        "source_fields": [
+            "strength",
+            "size"
+        ]
+    },
+    "damage_bonus": {
+        "type": "str",
+        "label": "Damage Bonus",
+        "read_only": true,
+        "formula": "coc7e_damage_bonus",
+        "source_fields": [
+            "strength",
+            "size"
+        ]
+    },
+    "dodge": {
+        "type": "int",
+        "label": "Dodge",
+        "read_only": true,
+        "formula": "half_value",
+        "source_field": "dexterity"
+    },
+    "armor": {
+        "type": "int",
+        "label": "Armor",
+        "min_value": 0
+    },
+    "attacks_per_round": {
+        "type": "int",
+        "label": "Attacks per Round",
+        "min_value": 1,
+        "max_value": 3,
+        "help_text": "Value between 1 and 3"
+    },
+    "credit_rating": {
+        "type": "int",
+        "label": "Credit Rating",
+        "min_value": 0,
+        "max_value": 100,
+        "help_text": "Value between 0 and 100"
+    },
+    "cash": {
+        "type": "str",
+        "label": "Cash on Hand"
+    },
+    "assets": {
+        "type": "str",
+        "label": "Assets"
+    },
+    "occupation_skill_points": {
+        "type": "int",
+        "label": "Occupation Skill Points",
+        "read_only": true,
+        "formula": "multiply",
+        "source_field": "education",
+        "multiplier": 4
+    },
+    "personal_interest_points": {
+        "type": "int",
+        "label": "Personal Interest Skill Points",
+        "read_only": true,
+        "formula": "multiply",
+        "source_field": "intelligence",
+        "multiplier": 2
+    }
+}

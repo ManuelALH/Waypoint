@@ -4,8 +4,8 @@ from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 
 from tables.models import CampaignLog
-from .models.base import Character
-from .forms.factory import create_character_form
+from characters.models import Character
+from characters.forms import create_character_form
 
 from gamesystems.models import GameSystem 
 
