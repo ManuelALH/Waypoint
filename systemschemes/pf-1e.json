@@ -3,7 +3,7 @@
         "color": "#be780a",
         "label": "Pathfinder 1e",
         "dm_title": "Game Master",
-        "player_title": "Héroes"
+        "player_title": "Heroes"
     },
     "character_name": {
         "type": "str",
@@ -128,9 +128,18 @@
             ]
         ]
     },
+    "level": {
+        "type": "int",
+        "label": "Level",
+        "min_value": 1,
+        "max_value": 20,
+        "default": 1,
+        "help_text": "Value between 1 and 20"
+    },
     "race": {
         "type": "choice",
         "label": "Race",
+        "default": "human",
         "choices": [
             [
                 "dwarf",
@@ -226,48 +235,6 @@
             ]
         ]
     },
-    "size": {
-        "type": "choice",
-        "label": "Size",
-        "choices": [
-            [
-                "fine",
-                "Fine"
-            ],
-            [
-                "diminutive",
-                "Diminutive"
-            ],
-            [
-                "tiny",
-                "Tiny"
-            ],
-            [
-                "small",
-                "Small"
-            ],
-            [
-                "medium",
-                "Medium"
-            ],
-            [
-                "large",
-                "Large"
-            ],
-            [
-                "huge",
-                "Huge"
-            ],
-            [
-                "gargantuan",
-                "Gargantuan"
-            ],
-            [
-                "colossal",
-                "Colossal"
-            ]
-        ]
-    },
     "alignment": {
         "type": "choice",
         "label": "Alignment",
@@ -310,17 +277,11 @@
             ]
         ]
     },
-    "level": {
-        "type": "int",
-        "label": "Level",
-        "min_value": 1,
-        "max_value": 20,
-        "help_text": "Value between 1 and 20"
-    },
     "experience_points": {
         "type": "int",
         "label": "Experience Points",
         "min_value": 0,
+        "default": 0,
         "help_text": "Total experience points accumulated"
     },
     "strength": {
@@ -328,6 +289,7 @@
         "label": "Strength",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "dexterity": {
@@ -335,6 +297,7 @@
         "label": "Dexterity",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "constitution": {
@@ -342,6 +305,7 @@
         "label": "Constitution",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "intelligence": {
@@ -349,6 +313,7 @@
         "label": "Intelligence",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "wisdom": {
@@ -356,6 +321,7 @@
         "label": "Wisdom",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "charisma": {
@@ -363,6 +329,7 @@
         "label": "Charisma",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "mod_strength": {
@@ -411,6 +378,7 @@
         "type": "int",
         "label": "Hit Points",
         "min_value": 1,
+        "default": 10,
         "help_text": "Total hit points"
     },
     "hit_die": {
@@ -450,98 +418,432 @@
             "samurai": "d10"
         }
     },
+    "size": {
+        "type": "choice",
+        "label": "Size",
+        "default": "human",
+        "choices": [
+            [
+                "fine",
+                "Fine"
+            ],
+            [
+                "diminutive",
+                "Diminutive"
+            ],
+            [
+                "tiny",
+                "Tiny"
+            ],
+            [
+                "small",
+                "Small"
+            ],
+            [
+                "medium",
+                "Medium"
+            ],
+            [
+                "large",
+                "Large"
+            ],
+            [
+                "huge",
+                "Huge"
+            ],
+            [
+                "gargantuan",
+                "Gargantuan"
+            ],
+            [
+                "colossal",
+                "Colossal"
+            ]
+        ]
+    },
     "speed": {
         "type": "int",
-        "label": "Speed",
-        "min_value": 1,
-        "help_text": "Total Speed"
+        "label": "Speed (ft.)",
+        "read_only": true,
+        "source_field": "race",
+        "formula": "map_value",
+        "mapping": {
+            "dwarf": 20,
+            "elf": 30,
+            "gnome": 20,
+            "half-elf": 30,
+            "halfling": 20,
+            "half-orc": 30,
+            "human": 30,
+            "aasimar": 30,
+            "catfolk": 30,
+            "dhampir": 30,
+            "drow": 30,
+            "fetchling": 30,
+            "goblin": 30,
+            "hobgoblin": 30,
+            "ifrit": 30,
+            "kobold": 30,
+            "orc": 30,
+            "odread": 20,
+            "ratfolk": 30,
+            "sylph": 30,
+            "tengu": 30,
+            "tiefling": 30,
+            "undine": 30
+        },
+        "help_text": "Base speed determined by Race"
     },
     "initiative": {
         "type": "int",
         "label": "Initiative",
         "min_value": 0,
+        "default": 0,
         "help_text": "Total Initiative"
     },
     "armor_class": {
         "type": "int",
         "label": "Armor Class",
         "min_value": 1,
+        "default": 10,
         "help_text": "Total Armor Class"
     },
     "touch_armor_class": {
         "type": "int",
         "label": "Touch Armor Class",
         "min_value": 1,
+        "default": 10,
         "help_text": "Total Touch Armor Class"
     },
     "flat_footed_armor_class": {
         "type": "int",
         "label": "Flat Footed Armor Class",
         "min_value": 1,
+        "default": 10,
         "help_text": "Total Flat Footed Armor Class"
     },
     "fortitude": {
         "type": "int",
         "label": "Fortitude Save",
         "min_value": 0,
+        "default": 0,
         "help_text": "Total Fortitude Save"
     },
     "reflex": {
         "type": "int",
         "label": "Reflex Save",
         "min_value": 0,
+        "default": 0,
         "help_text": "Total Reflex Save"
     },
     "will": {
         "type": "int",
         "label": "Will Save",
         "min_value": 0,
+        "default": 0,
         "help_text": "Total Will Save"
     },
     "bab": {
         "type": "int",
         "label": "Base Attack Bonus",
         "min_value": 0,
+        "default": 1,
         "help_text": "Total Base Attack Bonus"
     },
     "cmb": {
         "type": "int",
         "label": "Combat Maneuver Bonus",
         "min_value": 0,
+        "default": 0,
         "help_text": "Total Combat Maneuver Bonus"
     },
     "cmd": {
         "type": "int",
         "label": "Combat Maneuver Defenses",
-        "min_value": 0,
+        "min_value": 10,
         "help_text": "Total Combat Maneuver Defenses"
     },
     "copper_pieces": {
         "type": "int",
         "label": "Copper Pieces",
         "min_value": 0,
-        "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Copper"
     },
     "silver_pieces": {
         "type": "int",
         "label": "Silver Pieces",
         "min_value": 0,
-        "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Silver"
     },
     "gold_pieces": {
         "type": "int",
         "label": "Gold Pieces",
         "min_value": 0,
-        "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Gold"
     },
     "platinum_pieces": {
         "type": "int",
         "label": "Platinum Pieces",
         "min_value": 0,
-        "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Platinum"
+    },
+    "skills": {
+        "type": "skill_list",
+        "label": "Skills",
+        "formula": "pf1e_skillcalc",
+        "has_misc_bonus": true,
+        "allow_custom": false,
+        "help_text": "Class Skill+Ranks+Mod",
+        "catalog": [
+            {
+                "id": "acrobatics",
+                "label": "Acrobatics (Dex)",
+                "sources": [
+                    "mod_dexterity"
+                ]
+            },
+            {
+                "id": "appraise",
+                "label": "Appraise (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "bluff",
+                "label": "Bluff (Cha)",
+                "sources": [
+                    "mod_charisma"
+                ]
+            },
+            {
+                "id": "climb",
+                "label": "Climb (Str)",
+                "sources": [
+                    "mod_strength"
+                ]
+            },
+            {
+                "id": "craft",
+                "label": "Craft (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "diplomacy",
+                "label": "Diplomacy (Cha)",
+                "sources": [
+                    "mod_charisma"
+                ]
+            },
+            {
+                "id": "disable_device",
+                "label": "Disable Device (Dex)",
+                "sources": [
+                    "mod_dexterity"
+                ]
+            },
+            {
+                "id": "disguise",
+                "label": "Disguise (Cha)",
+                "sources": [
+                    "mod_charisma"
+                ]
+            },
+            {
+                "id": "escape_artist",
+                "label": "Escape Artist (Dex)",
+                "sources": [
+                    "mod_dexterity"
+                ]
+            },
+            {
+                "id": "fly",
+                "label": "Fly (Dex)",
+                "sources": [
+                    "mod_dexterity"
+                ]
+            },
+            {
+                "id": "handle_animal",
+                "label": "Handle Animal (Cha)",
+                "sources": [
+                    "mod_charisma"
+                ]
+            },
+            {
+                "id": "heal",
+                "label": "Heal (Wis)",
+                "sources": [
+                    "mod_wisdom"
+                ]
+            },
+            {
+                "id": "intimidate",
+                "label": "Intimidate (Cha)",
+                "sources": [
+                    "mod_charisma"
+                ]
+            },
+            {
+                "id": "knowledge_arcana",
+                "label": "Knowledge (Arcana) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_dungeoneering",
+                "label": "Knowledge (Dungeoneering) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_engineering",
+                "label": "Knowledge (Engineering) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_geography",
+                "label": "Knowledge (Geography) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_history",
+                "label": "Knowledge (History) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_local",
+                "label": "Knowledge (Local) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_nature",
+                "label": "Knowledge (Nature) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_nobility",
+                "label": "Knowledge (Nobility) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_planes",
+                "label": "Knowledge (Planes) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "knowledge_religion",
+                "label": "Knowledge (Religion) (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "linguistics",
+                "label": "Linguistics (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "perception",
+                "label": "Perception (Wis)",
+                "sources": [
+                    "mod_wisdom"
+                ]
+            },
+            {
+                "id": "perform",
+                "label": "Perform (Cha)",
+                "sources": [
+                    "mod_charisma"
+                ]
+            },
+            {
+                "id": "profession",
+                "label": "Profession (Wis)",
+                "sources": [
+                    "mod_wisdom"
+                ]
+            },
+            {
+                "id": "ride",
+                "label": "Ride (Dex)",
+                "sources": [
+                    "mod_dexterity"
+                ]
+            },
+            {
+                "id": "sense_motive",
+                "label": "Sense Motive (Wis)",
+                "sources": [
+                    "mod_wisdom"
+                ]
+            },
+            {
+                "id": "sleight_of_hand",
+                "label": "Sleight of Hand (Dex)",
+                "sources": [
+                    "mod_dexterity"
+                ]
+            },
+            {
+                "id": "spellcraft",
+                "label": "Spellcraft (Int)",
+                "sources": [
+                    "mod_intelligence"
+                ]
+            },
+            {
+                "id": "stealth",
+                "label": "Stealth (Dex)",
+                "sources": [
+                    "mod_dexterity"
+                ]
+            },
+            {
+                "id": "survival",
+                "label": "Survival (Wis)",
+                "sources": [
+                    "mod_wisdom"
+                ]
+            },
+            {
+                "id": "swim",
+                "label": "Swim (Str)",
+                "sources": [
+                    "mod_strength"
+                ]
+            },
+            {
+                "id": "use_magic_device",
+                "label": "Use Magic Device (Cha)",
+                "sources": [
+                    "mod_charisma"
+                ]
+            }
+        ]
     }
 }

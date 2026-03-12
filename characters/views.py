@@ -57,15 +57,69 @@ def my_characters(request):
 @login_required
 def character_sheet(request, pk):
     character = get_object_or_404(Character, pk=pk)
-    schema = character.system.schema_definition
-    character.color = schema.get('meta', {}).get('color', '#3498db')
-    recent_logs = CampaignLog.objects.filter(target_character=character).order_by('-created_at')[:5]
     
+    schema = character.system.schema_definition
+    schema_meta = schema.get("meta", {})
+    character_color = schema_meta.get("color", "#2c3e50")
+
+    char_data = character.data
+    display_fields = []
+
+    for f_name, f_config in schema.items():
+        if f_name in ["meta", "character_name"]: 
+            continue
+        
+        field_type = f_config.get("type", "string")
+        label = f_config.get("label", f_name.title())
+        raw_value = char_data.get(f_name)
+
+        if field_type == "skill_list":
+            skills_to_display = []
+            catalog = f_config.get("catalog", [])
+            saved_skills = raw_value if isinstance(raw_value, dict) else {}
+            
+            for skill in catalog:
+                s_id = skill.get("id")
+                s_label = skill.get("label", s_id)
+                s_data = saved_skills.get(s_id, {})
+                
+                skills_to_display.append({
+                    "label": s_label,
+                    "total": s_data.get("total", 0),
+                    "prof": int(s_data.get("prof", 0))
+                })
+                
+            display_fields.append({
+                "type": "skill_list",
+                "label": label,
+                "skills": skills_to_display
+            })
+            
+        elif field_type in ["choice", "select"]:
+            choices = f_config.get("choices", [])
+            display_value = raw_value
+            for choice in choices:
+                if choice[0] == raw_value:
+                    display_value = choice[1]
+                    break
+                    
+            display_fields.append({
+                "type": "normal",
+                "label": label,
+                "value": display_value
+            })
+            
+        else:
+            display_fields.append({
+                "type": "normal",
+                "label": label,
+                "value": raw_value if raw_value not in [None, ""] else "-"
+            })
+
     return render(request, "characters/character_sheet.html", {
         "character": character,
-        "schema": schema,
-        "character_color": character.color,
-        "recent_logs": recent_logs,
+        "character_color": character_color,
+        "display_fields": display_fields,
     })
 
 @login_required

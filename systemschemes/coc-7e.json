@@ -35,20 +35,27 @@
         "label": "Age",
         "min_value": 1,
         "max_value": 90,
+        "default": 25,
         "help_text": "Value between 1 and 90"
+    },
+    "gender": {
+        "type": "str",
+        "label": "Gender"
+    },
+    "residence": {
+        "type": "str",
+        "label": "Residence"
+    },
+    "birthplace": {
+        "type": "str",
+        "label": "Birthplace"
     },
     "strength": {
         "type": "int",
         "label": "Strength",
         "min_value": 0,
         "max_value": 100,
-        "help_text": "Value between 0 and 100"
-    },
-    "constitution": {
-        "type": "int",
-        "label": "Constitution",
-        "min_value": 0,
-        "max_value": 100,
+        "default": 50,
         "help_text": "Value between 0 and 100"
     },
     "dexterity": {
@@ -56,13 +63,7 @@
         "label": "Dexterity",
         "min_value": 0,
         "max_value": 100,
-        "help_text": "Value between 0 and 100"
-    },
-    "appearance": {
-        "type": "int",
-        "label": "Appearance",
-        "min_value": 0,
-        "max_value": 100,
+        "default": 50,
         "help_text": "Value between 0 and 100"
     },
     "power": {
@@ -70,20 +71,23 @@
         "label": "Power",
         "min_value": 0,
         "max_value": 100,
+        "default": 50,
         "help_text": "Value between 0 and 100"
     },
-    "size": {
+    "constitution": {
         "type": "int",
-        "label": "Size",
+        "label": "Constitution",
         "min_value": 0,
         "max_value": 100,
+        "default": 50,
         "help_text": "Value between 0 and 100"
     },
-    "intelligence": {
+    "appearance": {
         "type": "int",
-        "label": "Intelligence",
+        "label": "Appearance",
         "min_value": 0,
         "max_value": 100,
+        "default": 50,
         "help_text": "Value between 0 and 100"
     },
     "education": {
@@ -91,11 +95,39 @@
         "label": "Education",
         "min_value": 0,
         "max_value": 100,
+        "default": 50,
         "help_text": "Value between 0 and 100"
     },
-    "hit_points": {
+    "size": {
         "type": "int",
-        "label": "Hit Points",
+        "label": "Size",
+        "min_value": 0,
+        "max_value": 100,
+        "default": 50,
+        "help_text": "Value between 0 and 100"
+    },
+    "intelligence": {
+        "type": "int",
+        "label": "Intelligence",
+        "min_value": 0,
+        "max_value": 100,
+        "default": 50,
+        "help_text": "Value between 0 and 100"
+    },
+    "movement_rate": {
+        "type": "int",
+        "label": "Movement Rate (MOV)",
+        "read_only": true,
+        "formula": "coc7e_mov",
+        "source_fields": [
+            "strength",
+            "dexterity",
+            "size"
+        ]
+    },
+    "hit_points_max": {
+        "type": "int",
+        "label": "Max Hit Points(HP)",
         "read_only": true,
         "formula": "coc7e_hp",
         "source_fields": [
@@ -103,34 +135,58 @@
             "size"
         ]
     },
+    "hit_points": {
+        "type": "int",
+        "label": "Current HP",
+        "min_value": 0,
+        "max_field": "hit_points_max",
+        "default": 1
+    },
     "sanity_max": {
         "type": "int",
         "label": "Max Sanity",
         "read_only": true,
+        "formula": "sum_values",
         "source_field": "power"
     },
-    "magic_points": {
+    "sanity": {
         "type": "int",
-        "label": "Magic Points",
-        "read_only": true,
-        "formula": "coc7e_mp",
-        "source_field": "power"
+        "label": "Sanity",
+        "min_value": 0,
+        "max_field": "sanity_max",
+        "default": 1
     },
     "luck": {
         "type": "int",
         "label": "Luck",
         "min_value": 0,
         "max_value": 100,
+        "default": 50,
         "help_text": "Usually rolled separately (3d6 x 5)"
     },
-    "movement_rate": {
+    "magic_points_max": {
         "type": "int",
-        "label": "Movement Rate",
+        "label": "Max Magic Points(MP)",
         "read_only": true,
-        "formula": "coc7e_movement_rate",
+        "formula": "coc7e_mp",
+        "source_fields": [
+            "power"
+        ]
+    },
+    "magic_points": {
+        "type": "int",
+        "label": "Magic Points",
+        "min_value": 0,
+        "max_field": "magic_points_max",
+        "default": 1
+    },
+    "damage_bonus": {
+        "type": "str",
+        "label": "Damage Bonus",
+        "read_only": true,
+        "formula": "coc7e_db",
         "source_fields": [
             "strength",
-            "dexterity",
             "size"
         ]
     },
@@ -139,16 +195,6 @@
         "label": "Build",
         "read_only": true,
         "formula": "coc7e_build",
-        "source_fields": [
-            "strength",
-            "size"
-        ]
-    },
-    "damage_bonus": {
-        "type": "str",
-        "label": "Damage Bonus",
-        "read_only": true,
-        "formula": "coc7e_damage_bonus",
         "source_fields": [
             "strength",
             "size"
@@ -164,44 +210,404 @@
     "armor": {
         "type": "int",
         "label": "Armor",
-        "min_value": 0
+        "min_value": 0,
+        "default": 0
     },
-    "attacks_per_round": {
+    "cthulhu_mythos": {
         "type": "int",
-        "label": "Attacks per Round",
-        "min_value": 1,
-        "max_value": 3,
-        "help_text": "Value between 1 and 3"
+        "label": "Chulhu Mythos",
+        "min_value": 0,
+        "max_value": 100,
+        "default": 50,
+        "help_text": "Value between 0 and 100"
     },
     "credit_rating": {
         "type": "int",
         "label": "Credit Rating",
         "min_value": 0,
         "max_value": 100,
+        "default": 50,
         "help_text": "Value between 0 and 100"
     },
     "cash": {
-        "type": "str",
-        "label": "Cash on Hand"
-    },
-    "assets": {
-        "type": "str",
-        "label": "Assets"
-    },
-    "occupation_skill_points": {
         "type": "int",
-        "label": "Occupation Skill Points",
-        "read_only": true,
-        "formula": "multiply",
-        "source_field": "education",
-        "multiplier": 4
+        "label": "Cash on Hand",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Your total currency"
     },
-    "personal_interest_points": {
-        "type": "int",
-        "label": "Personal Interest Skill Points",
-        "read_only": true,
-        "formula": "multiply",
-        "source_field": "intelligence",
-        "multiplier": 2
+    "skills": {
+        "type": "skill_list",
+        "label": "Skills",
+        "formula": "misc_only",
+        "has_misc_bonus": true,
+        "filter_by": "era",
+        "catalog": [
+            {
+                "id": "accounting",
+                "label": "Accounting",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "anthropology",
+                "label": "Anthropology",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "appraise",
+                "label": "Appraise",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "archaeology",
+                "label": "Archaeology",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "art_craft",
+                "label": "Art/Craft",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "charm",
+                "label": "Charm",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "climb",
+                "label": "Climb",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "computer_use",
+                "label": "Computer Use",
+                "filter_values": [
+                    "modern"
+                ]
+            },
+            {
+                "id": "disguise",
+                "label": "Disguise",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "dodge",
+                "label": "Dodge",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "drive_auto",
+                "label": "Drive Auto",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "electrical_repair",
+                "label": "Electrical Repair",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "electronics",
+                "label": "Electronics",
+                "filter_values": [
+                    "modern"
+                ]
+            },
+            {
+                "id": "fast_talk",
+                "label": "Fast Talk",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "fighting",
+                "label": "Fighting",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "firearms_handgun",
+                "label": "Firearms Handgun",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "firearms",
+                "label": "Firearms Rifle/Shotgun",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "first_aid",
+                "label": "First Aid",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "history",
+                "label": "History",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "intimidate",
+                "label": "Intimidate",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "jump",
+                "label": "Jump",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "language_other",
+                "label": "Language (Other)",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "language_own",
+                "label": "Language (Own)",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "law",
+                "label": "Law",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "library_use",
+                "label": "Library Use",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "listen",
+                "label": "Listen",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "locksmith",
+                "label": "Locksmith",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "mechanical_repair",
+                "label": "Mechanical Repair",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "medicine",
+                "label": "Medicine",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "natural_world",
+                "label": "Natural World",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "navigate",
+                "label": "Navigate",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "occult",
+                "label": "Occult",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "operate_heavy_machinery",
+                "label": "Operate Heavy Machinery",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "persuade",
+                "label": "Persuade",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "pilot",
+                "label": "Pilot",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "psychology",
+                "label": "Psychology",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "psychoanalysis",
+                "label": "Psychoanalysis",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "ride",
+                "label": "Ride",
+                "filter_values": [
+                    "1920s"
+                ]
+            },
+            {
+                "id": "science",
+                "label": "Science",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "sleight_of_hand",
+                "label": "Sleight of Hand",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "spot_hidden",
+                "label": "Spot Hidden",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "stealth",
+                "label": "Stealth",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "survival",
+                "label": "Survival",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "swim",
+                "label": "Swim",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "throw",
+                "label": "Throw",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            },
+            {
+                "id": "track",
+                "label": "Track",
+                "filter_values": [
+                    "1920s",
+                    "modern"
+                ]
+            }
+        ]
     }
 }

@@ -19,25 +19,52 @@
                 "Human"
             ],
             [
-                "elf",
-                "Elf"
-            ],
-            [
                 "dwarf",
                 "Dwarf"
             ],
             [
-                "halfling",
-                "Halfling"
+                "elf",
+                "Elf"
+            ],
+            [
+                "lizardman",
+                "Lizardman"
+            ],
+            [
+                "rhea",
+                "Rhea"
             ]
         ]
     },
     "age": {
         "type": "int",
         "label": "Age",
-        "min_value": 1,
-        "max_value": 99,
-        "help_text": "Value between 1 and 99"
+        "source_fields": [
+            "race"
+        ],
+        "range_mapping": {
+            "human": {
+                "min": 15,
+                "max": 90
+            },
+            "dwarf": {
+                "min": 30,
+                "max": 900
+            },
+            "elf": {
+                "min": 50,
+                "max": 5000
+            },
+            "lizardman": {
+                "min": 13,
+                "max": 100
+            },
+            "rhea": {
+                "min": 30,
+                "max": 180
+            }
+        },
+        "help_text": "Age range is based on your Race"
     },
     "gender": {
         "type": "str",
@@ -46,6 +73,240 @@
     "history": {
         "type": "str",
         "label": "History"
+    },
+    "origin": {
+        "type": "choice",
+        "label": "Origin",
+        "choices": [
+            [
+                "adventurer",
+                "Adventurer"
+            ],
+            [
+                "vagabound",
+                "Vagabound"
+            ],
+            [
+                "hunter",
+                "Hunter"
+            ],
+            [
+                "scholar",
+                "Scholar"
+            ],
+            [
+                "artisan",
+                "Artisan"
+            ],
+            [
+                "farmer",
+                "Farmer"
+            ],
+            [
+                "merchant",
+                "Merchant"
+            ],
+            [
+                "soldier",
+                "Soldier"
+            ],
+            [
+                "knight",
+                "Knight"
+            ],
+            [
+                "priest",
+                "Priest"
+            ],
+            [
+                "noble",
+                "Noble"
+            ],
+            [
+                "shopkeeper",
+                "Shopkeeper"
+            ],
+            [
+                "smith",
+                "Smith"
+            ],
+            [
+                "shield_breaker",
+                "Shield Breaker"
+            ],
+            [
+                "half_elf",
+                "Half-Elf"
+            ],
+            [
+                "craftsperson",
+                "Craftsperson"
+            ],
+            [
+                "poet",
+                "Poet"
+            ],
+            [
+                "musician",
+                "Musician"
+            ],
+            [
+                "storyteller",
+                "Storyteller"
+            ],
+            [
+                "faith_healer",
+                "Faith Healer"
+            ],
+            [
+                "chief",
+                "Chief"
+            ],
+            [
+                "slave",
+                "Slave"
+            ],
+            [
+                "cavalry",
+                "Cavalry"
+            ],
+            [
+                "engineer",
+                "Engineer"
+            ],
+            [
+                "archer",
+                "Archer"
+            ],
+            [
+                "spear_soldier",
+                "Spear Soldier"
+            ],
+            [
+                "foot_soldier",
+                "Foot Soldier"
+            ],
+            [
+                "tactician",
+                "Tactician"
+            ],
+            [
+                "bishop",
+                "Bishop"
+            ],
+            [
+                "kingspawn",
+                "Kingspawn"
+            ],
+            [
+                "gardener",
+                "Gardener"
+            ],
+            [
+                "landowner",
+                "Landowner"
+            ]
+        ]
+    },
+    "past": {
+        "type": "choice",
+        "label": "Past",
+        "choices": [
+            [
+                "slave",
+                "Slave"
+            ],
+            [
+                "prison",
+                "Prison"
+            ],
+            [
+                "battlefield",
+                "Battlefield"
+            ],
+            [
+                "temple",
+                "Temple"
+            ],
+            [
+                "orphan",
+                "Orphan"
+            ],
+            [
+                "peaceful",
+                "Peaceful"
+            ],
+            [
+                "destitute",
+                "Destitute"
+            ],
+            [
+                "school",
+                "School"
+            ],
+            [
+                "sheltered",
+                "Sheltered"
+            ],
+            [
+                "luxury",
+                "Luxury"
+            ],
+            [
+                "palace",
+                "Palace"
+            ]
+        ]
+    },
+    "encounter": {
+        "type": "choice",
+        "label": "Encounter",
+        "choices": [
+            [
+                "fated_enemy",
+                "Fated Enemy"
+            ],
+            [
+                "superior",
+                "Superior"
+            ],
+            [
+                "junior",
+                "Junior"
+            ],
+            [
+                "business_partner",
+                "Business Partner"
+            ],
+            [
+                "subordinate",
+                "Subordinate"
+            ],
+            [
+                "family",
+                "Family"
+            ],
+            [
+                "friend",
+                "Friend"
+            ],
+            [
+                "senior",
+                "Senior"
+            ],
+            [
+                "betrothed",
+                "Betrothed"
+            ],
+            [
+                "worthy_rival",
+                "Worthy Rival"
+            ],
+            [
+                "master",
+                "Master"
+            ]
+        ]
     },
     "rank": {
         "type": "choice",
@@ -58,6 +319,38 @@
             [
                 "obsidian",
                 "Obsidian"
+            ],
+            [
+                "steel",
+                "Steel"
+            ],
+            [
+                "sapphire",
+                "Sapphire"
+            ],
+            [
+                "emerald",
+                "Emerald"
+            ],
+            [
+                "ruby",
+                "Ruby"
+            ],
+            [
+                "copper",
+                "Copper"
+            ],
+            [
+                "silver",
+                "Silver"
+            ],
+            [
+                "gold",
+                "Gold"
+            ],
+            [
+                "platinum",
+                "Platinum"
             ]
         ]
     },
@@ -66,6 +359,7 @@
         "label": "Strength",
         "min_value": 0,
         "max_value": 10,
+        "default": 0,
         "help_text": "Value between 0 and 10"
     },
     "psyche": {
@@ -73,6 +367,7 @@
         "label": "Psyche",
         "min_value": 0,
         "max_value": 10,
+        "default": 0,
         "help_text": "Value between 0 and 10"
     },
     "technique": {
@@ -80,6 +375,7 @@
         "label": "Technique",
         "min_value": 0,
         "max_value": 10,
+        "default": 0,
         "help_text": "Value between 0 and 10"
     },
     "intelligence": {
@@ -87,6 +383,7 @@
         "label": "Intelligence",
         "min_value": 0,
         "max_value": 10,
+        "default": 0,
         "help_text": "Value between 0 and 10"
     },
     "focus": {
@@ -94,6 +391,7 @@
         "label": "Focus",
         "min_value": 0,
         "max_value": 10,
+        "default": 0,
         "help_text": "Value between 0 and 10"
     },
     "endurance": {
@@ -101,6 +399,7 @@
         "label": "Endurance",
         "min_value": 0,
         "max_value": 10,
+        "default": 0,
         "help_text": "Value between 0 and 10"
     },
     "strength_focus": {
@@ -223,32 +522,110 @@
             "reflex"
         ]
     },
+    "life_force_roll": {
+        "type": "int",
+        "label": "Life Force Roll",
+        "min_value": 2,
+        "max_value": 12,
+        "help_text": "Value between 2 and 12 (2d6)"
+    },
+    "life_force": {
+        "type": "int",
+        "label": "Life Force",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "strength",
+            "psyche",
+            "endurance",
+            "life_force_roll"
+        ],
+        "help_text": "Strength+Psyche+Endurance+Life Force Roll"
+    },
+    "life_force_double": {
+        "type": "int",
+        "label": "Life Force x2",
+        "read_only": true,
+        "formula": "double_value",
+        "source_field": "life_force",
+        "help_text": "Double your Life Force"
+    },
+    "speed_roll": {
+        "type": "int",
+        "label": "Speed Roll",
+        "min_value": 2,
+        "max_value": 12,
+        "help_text": "Value between 2 and 12 (2d6)"
+    },
+    "speed_bonus": {
+        "type": "int",
+        "label": "Speed Bonus",
+        "read_only": true,
+        "formula": "map_value",
+        "source_fields": [
+            "race"
+        ],
+        "mapping": {
+            "human": 3,
+            "dwarf": 2,
+            "elf": 4,
+            "lizardman": 2,
+            "rhea": 3
+        },
+        "help_text": "Based on your Race"
+    },
+    "speed": {
+        "type": "int",
+        "label": "Speed",
+        "read_only": true,
+        "formula": "gs_speed",
+        "source_fields": [
+            "speed_roll",
+            "speed_bonus"
+        ],
+        "help_text": "Speed Roll * Speed Bonus"
+    },
+    "spells_roll": {
+        "type": "int",
+        "label": "Spell Uses Roll",
+        "min_value": 2,
+        "max_value": 12,
+        "help_text": "Value between 2 and 12 (2d6)"
+    },
+    "spells_uses": {
+        "type": "int",
+        "label": "Spell Uses",
+        "read_only": true,
+        "formula": "gs_spelluses",
+        "source_field": "spells_roll",
+        "help_text": "Based on your Spell Uses Roll"
+    },
     "exp_cumulative": {
         "type": "int",
         "label": "Cumulative Experience Points",
         "min_value": 0,
-        "max_value": 99,
+        "default": 0,
         "help_text": "Total Experience of your Adventurer"
     },
     "exp_current": {
         "type": "int",
         "label": "Current Experience Points",
         "min_value": 0,
-        "max_value": 99,
+        "default": 0,
         "help_text": "Actual Experience of your Adventurer"
     },
     "adventures_total": {
         "type": "int",
         "label": "Adventures",
         "min_value": 0,
-        "max_value": 99,
+        "default": 0,
         "help_text": "Total Adventures of your Adventurer"
     },
     "adventures_completed": {
         "type": "int",
         "label": "Completed",
         "min_value": 0,
-        "max_value": 99,
+        "default": 0,
         "help_text": "Total Completed Adventures of your Adventurer"
     },
     "adventurer_level": {
@@ -256,7 +633,32 @@
         "label": "Level",
         "min_value": 1,
         "max_value": 20,
+        "default": 1,
         "help_text": "Value between 1 and 20"
+    },
+    "spell_resistance_bonus": {
+        "type": "int",
+        "label": "Spell Resistance Bonus",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Any bonuses to Spell Resistance"
+    },
+    "spell_resistance": {
+        "type": "int",
+        "label": "Spell Resistance",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "psyche_reflex",
+            "adventurer_level",
+            "spell_resistance_bonus"
+        ]
+    },
+    "advancement_points": {
+        "type": "int",
+        "label": "Advancement Points",
+        "min_value": 0,
+        "default": 0
     },
     "class": {
         "type": "choice",
@@ -296,60 +698,25 @@
             ]
         ]
     },
-    "life_force": {
+    "copper_pieces": {
         "type": "int",
-        "label": "Life Force",
-        "read_only": true,
-        "formula": "gs_lf",
-        "source_fields": [
-            "constitution",
-            "level"
-        ],
-        "help_text": "HP = 10 + Constitution + (Level - 1) * (5 + Constitution Modifier)"
-    },
-    "attack_bonus": {
-        "type": "int",
-        "label": "Attack Bonus",
-        "read_only": true,
-        "formula": "gs_attack",
-        "source_fields": [
-            "strength",
-            "level"
-        ],
-        "help_text": "Attack Bonus = Strength Modifier + Level"
-    },
-    "defense": {
-        "type": "int",
-        "label": "Defense",
-        "read_only": true,
-        "formula": "gs_defense",
-        "source_fields": [
-            "dexterity",
-            "agility"
-        ],
-        "help_text": "Defense = 10 + Dexterity Modifier + Agility Modifier"
-    },
-    "speed": {
-        "type": "int",
-        "label": "Speed",
-        "min_value": 1,
-        "help_text": "Movement speed in meters per turn"
-    },
-    "equipment": {
-        "type": "list",
-        "label": "Equipment",
-        "help_text": "List of weapons, armor, and other items"
+        "label": "Copper Pieces",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Currency in Copper"
     },
     "silver_pieces": {
         "type": "int",
         "label": "Silver Pieces",
         "min_value": 0,
-        "help_text": "Currency in silver"
+        "default": 0,
+        "help_text": "Currency in Silver"
     },
     "gold_pieces": {
         "type": "int",
         "label": "Gold Pieces",
         "min_value": 0,
-        "help_text": "Currency in gold"
+        "default": 0,
+        "help_text": "Currency in Gold"
     }
 }

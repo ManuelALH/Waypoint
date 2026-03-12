@@ -68,6 +68,14 @@
             ]
         ]
     },
+    "level": {
+        "type": "int",
+        "label": "Level",
+        "min_value": 1,
+        "max_value": 20,
+        "default": 1,
+        "help_text": "Value between 1 and 20"
+    },
     "background": {
         "type": "choice",
         "label": "Background",
@@ -125,6 +133,7 @@
     "race": {
         "type": "choice",
         "label": "Race",
+        "default": "human",
         "choices": [
             [
                 "dragonborn",
@@ -165,6 +174,10 @@
             [
                 "goblin",
                 "Goblin"
+            ],
+            [
+                "tabaxi",
+                "Tabaxi"
             ]
         ]
     },
@@ -210,24 +223,12 @@
             ]
         ]
     },
-    "level": {
-        "type": "int",
-        "label": "Level",
-        "min_value": 1,
-        "max_value": 20,
-        "help_text": "Value between 1 and 20"
-    },
-    "experience_points": {
-        "type": "int",
-        "label": "Experience Points",
-        "min_value": 0,
-        "help_text": "Total experience points accumulated"
-    },
     "strength": {
         "type": "int",
         "label": "Strength",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "dexterity": {
@@ -235,6 +236,7 @@
         "label": "Dexterity",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "constitution": {
@@ -242,6 +244,7 @@
         "label": "Constitution",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "intelligence": {
@@ -249,6 +252,7 @@
         "label": "Intelligence",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "wisdom": {
@@ -256,6 +260,7 @@
         "label": "Wisdom",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "charisma": {
@@ -263,6 +268,7 @@
         "label": "Charisma",
         "min_value": 1,
         "max_value": 20,
+        "default": 10,
         "help_text": "Value between 1 and 20"
     },
     "mod_strength": {
@@ -307,40 +313,68 @@
         "formula": "dnd5e_2014_mod",
         "source_field": "charisma"
     },
+    "experience_points": {
+        "type": "int",
+        "label": "Experience Points",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Total experience points accumulated"
+    },
     "proficiency_bonus": {
         "type": "int",
         "label": "Proficiency Bonus",
-        "min_value": 1,
-        "help_text": "Total Proficiency Bonus"
+        "read_only": true,
+        "formula": "dnd5e_2014_pb",
+        "source_field": "level",
+        "help_text": "Based on your Level"
     },
     "passive_perception": {
         "type": "int",
         "label": "Passive Perception",
         "min_value": 1,
-        "help_text": "Total Passive Perception"
+        "default": 10,
+        "help_text": "10 + Perception Skill"
     },
     "initiative": {
         "type": "int",
         "label": "Initiative",
         "min_value": 0,
+        "default": 0,
         "help_text": "Total Initiative"
     },
     "speed": {
         "type": "int",
-        "label": "Speed",
-        "min_value": 1,
-        "help_text": "Total Speed"
+        "label": "Speed (ft.)",
+        "read_only": true,
+        "source_field": "race",
+        "formula": "map_value",
+        "mapping": {
+            "dragonborn": 30,
+            "dwarf": 25,
+            "elf": 30,
+            "gnome": 25,
+            "half-elf": 30,
+            "halfling": 25,
+            "half-orc": 30,
+            "human": 30,
+            "tiefling": 30,
+            "goblin": 30,
+            "tabaxi": 30
+        },
+        "help_text": "Based on your Race"
     },
     "armor_class": {
         "type": "int",
         "label": "Armor Class",
         "min_value": 1,
+        "default": 10,
         "help_text": "Total Armor Class"
     },
     "hit_points": {
         "type": "int",
         "label": "Hit Points",
         "min_value": 1,
+        "default": 1,
         "help_text": "Total hit points"
     },
     "hit_die": {
@@ -369,35 +403,245 @@
         "type": "int",
         "label": "Copper Pieces",
         "min_value": 0,
-        "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Copper"
     },
     "silver_pieces": {
         "type": "int",
         "label": "Silver Pieces",
         "min_value": 0,
         "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Silver"
     },
     "electrum_pieces": {
         "type": "int",
         "label": "Electrum Pieces",
         "min_value": 0,
         "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Electrum"
     },
     "gold_pieces": {
         "type": "int",
         "label": "Gold Pieces",
         "min_value": 0,
         "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Gold"
     },
     "platinum_pieces": {
         "type": "int",
         "label": "Platinum Pieces",
         "min_value": 0,
         "max_value": 9999999,
-        "help_text": "Value between 0 and 9999999"
+        "default": 0,
+        "help_text": "Currency in Platinum"
+    },
+    "saving_throws": {
+        "type": "skill_list",
+        "label": "Saving Throws",
+        "formula": "dnd5e_2014_skillscalc",
+        "catalog": [
+            {
+                "id": "str_save",
+                "label": "Strength",
+                "sources": [
+                    "mod_strength",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "dex_save",
+                "label": "Dexterity",
+                "sources": [
+                    "mod_dexterity",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "con_save",
+                "label": "Constitution",
+                "sources": [
+                    "mod_constitution",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "int_save",
+                "label": "Intelligence",
+                "sources": [
+                    "mod_intelligence",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "wis_save",
+                "label": "Wisdom",
+                "sources": [
+                    "mod_wisdom",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "cha_save",
+                "label": "Charisma",
+                "sources": [
+                    "mod_charisma",
+                    "proficiency_bonus"
+                ]
+            }
+        ]
+    },
+    "skills": {
+        "type": "skill_list",
+        "label": "Skills",
+        "formula": "dnd5e_2014_skillcalc",
+        "catalog": [
+            {
+                "id": "acrobatics",
+                "label": "Acrobatics (Dex)",
+                "sources": [
+                    "mod_dexterity",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "animal_handling",
+                "label": "Animal Handling (Wis)",
+                "sources": [
+                    "mod_wisdom",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "arcana",
+                "label": "Arcana (Int)",
+                "sources": [
+                    "mod_intelligence",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "athletics",
+                "label": "Athletics (Str)",
+                "sources": [
+                    "mod_strength",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "deception",
+                "label": "deception (Cha)",
+                "sources": [
+                    "mod_charisma",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "history",
+                "label": "History (Int)",
+                "sources": [
+                    "mod_intelligence",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "insight",
+                "label": "Insight (Wis)",
+                "sources": [
+                    "mod_wisdom",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "intimidation",
+                "label": "Intimidation (Cha)",
+                "sources": [
+                    "mod_charisma",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "investigation",
+                "label": "Investigation (Int)",
+                "sources": [
+                    "mod_intelligence",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "medicine",
+                "label": "Medicine (Wis)",
+                "sources": [
+                    "mod_wisdom",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "nature",
+                "label": "Nature (Int)",
+                "sources": [
+                    "mod_intelligence",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "perception",
+                "label": "Perception (Wis)",
+                "sources": [
+                    "mod_wisdom",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "performance",
+                "label": "performance (Cha)",
+                "sources": [
+                    "mod_charisma",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "persuasion",
+                "label": "Persuasion (Cha)",
+                "sources": [
+                    "mod_charisma",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "religion",
+                "label": "Religion (Int)",
+                "sources": [
+                    "mod_intelligence",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "sleight_of_hand",
+                "label": "Sleight of Hand (Dex)",
+                "sources": [
+                    "mod_dexterity",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "stealth",
+                "label": "stealth (Dex)",
+                "sources": [
+                    "mod_dexterity",
+                    "proficiency_bonus"
+                ]
+            },
+            {
+                "id": "survival",
+                "label": "Survivarl (Wis)",
+                "sources": [
+                    "mod_wisdom",
+                    "proficiency_bonus"
+                ]
+            }
+        ]
     }
 }

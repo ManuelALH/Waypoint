@@ -77,20 +77,52 @@
         "label": "Clan",
         "choices": [
             [
+                "banu_haqim",
+                "Banu Haqim"
+            ],
+            [
                 "brujah",
                 "Brujah"
+            ],
+            [
+                "caitiff",
+                "Caitiff"
             ],
             [
                 "gangrel",
                 "Gangrel"
             ],
             [
+                "hecata",
+                "Hecata"
+            ],
+            [
+                "lasombra",
+                "Lasombra"
+            ],
+            [
                 "malkavian",
                 "Malkavian"
             ],
             [
+                "ministry",
+                "The Ministry"
+            ],
+            [
                 "nosferatu",
                 "Nosferatu"
+            ],
+            [
+                "ravnos",
+                "Ravnos"
+            ],
+            [
+                "salubri",
+                "Salubri"
+            ],
+            [
+                "thin_blood",
+                "Thin-Blood"
             ],
             [
                 "toreador",
@@ -101,16 +133,12 @@
                 "Tremere"
             ],
             [
+                "tzimisce",
+                "Tzimisce"
+            ],
+            [
                 "ventrue",
                 "Ventrue"
-            ],
-            [
-                "caitiff",
-                "Caitiff"
-            ],
-            [
-                "thin_blood",
-                "Thin Blood"
             ]
         ]
     },
@@ -119,80 +147,71 @@
         "label": "Generation",
         "min_value": 4,
         "max_value": 16,
-        "help_text": "Value between 4 and 16"
-    },
-    "sire": {
-        "type": "str",
-        "label": "Sire"
-    },
-    "experience_points": {
-        "type": "int",
-        "label": "Experience Points",
-        "min_value": 0,
-        "help_text": "Total experience points accumulated"
+        "default": 12,
+        "help_text": "Tu generación vampírica"
     },
     "strength": {
         "type": "int",
         "label": "Strength",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "dexterity": {
         "type": "int",
         "label": "Dexterity",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "stamina": {
         "type": "int",
         "label": "Stamina",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "charisma": {
         "type": "int",
         "label": "Charisma",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "manipulation": {
         "type": "int",
         "label": "Manipulation",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "composure": {
         "type": "int",
         "label": "Composure",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "intelligence": {
         "type": "int",
         "label": "Intelligence",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "wits": {
         "type": "int",
         "label": "Wits",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "resolve": {
         "type": "int",
         "label": "Resolve",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1
     },
     "health_max": {
         "type": "int",
@@ -200,6 +219,18 @@
         "read_only": true,
         "formula": "vtm5e_healthmax",
         "source_field": "stamina"
+    },
+    "health_superficial": {
+        "type": "int",
+        "label": "Health Dmg (Superficial)",
+        "min_value": 0,
+        "default": 0
+    },
+    "health_aggravated": {
+        "type": "int",
+        "label": "Health Dmg (Aggravated)",
+        "min_value": 0,
+        "default": 0
     },
     "willpower_max": {
         "type": "int",
@@ -211,32 +242,171 @@
             "resolve"
         ]
     },
+    "willpower_superficial": {
+        "type": "int",
+        "label": "Willpower Dmg (Superficial)",
+        "min_value": 0,
+        "default": 0
+    },
+    "willpower_aggravated": {
+        "type": "int",
+        "label": "Willpower Dmg (Aggravated)",
+        "min_value": 0,
+        "default": 0
+    },
     "humanity": {
         "type": "int",
         "label": "Humanity",
         "min_value": 0,
         "max_value": 10,
-        "help_text": "Value between 0 and 10"
+        "default": 7
     },
     "stains": {
         "type": "int",
         "label": "Stains",
         "min_value": 0,
         "max_value": 10,
-        "help_text": "Value between 0 and 10"
+        "default": 0
     },
     "hunger": {
         "type": "int",
         "label": "Hunger",
         "min_value": 0,
         "max_value": 5,
-        "help_text": "Value between 0 and 5"
+        "default": 1,
+        "help_text": "Nivel de Hambre (0-5)"
     },
     "blood_potency": {
         "type": "int",
         "label": "Blood Potency",
         "min_value": 0,
         "max_value": 10,
-        "help_text": "Value between 0 and 10"
+        "default": 1
+    },
+    "blood_resonance": {
+        "type": "str",
+        "label": "Blood Resonance",
+        "help_text": "Ej: Colérica, Melancólica, Flemática, Sanguínea"
+    },
+    "disciplines": {
+        "type": "str",
+        "label": "Disciplines & Powers",
+        "help_text": "Anota tus disciplinas y los poderes que has desbloqueado (Ej: Celerity 2, Auspex 1)."
+    },
+    "skills": {
+        "type": "skill_list",
+        "label": "Skills",
+        "formula": "misc_only",
+        "has_misc_bonus": true,
+        "catalog": [
+            {
+                "id": "athletics",
+                "label": "Athletics (Física)"
+            },
+            {
+                "id": "brawl",
+                "label": "Brawl (Física)"
+            },
+            {
+                "id": "craft",
+                "label": "Craft (Física)"
+            },
+            {
+                "id": "drive",
+                "label": "Drive (Física)"
+            },
+            {
+                "id": "firearms",
+                "label": "Firearms (Física)"
+            },
+            {
+                "id": "larceny",
+                "label": "Larceny (Física)"
+            },
+            {
+                "id": "melee",
+                "label": "Melee (Física)"
+            },
+            {
+                "id": "stealth",
+                "label": "Stealth (Física)"
+            },
+            {
+                "id": "survival",
+                "label": "Survival (Física)"
+            },
+            {
+                "id": "animal_ken",
+                "label": "Animal Ken (Social)"
+            },
+            {
+                "id": "etiquette",
+                "label": "Etiquette (Social)"
+            },
+            {
+                "id": "insight",
+                "label": "Insight (Social)"
+            },
+            {
+                "id": "intimidation",
+                "label": "Intimidation (Social)"
+            },
+            {
+                "id": "leadership",
+                "label": "Leadership (Social)"
+            },
+            {
+                "id": "performance",
+                "label": "Performance (Social)"
+            },
+            {
+                "id": "persuasion",
+                "label": "Persuasion (Social)"
+            },
+            {
+                "id": "streetwise",
+                "label": "Streetwise (Social)"
+            },
+            {
+                "id": "subterfuge",
+                "label": "Subterfuge (Social)"
+            },
+            {
+                "id": "academics",
+                "label": "Academics (Mental)"
+            },
+            {
+                "id": "awareness",
+                "label": "Awareness (Mental)"
+            },
+            {
+                "id": "finance",
+                "label": "Finance (Mental)"
+            },
+            {
+                "id": "investigation",
+                "label": "Investigation (Mental)"
+            },
+            {
+                "id": "medicine",
+                "label": "Medicine (Mental)"
+            },
+            {
+                "id": "occult",
+                "label": "Occult (Mental)"
+            },
+            {
+                "id": "politics",
+                "label": "Politics (Mental)"
+            },
+            {
+                "id": "science",
+                "label": "Science (Mental)"
+            },
+            {
+                "id": "technology",
+                "label": "Technology (Mental)"
+            }
+        ]
     }
 }

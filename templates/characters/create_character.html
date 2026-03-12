@@ -264,16 +264,62 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Fórmulas genéricas y reutilizables
+        // --- MOTOR DE FÓRMULAS ---
         const FORMULAS = {
             'map_value': (val, mapping) => mapping[val] || '',
             'half_value': val => Math.floor(val / 2),
+            'double_value': val => Math.floor(val * 2),
             'sum_values': val => Math.floor(val),
+            'misc_only': (val, mapping, arr) => {
+                if (!arr || arr.length === 0) return 0;
+                return arr[arr.length - 1]; 
+            },
             'dnd5e_2014_mod': val => Math.floor((val - 10) / 2),
+            'dnd5e_2014_pb': val => Math.ceil((val / 4) + 1),
+            'dnd5e_2014_skillcalc': (val, mapping, arr) => (arr[0] || 0) + ((arr[1] || 0) * (arr[2] || 0)),
+            'dnd5e_2014_savescalc': (val, mapping, arr) => (arr[0] || 0) + ((arr[1] || 0) * (arr[2] || 0)),
             'pf1e_mod': val => Math.floor((val - 10) / 2),
+            'pf1e_skillcalc': (val, mapping, arr) => {
+                const mod = arr[0] || 0;
+                const classSkill = arr[1] || 0; 
+                const ranks = arr[2] || 0;                
+                const classBonus = (classSkill === 1 && ranks > 0) ? 3 : 0;                
+                return mod + classBonus + ranks;
+            },
             'coc7e_hp': val => Math.floor(FORMULAS['sum_values'](val) / 10),
             'coc7e_mp': val => Math.floor(val / 5),
+            'coc7e_mov': (val, mapping, arr) => {
+                const fue = arr[0] || 0, des = arr[1] || 0, tam = arr[2] || 0;
+                if (fue < tam && des < tam) return 7;
+                if (fue > tam && des > tam) return 9;
+                return 8;
+            },
+            'coc7e_build': (val, mapping, arr) => {
+                const total = (arr[0] || 0) + (arr[1] || 0);
+                if (total <= 64) return -2;
+                if (total <= 84) return -1;
+                if (total <= 124) return 0;
+                if (total <= 164) return 1;
+                if (total <= 204) return 2;
+                return 3;
+            },
+            'coc7e_db': (val, mapping, arr) => {
+                const total = (arr[0] || 0) + (arr[1] || 0);
+                if (total <= 64) return "-2";
+                if (total <= 84) return "-1";
+                if (total <= 124) return "0";
+                if (total <= 164) return "+1D4";
+                if (total <= 204) return "+1D6";
+                return "+2D6";
+            },
             'vtm5e_healthmax': val => Math.floor(val + 3),
+            'gs_speed': (sum, mapping, arr) => (arr[0] || 0) * (arr[1] || 0),
+            'gs_spelluses': val => {
+                if (val <= 6) return 0;
+                if (val <= 9) return 1;
+                if (val <= 11) return 2;
+                return 3;
+            }
         };
 
         const calculatedFields = document.querySelectorAll('.calculated-field');
@@ -291,6 +337,7 @@
                 const updateValue = () => {
                     let totalSum = 0;
                     let lastValue = "";
+                    let valuesArr = [];
 
                     sourceInputs.forEach(input => {
                         const val = input.value;
@@ -298,13 +345,23 @@
                         const num = parseInt(val);
                         if (!isNaN(num)) {
                             totalSum += num;
+                            valuesArr.push(num);
+                        }
+                        else {
+                            valuesArr.push(0);
                         }
                     });
-
+                    
+                    let newValue;
                     if (formulaName === 'map_value' && mapping) {
-                        targetField.value = FORMULAS[formulaName](lastValue, mapping);
+                        newValue = FORMULAS[formulaName](lastValue, mapping);
                     } else {
-                        targetField.value = FORMULAS[formulaName](totalSum);
+                        newValue = FORMULAS[formulaName](totalSum, mapping, valuesArr);
+                    }
+
+                    if (targetField.value !== String(newValue)) {
+                        targetField.value = newValue;
+                        targetField.dispatchEvent(new Event('change'));
                     }
                 };
 
@@ -317,6 +374,295 @@
                 updateValue();
             }
         });
+
+        // --- MOTOR DE RANGOS DINÁMICOS (Ej: Edad por Raza) ---
+        const dynamicRangeFields = document.querySelectorAll('.dynamic-range-field');
+
+        dynamicRangeFields.forEach(targetField => {
+            const sourceIdsRaw = targetField.getAttribute('data-source-ids');
+            const mappingRaw = targetField.getAttribute('data-range-mapping');
+
+            if (sourceIdsRaw && mappingRaw) {
+                const sourceIds = JSON.parse(sourceIdsRaw);
+                const mapping = JSON.parse(mappingRaw);
+                // Generalmente el primer ID en sourceIds es de donde leemos (ej: id_race)
+                const sourceInput = document.getElementById(sourceIds[0]); 
+
+                if (sourceInput) {
+                    const updateLimits = () => {
+                        const sourceVal = sourceInput.value;
+                        const limits = mapping[sourceVal];
+
+                        if (limits) {
+                            if (limits.min !== undefined) targetField.setAttribute('min', limits.min);
+                            if (limits.max !== undefined) targetField.setAttribute('max', limits.max);
+
+                            const currentVal = parseInt(targetField.value);
+                            if (!isNaN(currentVal)) {
+                                if (limits.min !== undefined && currentVal < limits.min) targetField.value = limits.min;
+                                if (limits.max !== undefined && currentVal > limits.max) targetField.value = limits.max;
+                            }
+
+                            const container = targetField.parentElement;
+                            const helpTextEl = container.querySelector('.helptext, .text-muted, .form-text');
+                            
+                            if (helpTextEl) {
+                                helpTextEl.textContent = 'Valor permitido: entre ${limits.min} y ${limits.max}.';
+                                helpTextEl.style.color = '#3498db';
+                            }
+                        }
+                    };
+
+                    sourceInput.addEventListener('change', updateLimits);
+                    // Ejecutar en la carga inicial
+                    updateLimits();
+                }
+            }
+        });
+
+        // --- GENERADOR DINÁMICO DE LISTAS DE HABILIDADES ---
+        const skillListInputs = document.querySelectorAll('input[data-is-skill-list="true"]');
+
+        skillListInputs.forEach(hiddenInput => {
+            const catalog = JSON.parse(hiddenInput.getAttribute('data-catalog') || '[]');
+            const formulaName = hiddenInput.getAttribute('data-formula');
+            const hasMisc = hiddenInput.getAttribute('data-has-misc') === 'true';
+            let currentData = {};
+            try { currentData = JSON.parse(hiddenInput.value || '{}'); } catch(e) {}
+
+            const isMasterManual = currentData['_meta']?.manual_mode || false;
+
+            const container = document.createElement('div');
+            container.className = 'skill-list-container stat-box';
+            container.style.gridColumn = 'span 2';
+            
+            let html = `
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 10px; padding-bottom: 5px;">
+                    <label style="font-size: 0.85em; cursor: pointer; color: #7f8c8d;">
+                        <input type="checkbox" class="master-manual-toggle" ${isMasterManual ? 'checked' : ''}>
+                        Custom Mode
+                    </label>
+                </div>
+                <table class="compact-list-table" style="width: 100%; text-align: left;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center;">Prof.</th>
+                            <th style="text-align:center;">Skill</th>
+                            ${hasMisc ? '<th style="text-align:center;">Misc.</th>' : ''}
+                            <th style="text-align:center;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            catalog.forEach(skill => {
+                const profLevel = currentData[skill.id]?.prof || 0;
+                const savedTotal = currentData[skill.id]?.total || 0;
+                const savedMisc = currentData[skill.id]?.misc || 0;
+                const filterValuesStr = skill.filter_values ? skill.filter_values.join(',') : 'all';
+                
+                html += `
+                    <tr class="skill-row" data-skill-id="${skill.id}" data-filter-values="${filterValuesStr}">
+                        <td style="text-align:center; width: 50px;">
+                            <input type="checkbox" class="skill-prof-checkbox" ${profLevel === 1 ? 'checked' : ''}>
+                        </td>
+                        <td>${skill.label}</td>
+                        ${hasMisc ? `
+                        <td style="text-align:center; width: 60px;">
+                            <input type="number" class="skill-misc-input form-control" 
+                                style="width: 100%; padding: 2px; text-align: center; margin: 0;" 
+                                value="${savedMisc}">
+                        </td>` : ''}
+                        <td style="text-align:center; width: 70px;">
+                            <input type="number" class="skill-total-input form-control" 
+                                style="width: 100%; padding: 2px; text-align: center; margin: 0; ${isMasterManual ? 'background-color:#fff;' : 'background-color:#f0f0f0;'}" 
+                                value="${savedTotal}" ${isMasterManual ? '' : 'readonly'}>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;            
+
+            hiddenInput.parentNode.insertBefore(container, hiddenInput);
+
+            // --- FUNCIÓN DE CALCULO ---
+            const updateSkillList = () => {
+                const newData = {};
+                const rows = container.querySelectorAll('.skill-row');
+                
+                const isManual = container.querySelector('.master-manual-toggle').checked;
+                newData['_meta'] = { manual_mode: isManual };
+
+                rows.forEach(row => {
+                    if (row.style.display === 'none') return;                    
+                    const skillId = row.getAttribute('data-skill-id');
+                    const profCheckbox = row.querySelector('.skill-prof-checkbox');
+                    const miscInput = row.querySelector('.skill-misc-input');
+                    const totalInput = row.querySelector('.skill-total-input');                    
+                    const profValue = profCheckbox ? (profCheckbox.checked ? 1 : 0) : 0;
+                    const miscValue = miscInput ? (parseInt(miscInput.value) || 0) : 0;
+                    const skillConfig = catalog.find(s => s.id === skillId);
+                    
+                    let total = 0;
+
+                    if (isManual) {
+                        if(totalInput) {
+                            totalInput.readOnly = false;
+                            totalInput.style.backgroundColor = '#fff';
+                            total = parseInt(totalInput.value) || 0;
+                        }
+                    } else {
+                        if(totalInput) {
+                            totalInput.readOnly = true;
+                            totalInput.style.backgroundColor = '#f0f0f0';
+                        }
+
+                        let sourceValues = [];
+                        if (skillConfig && skillConfig.sources) {
+                            skillConfig.sources.forEach(sourceName => {
+                                const sourceEl = document.getElementById('id_' + sourceName);
+                                sourceValues.push(sourceEl ? (parseInt(sourceEl.value) || 0) : 0);
+                            });
+                        }
+
+                        if (formulaName && FORMULAS[formulaName]) {
+                            const formulaArgs = [...sourceValues, profValue, miscValue]; 
+                            total = FORMULAS[formulaName](0, null, formulaArgs);
+                        }
+
+                        if(totalInput) totalInput.value = total;
+                    }
+
+                    newData[skillId] = {
+                        prof: profValue,
+                        misc: miscValue,
+                        total: total
+                    };
+                });
+
+                hiddenInput.value = JSON.stringify(newData);
+            };
+
+            // Event Listeners
+            container.querySelector('.master-manual-toggle').addEventListener('change', updateSkillList);
+            
+            container.querySelectorAll('.skill-prof-checkbox').forEach(el => {
+                el.addEventListener('change', updateSkillList);
+            });
+            
+            if (hasMisc) {
+                container.querySelectorAll('.skill-misc-input').forEach(el => {
+                    el.addEventListener('input', updateSkillList);
+                });
+            }
+
+            container.querySelectorAll('.skill-total-input').forEach(el => {
+                el.addEventListener('input', updateSkillList);
+            });
+
+            catalog.forEach(skill => {
+                if(skill.sources) {
+                    skill.sources.forEach(sourceName => {
+                        const sourceEl = document.getElementById('id_' + sourceName);
+                        if(sourceEl) {
+                            sourceEl.addEventListener('change', updateSkillList);
+                            sourceEl.addEventListener('input', updateSkillList);
+                        }
+                    });
+                }
+            });
+
+            updateSkillList();
+
+            // --- SISTEMA DE FILTRADO AGNÓSTICO ---
+            const filterByFieldName = hiddenInput.getAttribute('data-filter-by');
+            if (filterByFieldName) {
+                const triggerElement = document.getElementById('id_' + filterByFieldName);
+                
+                if (triggerElement) {
+                    const filterListItems = () => {
+                        const selectedValue = triggerElement.value; 
+                        const rows = container.querySelectorAll('.skill-row');
+                        
+                        rows.forEach(row => {
+                            const allowedValues = row.getAttribute('data-filter-values');
+                            
+                            if (allowedValues === 'all' || allowedValues.split(',').includes(selectedValue) || !selectedValue) {
+                                row.style.display = ''; 
+                            } else {
+                                row.style.display = 'none';                                 
+                                // Reseteamos visualmente los inputs para que no haya datos "fantasma"
+                                const totalInput = row.querySelector('.skill-total-input');
+                                if(totalInput) totalInput.value = 0;
+                                const profCheckbox = row.querySelector('.skill-prof-checkbox');
+                                if(profCheckbox) profCheckbox.checked = false;
+                                const miscInput = row.querySelector('.skill-misc-input');
+                                if(miscInput) miscInput.value = 0;
+                            }
+                        });
+                        
+                        // Forzamos a que guarde la lista inmediatamente después de ocultar las filas
+                        updateSkillList();
+                    };
+
+                    triggerElement.addEventListener('change', filterListItems);
+                    filterListItems();
+                }
+            }
+        });
+
+        // --- SISTEMA DE LIMITES DINAMICOS ---
+        const enforceDynamicLimits = () => {
+            document.querySelectorAll('input[data-max-field], input[data-min-field]').forEach(input => {
+                
+                const maxFieldId = input.getAttribute('data-max-field');
+                if (maxFieldId) {
+                    const maxField = document.getElementById('id_' + maxFieldId);
+                    if (maxField && maxField.value !== "") {
+                        const maxVal = parseInt(maxField.value) || 0;
+                        input.setAttribute('max', maxVal);
+                        
+                        if (parseInt(input.value) > maxVal) {
+                            input.value = maxVal;
+                        }
+                    }
+                }
+                
+                const minFieldId = input.getAttribute('data-min-field');
+                if (minFieldId) {
+                    const minField = document.getElementById('id_' + minFieldId);
+                    if (minField && minField.value !== "") {
+                        const minVal = parseInt(minField.value) || 0;
+                        input.setAttribute('min', minVal);
+                        
+                        if (parseInt(input.value) < minVal) {
+                            input.value = minVal;
+                        }
+                    }
+                }
+            });
+        };
+
+        const formContainer = document.querySelector('form');
+        if(formContainer) {
+            formContainer.addEventListener('input', enforceDynamicLimits);
+            formContainer.addEventListener('change', enforceDynamicLimits);
+        }        
+
+        // Ejecutar 100ms después de cargar la página para dar tiempo a que tus fórmulas iniciales terminen
+        setTimeout(enforceDynamicLimits, 100);
+        const form = document.querySelector('form');
+
+        if (form) {
+            form.addEventListener('submit', () => {
+                document.querySelectorAll('input[data-is-skill-list="true"]').forEach(input => {
+                    const event = new Event('change');
+                    input.dispatchEvent(event);
+                });
+            });
+        }
     });
 </script>
 

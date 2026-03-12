@@ -12,8 +12,50 @@
     },
     "pronouns": {
         "type": "str",
-        "label": "Character Pronouns",
+        "label": "Pronouns",
         "help_text": "Your character's pronouns"
+    },
+    "class": {
+        "type": "choice",
+        "label": "Class",
+        "choices": [
+            [
+                "bard",
+                "Bard"
+            ],
+            [
+                "druid",
+                "Druid"
+            ],
+            [
+                "guardian",
+                "Guardian"
+            ],
+            [
+                "ranger",
+                "Ranger"
+            ],
+            [
+                "rogue",
+                "Rogue"
+            ],
+            [
+                "seraph",
+                "Seraph"
+            ],
+            [
+                "sorcerer",
+                "Sorcerer"
+            ],
+            [
+                "warrior",
+                "Warrior"
+            ],
+            [
+                "wizard",
+                "Wizard"
+            ]
+        ]
     },
     "ancestry": {
         "type": "choice",
@@ -60,20 +102,12 @@
                 "Giant"
             ],
             [
-                "goblin",
-                "Goblin"
-            ],
-            [
                 "halfling",
                 "Halfling"
             ],
             [
                 "human",
                 "Human"
-            ],
-            [
-                "infernis",
-                "Infernis"
             ],
             [
                 "katari",
@@ -92,202 +126,188 @@
                 "Simiah"
             ],
             [
-                "mixed_ancestry",
-                "Mixed Ancestry"
+                "sylph",
+                "Sylph"
             ]
         ]
     },
     "community": {
-        "type": "choice",
-        "label": "Community",
-        "choices": [
-            [
-                "highborne",
-                "Highborne"
-            ],
-            [
-                "loreborne",
-                "Loreborne"
-            ],
-            [
-                "orderborne",
-                "Orderborne"
-            ],
-            [
-                "ridgeborne",
-                "Ridgeborne"
-            ],
-            [
-                "seaborne",
-                "Seaborne"
-            ],
-            [
-                "slyborne",
-                "Slyborne"
-            ],
-            [
-                "underborne",
-                "Underborne"
-            ],
-            [
-                "wanderborne",
-                "Wanderborne"
-            ],
-            [
-                "wildborne",
-                "Wildborne"
-            ]
-        ]
-    },
-    "class": {
-        "type": "choice",
-        "label": "Class",
-        "choices": [
-            [
-                "bard",
-                "Bard"
-            ],
-            [
-                "druid",
-                "Druid"
-            ],
-            [
-                "guardian",
-                "Guardian"
-            ],
-            [
-                "ranger",
-                "Ranger"
-            ],
-            [
-                "rogue",
-                "Rogue"
-            ],
-            [
-                "seraph",
-                "Seraph"
-            ],
-            [
-                "sorcerer",
-                "Sorcerer"
-            ],
-            [
-                "warrior",
-                "Warrior"
-            ],
-            [
-                "wizard",
-                "Wizard"
-            ]
-        ]
-    },
-    "background": {
         "type": "str",
-        "label": "Background",
-        "help_text": "Your character's background"
+        "label": "Community",
+        "help_text": "E.g., Underborne, Seaborne, Loreborne..."
     },
     "level": {
         "type": "int",
         "label": "Level",
         "min_value": 1,
         "max_value": 10,
-        "help_text": "Value between 0 and 10"
+        "default": 1
     },
-    "strength": {
+    "brawn": {
         "type": "int",
-        "label": "Strength",
+        "label": "Brawn",
         "min_value": -1,
         "max_value": 5,
-        "help_text": "Value between -1 and 5"
+        "default": 0
     },
     "agility": {
         "type": "int",
         "label": "Agility",
         "min_value": -1,
         "max_value": 5,
-        "help_text": "Value between -1 and 5"
+        "default": 0
     },
     "finesse": {
         "type": "int",
         "label": "Finesse",
         "min_value": -1,
         "max_value": 5,
-        "help_text": "Value between -1 and 5"
+        "default": 0
     },
     "instinct": {
         "type": "int",
         "label": "Instinct",
         "min_value": -1,
         "max_value": 5,
-        "help_text": "Value between -1 and 5"
+        "default": 0
     },
     "presence": {
         "type": "int",
         "label": "Presence",
         "min_value": -1,
         "max_value": 5,
-        "help_text": "Value between -1 and 5"
+        "default": 0
     },
     "knowledge": {
         "type": "int",
         "label": "Knowledge",
         "min_value": -1,
         "max_value": 5,
-        "help_text": "Value between -1 and 5"
+        "default": 0
+    },
+    "hit_points_max": {
+        "type": "int",
+        "label": "Max Hit Points",
+        "min_value": 1,
+        "default": 6
     },
     "hit_points": {
         "type": "int",
-        "label": "Hit Points",
-        "min_value": 1,
-        "max_value": 12,
-        "help_text": "Value between 1 and 12"
-    },
-    "stress": {
-        "type": "int",
-        "label": "Stress",
-        "min_value": 1,
-        "max_value": 12,
-        "help_text": "Value between 1 and 12"
+        "label": "Current HP",
+        "min_value": 0,
+        "max_field": "hit_points_max",
+        "default": 6
     },
     "max_stress": {
         "type": "int",
         "label": "Max Stress",
-        "read_only": true,
-        "formula": "fixed_value",
-        "value": 6
+        "min_value": 1,
+        "default": 5,
+        "help_text": "Increases as you level up"
     },
-    "hope": {
+    "stress": {
         "type": "int",
-        "label": "Hope",
+        "label": "Current Stress",
         "min_value": 0,
-        "max_value": 6,
-        "help_text": "Value between 0 and 6"
+        "max_field": "max_stress",
+        "default": 0
     },
     "max_hope": {
         "type": "int",
         "label": "Max Hope",
-        "read_only": true,
-        "formula": "fixed_value",
-        "value": 6
+        "min_value": 1,
+        "default": 5,
+        "help_text": "Increases as you level up"
     },
-    "proficiency": {
+    "hope": {
         "type": "int",
-        "label": "Proficiency",
+        "label": "Current Hope",
         "min_value": 0,
-        "max_value": 6
+        "max_field": "max_hope",
+        "default": 2
     },
-    "armor": {
+    "threshold_minor": {
         "type": "int",
-        "label": "Armor",
-        "min_value": 0,
-        "max_value": 20,
-        "help_text": "Value between 0 and 20"
+        "label": "Minor Threshold",
+        "min_value": 1,
+        "default": 1,
+        "help_text": "Damage to lose 1 HP"
     },
-    "evasion": {
+    "threshold_major": {
         "type": "int",
-        "label": "Evasion",
+        "label": "Major Threshold",
+        "min_value": 1,
+        "default": 5,
+        "help_text": "Damage to lose 2 HP"
+    },
+    "threshold_severe": {
+        "type": "int",
+        "label": "Severe Threshold",
+        "min_value": 1,
+        "default": 10,
+        "help_text": "Damage to lose 3 HP"
+    },
+    "armor_score": {
+        "type": "int",
+        "label": "Armor Score",
         "min_value": 0,
-        "max_value": 20,
-        "help_text": "Value between 0 and 20"
+        "default": 0
+    },
+    "armor_slots_max": {
+        "type": "int",
+        "label": "Max Armor Slots",
+        "min_value": 0,
+        "default": 3
+    },
+    "armor_slots": {
+        "type": "int",
+        "label": "Available Armor Slots",
+        "min_value": 0,
+        "max_field": "armor_slots_max",
+        "default": 3
+    },
+    "experience_1_name": {
+        "type": "str",
+        "label": "Primary Experience"
+    },
+    "experience_1_value": {
+        "type": "int",
+        "label": "Primary Exp. Value",
+        "min_value": -1,
+        "max_value": 5,
+        "default": 2
+    },
+    "experience_2_name": {
+        "type": "str",
+        "label": "Secondary Experience"
+    },
+    "experience_2_value": {
+        "type": "int",
+        "label": "Secondary Exp. Value",
+        "min_value": -1,
+        "max_value": 5,
+        "default": 1
+    },
+    "wealth_handfuls": {
+        "type": "int",
+        "label": "Handfuls of Coins",
+        "min_value": 0,
+        "default": 0
+    },
+    "wealth_bags": {
+        "type": "int",
+        "label": "Bags of Gold",
+        "min_value": 0,
+        "default": 0
+    },
+    "active_loadout": {
+        "type": "str",
+        "label": "Active Loadout (Domain Cards)",
+        "help_text": "Anota aquí las cartas de dominio que tienes activas en tu Loadout."
+    },
+    "inventory": {
+        "type": "str",
+        "label": "Inventory & Vault",
+        "help_text": "Armas, equipo y cartas guardadas en tu Vault."
     }
 }
