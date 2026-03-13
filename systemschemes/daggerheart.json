@@ -3,7 +3,24 @@
         "color": "#2d6cdf",
         "label": "Daggerheart",
         "gm_title": "Game Master",
-        "player_title": "Players"
+        "player_title": "Players",
+        "card_fields": [
+            {
+                "key": "class",
+                "icon": "fa-khanda",
+                "label": "Class"
+            },
+            {
+                "key": "heritage",
+                "icon": "fa-dna",
+                "label": "Heritage"
+            },
+            {
+                "key": "community",
+                "icon": "fa-users",
+                "label": "Community"
+            }
+        ]
     },
     "character_name": {
         "type": "str",
@@ -57,9 +74,9 @@
             ]
         ]
     },
-    "ancestry": {
+    "heritage": {
         "type": "choice",
-        "label": "Ancestry",
+        "label": "Heritage",
         "choices": [
             [
                 "clank",
@@ -141,49 +158,56 @@
         "label": "Level",
         "min_value": 1,
         "max_value": 10,
-        "default": 1
+        "default": 1,
+        "help_text": "Value between 1 and 10"
     },
     "brawn": {
         "type": "int",
         "label": "Brawn",
         "min_value": -1,
         "max_value": 5,
-        "default": 0
+        "default": 0,
+        "help_text": "Value between -1 and 5"
     },
     "agility": {
         "type": "int",
         "label": "Agility",
         "min_value": -1,
         "max_value": 5,
-        "default": 0
+        "default": 0,
+        "help_text": "Value between -1 and 5"
     },
     "finesse": {
         "type": "int",
         "label": "Finesse",
         "min_value": -1,
         "max_value": 5,
-        "default": 0
+        "default": 0,
+        "help_text": "Value between -1 and 5"
     },
     "instinct": {
         "type": "int",
         "label": "Instinct",
         "min_value": -1,
         "max_value": 5,
-        "default": 0
+        "default": 0,
+        "help_text": "Value between -1 and 5"
     },
     "presence": {
         "type": "int",
         "label": "Presence",
         "min_value": -1,
         "max_value": 5,
-        "default": 0
+        "default": 0,
+        "help_text": "Value between -1 and 5"
     },
     "knowledge": {
         "type": "int",
         "label": "Knowledge",
         "min_value": -1,
         "max_value": 5,
-        "default": 0
+        "default": 0,
+        "help_text": "Value between -1 and 5"
     },
     "hit_points_max": {
         "type": "int",

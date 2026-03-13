@@ -3,7 +3,24 @@
         "color": "#be780a",
         "label": "Pathfinder 1e",
         "dm_title": "Game Master",
-        "player_title": "Heroes"
+        "player_title": "Heroes",
+        "card_fields": [
+            {
+                "key": "class",
+                "icon": "fa-user-shield",
+                "label": "Class"
+            },
+            {
+                "key": "race",
+                "icon": "fa-users",
+                "label": "Race"
+            },
+            {
+                "key": "level",
+                "icon": "fa-star",
+                "label": "Level"
+            }
+        ]
     },
     "character_name": {
         "type": "str",

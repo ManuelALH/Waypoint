@@ -155,20 +155,26 @@ def create_character_form(schema_data):
                     
                     if "source_fields" in f_config:
                         for sf in f_config["source_fields"]:
-                            val = cleaned_data.get(sf) or 0
+                            val = cleaned_data.get(sf)
+                            if val is None: val = 0
                             try:
                                 val_int = int(val)
-                                total_val += val_int
+                                if isinstance(total_val, int):
+                                    total_val += val_int
                                 source_values_arr.append(val_int)
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 source_values_arr.append(0)
+                                if total_val == 0:
+                                    total_val= val
                     elif "source_field" in f_config:
-                        val = cleaned_data.get(f_config["source_field"]) or 0
+                        val = cleaned_data.get(f_config["source_field"])
+                        if val is None: val = ""
                         try:
                             val_int = int(val)
                             total_val = val_int
                             source_values_arr.append(val_int)
-                        except ValueError:
+                        except (ValueError, TypeError):
+                            total_val = val
                             source_values_arr.append(0)
                         
                     try:

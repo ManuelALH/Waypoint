@@ -1,9 +1,26 @@
 {
     "meta": {
-        "color": "#064403",
+        "color": "#2f5d50",
         "label": "Call of Cthulhu 7e",
         "dm_title": "Keeper",
-        "player_title": "Investigadores"
+        "player_title": "Investigadores",
+        "card_fields": [
+            {
+                "key": "occupation",
+                "icon": "fa-briefcase",
+                "label": "Occupation"
+            },
+            {
+                "key": "era",
+                "icon": "fa-clock",
+                "label": "Era"
+            },
+            {
+                "key": "age",
+                "icon": "fa-hourglass-half",
+                "label": "Age"
+            }
+        ]
     },
     "character_name": {
         "type": "str",

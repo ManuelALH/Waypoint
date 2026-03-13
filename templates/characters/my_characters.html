@@ -24,23 +24,31 @@
                 <h3 class="char-name">{{ char.name }}</h3>
 
                 <div class="char-info">
+                    
+                    {% if char.display_stats %}
+                        {% for stat in char.display_stats %}
+                        <div class="info-item">
+                            <i class="fas {{ stat.icon }}"></i>
+                            <span style="text-transform: capitalize;">
+                                {{ stat.label }}: {{ stat.value }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                        
+                    {% else %}
+                        <div class="info-item">
+                            <i class="fas fa-user-tag"></i>
+                            <span style="text-transform: capitalize;">
+                                {{ char.data.class|default:"No Class" }}
+                            </span>
+                        </div>
 
-                    <div class="info-item">
-                        <i class="fas fa-user-tag"></i>
-                        <span style="text-transform: capitalize;">
-                            {{ char.data.class|default:"Sin clase" }}
-                        </span>
-                    </div>
+                        <div class="info-item">
+                            <i class="fas fa-star"></i>
+                            <span>Level: {{ char.data.level|default:"-" }}</span>
+                        </div>
+                    {% endif %}
 
-                    <div class="info-item">
-                        <i class="fas fa-star"></i>
-                        <span>Nivel {{ char.data.level|default:"1" }}</span>
-                    </div>
-
-                    <div class="info-item">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>{{ char.created_at|date:"d M Y" }}</span>
-                    </div>
                 </div>
 
                 <a href="{% url 'character_sheet' char.pk %}" class="btn-view" style="color: {{ char.system.primary_color|default:'#3498db' }}; 

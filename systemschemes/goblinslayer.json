@@ -3,7 +3,24 @@
         "color": "#4a4f57",
         "label": "Goblin Slayer TRPG",
         "dm_title": "Game Master",
-        "player_title": "Adventureros"
+        "player_title": "Adventureros",
+        "card_fields": [
+            {
+                "key": "class",
+                "icon": "fa-shield-alt",
+                "label": "Class"
+            },
+            {
+                "key": "race",
+                "icon": "fa-paw",
+                "label": "Race"
+            },
+            {
+                "key": "rank",
+                "icon": "fa-id-badge",
+                "label": "Rank"
+            }
+        ]
     },
     "character_name": {
         "type": "str",
@@ -308,52 +325,6 @@
             ]
         ]
     },
-    "rank": {
-        "type": "choice",
-        "label": "Rank",
-        "choices": [
-            [
-                "porcelain",
-                "Porcelain"
-            ],
-            [
-                "obsidian",
-                "Obsidian"
-            ],
-            [
-                "steel",
-                "Steel"
-            ],
-            [
-                "sapphire",
-                "Sapphire"
-            ],
-            [
-                "emerald",
-                "Emerald"
-            ],
-            [
-                "ruby",
-                "Ruby"
-            ],
-            [
-                "copper",
-                "Copper"
-            ],
-            [
-                "silver",
-                "Silver"
-            ],
-            [
-                "gold",
-                "Gold"
-            ],
-            [
-                "platinum",
-                "Platinum"
-            ]
-        ]
-    },
     "strength": {
         "type": "int",
         "label": "Strength",
@@ -397,6 +368,14 @@
     "endurance": {
         "type": "int",
         "label": "Endurance",
+        "min_value": 0,
+        "max_value": 10,
+        "default": 0,
+        "help_text": "Value between 0 and 10"
+    },
+    "reflex": {
+        "type": "int",
+        "label": "Reflex",
         "min_value": 0,
         "max_value": 10,
         "default": 0,
@@ -627,6 +606,52 @@
         "min_value": 0,
         "default": 0,
         "help_text": "Total Completed Adventures of your Adventurer"
+    },
+    "rank": {
+        "type": "choice",
+        "label": "Rank",
+        "choices": [
+            [
+                "porcelain",
+                "Porcelain"
+            ],
+            [
+                "obsidian",
+                "Obsidian"
+            ],
+            [
+                "steel",
+                "Steel"
+            ],
+            [
+                "sapphire",
+                "Sapphire"
+            ],
+            [
+                "emerald",
+                "Emerald"
+            ],
+            [
+                "ruby",
+                "Ruby"
+            ],
+            [
+                "copper",
+                "Copper"
+            ],
+            [
+                "silver",
+                "Silver"
+            ],
+            [
+                "gold",
+                "Gold"
+            ],
+            [
+                "platinum",
+                "Platinum"
+            ]
+        ]
     },
     "adventurer_level": {
         "type": "int",

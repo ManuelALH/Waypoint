@@ -50,6 +50,27 @@ def create_character(request):
 @login_required
 def my_characters(request):
     characters = Character.objects.filter(owner=request.user).order_by('-created_at')
+    for char in characters:
+        schema_meta = char.system.schema_definition.get("meta", {})
+        card_fields = schema_meta.get("card_fields", [])
+
+        char.display_stats = []
+
+        for field in card_fields:
+            key = field.get("key")
+            icon = field.get("icon", "fa-info-circle")
+            label = field.get("label", key.title())
+            value = char.data.get(key)
+
+            if value in [None, ""]:
+                value = "-"
+
+            char.display_stats.append({
+                "icon": icon,
+                "value": value,
+                "label": label
+            })
+
     return render(request, "characters/my_characters.html", {
         "characters": characters
     })

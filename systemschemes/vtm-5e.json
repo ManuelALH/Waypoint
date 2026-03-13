@@ -3,7 +3,24 @@
         "color": "#8e1b1b",
         "label": "Vampire: The Masquerade 5e",
         "dm_title": "Storyteller",
-        "player_title": "Kindred"
+        "player_title": "Kindred",
+        "card_fields": [
+            {
+                "key": "clan",
+                "icon": "fa-tint",
+                "label": "Clan"
+            },
+            {
+                "key": "predator_type",
+                "icon": "fa-tooth",
+                "label": "Predator Type"
+            },
+            {
+                "key": "generation",
+                "icon": "fa-sitemap",
+                "label": "Generation"
+            }
+        ]
     },
     "character_name": {
         "type": "str",
@@ -150,6 +167,10 @@
         "default": 12,
         "help_text": "Tu generación vampírica"
     },
+    "sire": {
+        "type": "str",
+        "label": "Sire"
+    },
     "strength": {
         "type": "int",
         "label": "Strength",
@@ -293,119 +314,135 @@
         "label": "Disciplines & Powers",
         "help_text": "Anota tus disciplinas y los poderes que has desbloqueado (Ej: Celerity 2, Auspex 1)."
     },
-    "skills": {
+    "skills_physics": {
         "type": "skill_list",
-        "label": "Skills",
+        "label": "Physical Skills",
         "formula": "misc_only",
         "has_misc_bonus": true,
         "catalog": [
             {
                 "id": "athletics",
-                "label": "Athletics (Física)"
+                "label": "Athletics"
             },
             {
                 "id": "brawl",
-                "label": "Brawl (Física)"
+                "label": "Brawl"
             },
             {
                 "id": "craft",
-                "label": "Craft (Física)"
+                "label": "Craft"
             },
             {
                 "id": "drive",
-                "label": "Drive (Física)"
+                "label": "Drive"
             },
             {
                 "id": "firearms",
-                "label": "Firearms (Física)"
+                "label": "Firearms"
             },
             {
                 "id": "larceny",
-                "label": "Larceny (Física)"
+                "label": "Larceny"
             },
             {
                 "id": "melee",
-                "label": "Melee (Física)"
+                "label": "Melee"
             },
             {
                 "id": "stealth",
-                "label": "Stealth (Física)"
+                "label": "Stealth"
             },
             {
                 "id": "survival",
-                "label": "Survival (Física)"
-            },
+                "label": "Survival"
+            }
+        ]
+    },
+    "skills_social": {
+        "type": "skill_list",
+        "label": "Social Skills",
+        "formula": "misc_only",
+        "has_misc_bonus": true,
+        "catalog": [
             {
                 "id": "animal_ken",
-                "label": "Animal Ken (Social)"
+                "label": "Animal Ken"
             },
             {
                 "id": "etiquette",
-                "label": "Etiquette (Social)"
+                "label": "Etiquette"
             },
             {
                 "id": "insight",
-                "label": "Insight (Social)"
+                "label": "Insight"
             },
             {
                 "id": "intimidation",
-                "label": "Intimidation (Social)"
+                "label": "Intimidation"
             },
             {
                 "id": "leadership",
-                "label": "Leadership (Social)"
+                "label": "Leadership"
             },
             {
                 "id": "performance",
-                "label": "Performance (Social)"
+                "label": "Performance"
             },
             {
                 "id": "persuasion",
-                "label": "Persuasion (Social)"
+                "label": "Persuasion"
             },
             {
                 "id": "streetwise",
-                "label": "Streetwise (Social)"
+                "label": "Streetwise"
             },
             {
                 "id": "subterfuge",
-                "label": "Subterfuge (Social)"
-            },
+                "label": "Subterfuge"
+            }
+        ]
+    },
+    "skills_mental": {
+        "type": "skill_list",
+        "label": "Mental Skills",
+        "formula": "misc_only",
+        "has_misc_bonus": true,
+        "catalog": [
             {
                 "id": "academics",
-                "label": "Academics (Mental)"
+                "label": "Academics"
             },
             {
                 "id": "awareness",
-                "label": "Awareness (Mental)"
+                "label": "Awareness"
             },
             {
                 "id": "finance",
-                "label": "Finance (Mental)"
+                "label": "Finance"
             },
             {
                 "id": "investigation",
-                "label": "Investigation (Mental)"
+                "label": "Investigation"
             },
             {
                 "id": "medicine",
-                "label": "Medicine (Mental)"
+                "label": "Medicine"
             },
             {
                 "id": "occult",
-                "label": "Occult (Mental)"
+                "label": "Occult"
             },
             {
                 "id": "politics",
-                "label": "Politics (Mental)"
+                "label": "Politics"
             },
             {
                 "id": "science",
-                "label": "Science (Mental)"
+                "label": "Science"
             },
             {
                 "id": "technology",
-                "label": "Technology (Mental)"
+                "label": "Technology"
             }
         ]
     }

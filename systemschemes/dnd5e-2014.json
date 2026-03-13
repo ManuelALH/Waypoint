@@ -3,7 +3,24 @@
         "color": "#e74c3c",
         "label": "Dungeons & Dragons 5e (2014)",
         "dm_title": "Dungeon Master",
-        "player_title": "Aventureros"
+        "player_title": "Aventureros",
+        "card_fields": [
+            {
+                "key": "class",
+                "icon": "fa-khanda",
+                "label": "Class"
+            },
+            {
+                "key": "race",
+                "icon": "fa-users",
+                "label": "Race"
+            },
+            {
+                "key": "level",
+                "icon": "fa-star",
+                "label": "Level"
+            }
+        ]
     },
     "character_name": {
         "type": "str",
@@ -410,7 +427,6 @@
         "type": "int",
         "label": "Silver Pieces",
         "min_value": 0,
-        "max_value": 9999999,
         "default": 0,
         "help_text": "Currency in Silver"
     },
@@ -418,7 +434,6 @@
         "type": "int",
         "label": "Electrum Pieces",
         "min_value": 0,
-        "max_value": 9999999,
         "default": 0,
         "help_text": "Currency in Electrum"
     },
@@ -426,7 +441,6 @@
         "type": "int",
         "label": "Gold Pieces",
         "min_value": 0,
-        "max_value": 9999999,
         "default": 0,
         "help_text": "Currency in Gold"
     },
@@ -434,14 +448,13 @@
         "type": "int",
         "label": "Platinum Pieces",
         "min_value": 0,
-        "max_value": 9999999,
         "default": 0,
         "help_text": "Currency in Platinum"
     },
     "saving_throws": {
         "type": "skill_list",
         "label": "Saving Throws",
-        "formula": "dnd5e_2014_skillscalc",
+        "formula": "dnd5e_2014_skillcalc",
         "catalog": [
             {
                 "id": "str_save",
