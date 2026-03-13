@@ -38,6 +38,13 @@ class CharacterForm(forms.ModelForm):
 def create_character_form(schema_data):    
     form_fields = {}
 
+    form_fields['is_homebrew'] = forms.BooleanField(
+        label="Modo Homebrew (Desactivar límites y fórmulas)",
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={'class': 'homebrew-toggle form-check-input'})
+    )
+
     for field_name, field_config in schema_data.items():
         if field_name == "meta":
             continue
@@ -85,11 +92,11 @@ def create_character_form(schema_data):
             }
             
             if "min_value" in field_config and "range_mapping" not in field_config:
-                int_kwargs['min_value'] = field_config["min_value"]
+                #int_kwargs['min_value'] = field_config["min_value"]
                 widget_attrs['min'] = field_config["min_value"]
                 
             if "max_value" in field_config and "range_mapping" not in field_config:
-                int_kwargs['max_value'] = field_config["max_value"]
+                #int_kwargs['max_value'] = field_config["max_value"]
                 widget_attrs['max'] = field_config["max_value"]
             
             if "min_field" in field_config:
@@ -109,10 +116,12 @@ def create_character_form(schema_data):
                     choices = [(c, c.title()) for c in raw_choices]
                 else:
                     choices = raw_choices
-
-            form_fields[field_name] = forms.ChoiceField(
-                label=label, choices=choices, required=is_required, 
-                widget=forms.Select(attrs=widget_attrs), help_text=help_text,
+            widget_attrs['data-is-choice'] = 'true'
+            form_fields[field_name] = forms.CharField(
+                label=label,  
+                required=is_required,
+                widget=forms.Select(choices=choices, attrs=widget_attrs), 
+                help_text=help_text,
                 initial=default_value          
             )
 
@@ -141,64 +150,86 @@ def create_character_form(schema_data):
 
     def custom_clean(self):
         cleaned_data = super(self.__class__, self).clean()
+
+        is_homebrew = cleaned_data.get('is_homebrew', False)
         
         for f_name, f_config in schema_data.items():
             if f_name == "meta": continue
             
             if f_config.get("read_only") and "formula" in f_config:
-                formula_name = f_config["formula"]
-                mapping = f_config.get("mapping", {})
-                
-                if formula_name in BACKEND_FORMULAS:
-                    total_val = 0
-                    source_values_arr = []
+                if not is_homebrew:
+                    formula_name = f_config["formula"]
+                    mapping = f_config.get("mapping", {})
                     
-                    if "source_fields" in f_config:
-                        for sf in f_config["source_fields"]:
-                            val = cleaned_data.get(sf)
-                            if val is None: val = 0
+                    if formula_name in BACKEND_FORMULAS:
+                        total_val = 0
+                        source_values_arr = []
+                        
+                        if "source_fields" in f_config:
+                            for sf in f_config["source_fields"]:
+                                val = cleaned_data.get(sf)
+                                if val is None: val = 0
+                                try:
+                                    val_int = int(val)
+                                    if isinstance(total_val, int):
+                                        total_val += val_int
+                                    source_values_arr.append(val_int)
+                                except (ValueError, TypeError):
+                                    source_values_arr.append(0)
+                                    if total_val == 0:
+                                        total_val= val
+                        elif "source_field" in f_config:
+                            val = cleaned_data.get(f_config["source_field"])
+                            if val is None: val = ""
                             try:
                                 val_int = int(val)
-                                if isinstance(total_val, int):
-                                    total_val += val_int
+                                total_val = val_int
                                 source_values_arr.append(val_int)
                             except (ValueError, TypeError):
+                                total_val = val
                                 source_values_arr.append(0)
-                                if total_val == 0:
-                                    total_val= val
-                    elif "source_field" in f_config:
-                        val = cleaned_data.get(f_config["source_field"])
-                        if val is None: val = ""
-                        try:
-                            val_int = int(val)
-                            total_val = val_int
-                            source_values_arr.append(val_int)
-                        except (ValueError, TypeError):
-                            total_val = val
-                            source_values_arr.append(0)
-                        
-                    try:
-                        try:
-                            real_value = BACKEND_FORMULAS[formula_name](total_val, cleaned_data, mapping, source_values_arr)
-                        except TypeError:
-                            real_value = BACKEND_FORMULAS[formula_name](total_val, cleaned_data, mapping)
                             
-                        cleaned_data[f_name] = real_value
-                    except Exception as e:
-                        cleaned_data[f_name] = 0 if f_config.get("type") == "int" else ""
+                        try:
+                            try:
+                                real_value = BACKEND_FORMULAS[formula_name](total_val, cleaned_data, mapping, source_values_arr)
+                            except TypeError:
+                                real_value = BACKEND_FORMULAS[formula_name](total_val, cleaned_data, mapping)
+                                
+                            cleaned_data[f_name] = real_value
+                        except Exception as e:
+                            cleaned_data[f_name] = 0 if f_config.get("type") == "int" else ""                
+                else:
+                    pass
+
+            if f_config.get("type") in ["select", "choice"]:
+                val = cleaned_data.get(f_name)
+                if not is_homebrew and val:
+                    raw_choices = f_config.get("choices", [])
+                    valid_keys = []
+                    if raw_choices:
+                        if not isinstance(raw_choices[0], (list, tuple)):
+                            valid_keys = [str(c) for c in raw_choices]
+                        else:
+                            valid_keys = [str(c[0]) for c in raw_choices]
+                    
+                    if str(val) not in valid_keys:
+                        self.add_error(f_name, f"La opción '{val}' no es válida. Activa el Modo Homebrew para valores personalizados.")
                                                 
         for f_name, f_config in schema_data.items():
             if f_name == "meta": continue
             
             if f_config.get("type") == "int":
                 val = cleaned_data.get(f_name)
-                if val is not None:
+                if val is not None and not is_homebrew:
+                    if "max_value" in f_config and val > f_config["max_value"]:
+                        self.add_error(f_name, f"El valor no puede ser mayor a {f_config['max_value']}.")
+                    if "min_value" in f_config and val < f_config["min_value"]:
+                        self.add_error(f_name, f"El valor no puede ser menor a {f_config['min_value']}.")
                     if "max_field" in f_config:
                         max_ref_name = f_config["max_field"]
                         dyn_max = cleaned_data.get(max_ref_name)
                         if dyn_max is not None and val > dyn_max:
-                            self.add_error(f_name, f"El valor no puede superar tu límite actual ({dyn_max}).")
-                            
+                            self.add_error(f_name, f"El valor no puede superar tu límite actual ({dyn_max}).")                            
                     if "min_field" in f_config:
                         min_ref_name = f_config["min_field"]
                         dyn_min = cleaned_data.get(min_ref_name)
@@ -279,7 +310,7 @@ def create_character_form(schema_data):
                 cleaned_data[f_name] = final_data
                 continue
 
-            if "range_mapping" in f_config and "source_fields" in f_config:
+            if "range_mapping" in f_config and "source_fields" in f_config and not is_homebrew:
                 source_field = f_config["source_fields"][0]
                 source_val = cleaned_data.get(source_field)
                 
@@ -300,7 +331,28 @@ def create_character_form(schema_data):
                             pass
 
         return cleaned_data
+    
+    
+    # Esta función inyecta la opción personalizada en el Select para que se vea correctamente al editar
+    def custom_init(self, *args, **kwargs):
+        forms.Form.__init__(self, *args, **kwargs)
+        for f_name, f_config in schema_data.items():
+            if f_name == "meta": continue
+            if f_config.get("type") in ["select", "choice"]:
+                current_val = self.data.get(f_name) if self.is_bound else self.initial.get(f_name)
+                field = self.fields.get(f_name)
+                if current_val is not None and str(current_val).strip() != "" and field:
+                    if str(current_val).strip() == "":
+                        continue
+                    existing_choices = [str(c[0]) for c in field.widget.choices]
+                    if str(current_val) not in existing_choices:
+                        field.widget.choices = list(field.widget.choices) + [(current_val, f"{current_val} (Homebrew)")]
+            if f_config.get("type") == "skill_list":
+                current_val = self.initial.get(f_name)
+                if isinstance(current_val, dict):
+                    self.initial[f_name] = json.dumps(current_val)
 
+    form_fields['__init__'] = custom_init
     form_fields['clean'] = custom_clean
     DynamicCharacterForm = type('DynamicCharacterForm', (forms.Form,), form_fields)
 
