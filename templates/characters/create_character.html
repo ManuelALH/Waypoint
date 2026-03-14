@@ -395,6 +395,7 @@
                     textInput.className = select.className.replace('form-select', 'form-control') + ' homebrew-choice-input';
                     textInput.id = select.id + '_homebrew';
                     textInput.style.display = 'none';
+                    textInput.value = select.value;
                     select.parentNode.insertBefore(textInput, select.nextSibling);
                     
                     // Si el jugador escribe algo nuevo, lo guardamos en la lista original por si apaga el homebrew
@@ -404,11 +405,11 @@
                         
                         //Si el campo está vacío, no hacemos nada para evitar opciones fantasma
                         if (val === "") {
-                            select.selectedIndex = 0; 
+                            select.value = "";
                             return;
                         }
                        
-                        let option = select.querySelector(`option[value="${textInput.value}"]`);
+                        let option = select.querySelector(`option[value="${val}"]`);
                         if (!option) {
                             option = document.createElement('option');
                             option.value = textInput.value;
@@ -443,8 +444,8 @@
 
             // Forzamos un recalculo en caso de que lo hayan apagado
             if (!isHomebrew) {
-                document.querySelectorAll('input').forEach(input => {
-                    input.dispatchEvent(new Event('input'));
+                    document.querySelectorAll('input:not(.homebrew-choice-input)').forEach(input => {
+                        input.dispatchEvent(new Event('input'));
                 });
             }
         };
