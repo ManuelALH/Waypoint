@@ -137,6 +137,27 @@ def character_sheet(request, pk):
                 "value": raw_value if raw_value not in [None, ""] else "-"
             })
 
+    #Normalizar custom_fields al mismo formato display_fields
+    custom_fields = char_data.get("custom_fields", [])
+    if isinstance(custom_fields, list):
+        for custom_field in custom_fields:
+            custom_field_type = custom_field.get("type")  # "number", "text" o "list"
+            label = custom_field.get("label", "Campo")
+            value = custom_field.get("value")
+
+            if custom_field_type == "homebrew_list":
+                display_fields.append({
+                    "type": "homebrew_list",
+                    "label": label,
+                    "items": value if isinstance(value, list) else []
+                })
+            else:
+                display_fields.append({
+                    "type": "normal",
+                    "label": label,
+                    "value": value if value not in [None, ""] else "-"
+                })
+
     return render(request, "characters/character_sheet.html", {
         "character": character,
         "character_color": character_color,

@@ -3,11 +3,43 @@
         "color": "#c9c9c9",
         "label": "Homebrew",
         "dm_title": "Director de Juego",
-        "player_title": "Jugadores"
+        "player_title": "Jugadores",
+        "card_fields": [
+            {
+                "key": "system_name",
+                "icon": "fa-dice-d20",
+                "label": "System Name"
+            },
+            {
+                "key": "base_system",
+                "icon": "fa-cogs",
+                "label": "Base System"
+            },
+            {
+                "key": "designer",
+                "icon": "fa-pen-nib",
+                "label": "Designer"
+            }
+        ]
     },
     "character_name": {
         "type": "str",
         "label": "Character Name",
         "help_text": "Enter the name of your character"
+    },
+    "system_name": {
+        "type": "str",
+        "label": "System Name",
+        "help_text": "Enter the name of your System"
+    },
+    "base_system": {
+        "type": "str",
+        "label": "Base System",
+        "help_text": "Enter the name of the System you took base on (D&D 5e, D6)"
+    },
+    "designer": {
+        "type": "str",
+        "label": "Designer",
+        "help_text": "Enter the name of the designer of the System"
     }
 }

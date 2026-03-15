@@ -9,7 +9,6 @@
             <span class="system-tag" style="background: {{ character_color }};">{{ character.system.name }}</span>
         </div>
 
-
         <div class="header-actions">
             {% if request.user == character.owner %}
             <button onclick="openDeleteModal1()" class="btn-action btn-delete">
@@ -55,6 +54,25 @@
                         {% endfor %}
                     </div>
                 </div>
+				
+			{% elif field.type == "homebrew_list" %}
+				<div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">
+					<div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+						{{ field.label }}
+					</div>
+					<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px 30px;">
+						{% for item in field.items %}
+							<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding-bottom: 5px;">
+								<span style="color: #2c3e50; font-size: 0.95em;">{{ item.name }}</span>
+								<strong style="font-size: 1.1em; color: #2c3e50;">
+									{{ item.value }}
+								</strong>
+							</div>
+						{% empty %}
+						<span style="color: #95a5a6; font-style: italic; font-size: 0.85em;">Lista vacía</span>
+						{% endfor %}
+					</div>
+				</div>				
 
             {% else %}
                 <div class="attr-card">
@@ -217,21 +235,16 @@
 
         .char-title {
             margin: 0;
-            /* Quitamos el color fijo para que funcione el estilo inline */
             font-size: 2.5em;
         }
 
-        /* 3. Estilo tipo CÁPSULA (igual que en table_detail) */
         .system-tag {
             display: inline-block;
             color: white;
             padding: 4px 12px;
-            /* Más padding lateral */
             border-radius: 20px;
-            /* Borde redondeado completo */
             font-weight: bold;
             font-size: 0.9em;
-            /* Ajuste de tamaño */
             margin-top: 5px;
             text-transform: uppercase;
         }
@@ -252,7 +265,6 @@
             cursor: pointer;
         }
 
-        /* Grid de datos */
         .attributes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -305,7 +317,6 @@
             background-color: #c0392b;
         }
 
-        /* Estilos del Modal */
     .modal-overlay {
         display: none;
         position: fixed;
@@ -367,5 +378,4 @@
         }
     </style>
 
-
-    {% endblock %}
+{% endblock %}

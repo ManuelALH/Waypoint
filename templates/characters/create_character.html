@@ -5,9 +5,9 @@
 
     <h2 style="color: #2c3e50; margin-top: 0;">
         {% if is_edit %}
-        Editar Personaje: {{ character.name }}
+            Editar Personaje: {{ character.name }}
         {% else %}
-        Crear Nuevo Personaje
+			Crear Nuevo Personaje
         {% endif %}
     </h2>
 
@@ -20,79 +20,153 @@
             <option value="">Selecciona un sistema...</option>
 
             {% for system in systems %}
-            <option value="{{ system.slug }}" {% if selected_system and system.slug == selected_system.slug %}selected{% endif %}>
-                {{ system.name }}
-            </option>
+				<option value="{{ system.slug }}" {% if selected_system and system.slug == selected_system.slug %}selected{% endif %}>
+					{{ system.name }}
+				</option>
             {% endfor %}
 
         </select>
     </div>
+	
     {% else %}
-    <div style="margin-bottom: 20px; color: #7f8c8d;">
-        <strong>Sistema:</strong> {{ selected_system.name }}
-    </div>
+		<div style="margin-bottom: 20px; color: #7f8c8d;">
+			<strong>Sistema:</strong> {{ selected_system.name }}
+		</div>
     {% endif %}
 
     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
     {% if form %}
-    <form method="post">
-        {% csrf_token %}
+		<form method="post">
+			{% csrf_token %}
 
-        <div style="background-color: #e8f4f8; border: 1px solid #bce8f1; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                {{ form.is_homebrew }} 
-                <label for="{{ form.is_homebrew.id_for_label }}" style="font-weight: bold; color: #2980b9; margin: 0; cursor: pointer;">
-                    <i class="fas fa-unlock-alt"></i> Modo Homebrew
-                </label>
-            </div>
-            <div style="font-size: 0.85rem; color: #5c8a8a; margin-top: 5px; margin-left: 28px;">
-                Desactiva las reglas, límites y fórmulas del sistema. Permite guardar cualquier valor libremente.
-            </div>
-        </div>
+			{% if not selected_system.slug == 'homebrew' %}
+				<div
+					style="background-color: #e8f4f8; border: 1px solid #bce8f1; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+					<div style="display: flex; align-items: center; gap: 10px;">
+						{{ form.is_homebrew }}
+						<label for="{{ form.is_homebrew.id_for_label }}"
+							style="font-weight: bold; color: #2980b9; margin: 0; cursor: pointer;">
+							<i class="fas fa-unlock-alt"></i> Modo Homebrew
+						</label>
+					</div>
+					<div style="font-size: 0.85rem; color: #5c8a8a; margin-top: 5px; margin-left: 28px;">
+						Desactiva las reglas, límites y fórmulas del sistema. Permite guardar cualquier valor libremente.
+					</div>
+				</div>
+			{% endif %}
 
-        <div class="character-form-grid">
+				{% if selected_system.slug == 'homebrew' %}      
+					{{ form.custom_fields }}
 
-            {% for field in form %}
-                {% if field.name != 'is_homebrew' %}
-                    <div class="form-group">
-                        {{ field.label_tag }}
+						<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+							<button type="button" onclick="openCustomFieldModal()" 
+								style="background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+								<i class="fas fa-plus-circle"></i> Agregar Campo Personalizado
+							</button>
+						</div>
 
-                        {{ field }}
+						<dialog id="customFieldModal" style="border: none; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); padding: 25px; width: 350px; background: white;">
+							<h3 style="margin-top: 0; color: #2c3e50;"><i class="fas fa-hammer"></i> Forjar Atributo</h3>
+							
+							<div class="form-group" style="margin-bottom: 15px;">
+								<label style="font-weight: bold; color: #34495e;">Nombre del Campo:</label>
+								<input type="text" id="new_custom_name" class="form-control" placeholder="Ej. Cordura, Habilidades Especiales...">
+							</div>
+							
+							<div class="form-group" style="margin-bottom: 25px;">
+								<label style="font-weight: bold; color: #34495e;">Tipo de Valor:</label>
+								<select id="new_custom_type" class="form-control">
+									<option value="number">Número (Puntos, Stats)</option>
+									<option value="text">Texto (Notas, Títulos)</option>
+									<option value="homebrew_list">Lista (Habilidades, Inventario)</option>
+								</select>
+							</div>
+							
+							<div style="display: flex; justify-content: flex-end; gap: 10px;">
+								<button type="button" onclick="document.getElementById('customFieldModal').close()" style="background: #95a5a6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Cancelar</button>
+								<button type="button" onclick="saveCustomField()" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Crear</button>
+							</div>
+						</dialog>
 
-                        {% if field.errors %}
-                        <div style="color: #e74c3c; font-size: 0.8em;">
-                            {{ field.errors }}
-                        </div>
-                        {% endif %}
+						<dialog id="editCustomFieldModal" style="border: none; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); padding: 25px; width: 350px; background: white;">
+							<h3 style="margin-top: 0; color: #2c3e50;"><i class="fas fa-pencil-alt"></i> Editar Atributo</h3>
+							
+							<!-- Campo oculto para saber qué índice del array estamos editando -->
+							<input type="hidden" id="edit_field_index" value="">
 
-                        {% if field.help_text %}
-                            <small class="help-text">{{ field.help_text }}</small>
-                        {% endif %}
-                    </div>
-                {% endif %}
-            {% endfor %}
+							<div class="form-group" style="margin-bottom: 15px;">
+								<label style="font-weight: bold; color: #34495e;">Nombre del Campo:</label>
+								<input type="text" id="edit_custom_name" class="form-control">
+							</div>
+							
+							<div class="form-group" style="margin-bottom: 25px;">
+								<label style="font-weight: bold; color: #34495e;">Tipo de Valor:</label>
+								<select id="edit_custom_type" class="form-control">
+									<option value="number">Número (Puntos, Stats)</option>
+									<option value="text">Texto (Notas, Títulos)</option>
+									<option value="homebrew_list">Lista (Habilidades, Inventario)</option>
+								</select>
+								<!-- Advertencia que aparece solo cuando el tipo va a cambiar -->
+								<small id="edit_type_warning" style="color: #e67e22; display: none; margin-top: 5px; display: block;">
+									⚠️ Cambiar el tipo reseteará el valor guardado del campo.
+								</small>
+							</div>
+							
+							<div style="display: flex; justify-content: flex-end; gap: 10px;">
+								<button type="button" onclick="document.getElementById('editCustomFieldModal').close()" 
+									style="background: #95a5a6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+									Cancelar
+								</button>
+								<button type="button" onclick="saveEditCustomField()" 
+									style="background: #2980b9; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+									Guardar Cambios
+								</button>
+							</div>
+						</dialog>						
+				{% endif %}
 
-            <div class="form-actions">
-                <button type="submit" class="btn-login" style="width: auto; padding: 12px 50px;">
-                    <i class="fas fa-save"></i>
-                    {% if is_edit %}Actualizar{% else %}Guardar Personaje{% endif %}
-                </button>
-                <a href="{% if is_edit %}{% url 'character_sheet' character.pk %}{% else %}{% url 'create_character' %}{% endif %}"
-                    class="btn-login" style="background-color: #c0392b; 
-                    width: auto; 
-                    padding: 12px 50px; 
-                    text-decoration: none;
-                    margin-left: 15px;
-                <i class=" fas fa-times"></i>
-                    Cancelar
-                </a>
-            </div>
-        </div>
-    </form>
-    {% else %}
-    {% endif %}
+				<div class="character-form-grid">
+					{% for field in form %}
+						{% if field.name != 'is_homebrew' and field.name != 'custom_fields' %}
+						<div class="form-group">
+							{{ field.label_tag }}
+							{{ field }}
+							{% if field.errors %}
+								<div style="color: #e74c3c; font-size: 0.8em;">
+									{{ field.errors }}
+								</div>
+							{% endif %}
 
+							{% if field.help_text %}
+								<small class="help-text">{{ field.help_text }}</small>
+							{% endif %}
+						</div>
+						{% endif %}
+					{% endfor %}
+
+					{% if selected_system.slug == 'homebrew' %}
+						<div id="custom-fields-container" style="grid-column: span 1; margin-top: 15px;"></div>
+					{% endif %}
+
+				<div class="form-actions">
+					<button type="submit" class="btn-login" style="width: auto; padding: 12px 50px;">
+						<i class="fas fa-save"></i>
+						{% if is_edit %}Actualizar{% else %}Guardar Personaje{% endif %}
+					</button>
+					<a href="{% if is_edit %}{% url 'character_sheet' character.pk %}{% else %}{% url 'create_character' %}{% endif %}"
+						class="btn-login" style="background-color: #c0392b; 
+						width: auto; 
+						padding: 12px 50px; 
+						text-decoration: none;
+						margin-left: 15px;" <i class=" fas fa-times"></i>
+						Cancelar
+					</a>
+				</div>
+			</div>
+		</form>
+	{% else %}
+	{% endif %}
 </div>
 
 <style>
@@ -201,78 +275,78 @@
         // 'form.errors' tendrá contenido si hubo error de validación
         const hasErrors = {% if form.errors %}true{% else %}false{% endif %};
 
-    // Referencias al DOM
-    const modal = document.getElementById('statusModal');
-    const title = document.getElementById('modalTitle');
-    const msg = document.getElementById('modalMessage');
-    const btns = document.getElementById('modalButtons');
-    const icon = document.getElementById('modalIcon');
+		// Referencias al DOM
+		const modal = document.getElementById('statusModal');
+		const title = document.getElementById('modalTitle');
+		const msg = document.getElementById('modalMessage');
+		const btns = document.getElementById('modalButtons');
+		const icon = document.getElementById('modalIcon');
 
-    // URLs para redirección
-    const urlCreateNew = "{% url 'create_character' %}";
-    const urlMyChars = "{% url 'my_characters' %}";
+		// URLs para redirección
+		const urlCreateNew = "{% url 'create_character' %}";
+		const urlMyChars = "{% url 'my_characters' %}";
 
-    // --- LÓGICA DE VISUALIZACIÓN ---
+		// --- LÓGICA DE VISUALIZACIÓN ---
 
-    if (isSuccess) {
-        // CASO 1: ÉXITO
-        modal.style.display = "flex";
-        title.innerText = "¡Personaje Registrado!";
-        title.style.color = "#27ae60";
-        icon.innerHTML = "✅";
-        msg.innerHTML = "Tu personaje se ha guardado correctamente.";
+		if (isSuccess) {
+			// CASO 1: ÉXITO
+			modal.style.display = "flex";
+			title.innerText = "¡Personaje Registrado!";
+			title.style.color = "#27ae60";
+			icon.innerHTML = "✅";
+			msg.innerHTML = "Tu personaje se ha guardado correctamente.";
 
-        // Botón 1: Entendido (Recarga el formulario limpio)
-        const btnNew = document.createElement('a');
-        btnNew.className = 'modal-btn btn-success';
-        btnNew.innerText = "Entendido (Nuevo)";
-        btnNew.href = urlCreateNew; // Esto hace un GET y limpia el form
+			// Botón 1: Entendido (Recarga el formulario limpio)
+			const btnNew = document.createElement('a');
+			btnNew.className = 'modal-btn btn-success';
+			btnNew.innerText = "Entendido (Nuevo)";
+			btnNew.href = urlCreateNew; // Esto hace un GET y limpia el form
 
-        // Botón 2: Ir a mis personajes
-        const btnList = document.createElement('a');
-        btnList.className = 'modal-btn btn-primary';
-        btnList.innerText = "Ir a mis personajes";
-        btnList.href = urlMyChars;
+			// Botón 2: Ir a mis personajes
+			const btnList = document.createElement('a');
+			btnList.className = 'modal-btn btn-primary';
+			btnList.innerText = "Ir a mis personajes";
+			btnList.href = urlMyChars;
 
-        btns.appendChild(btnNew);
-        btns.appendChild(btnList);
+			btns.appendChild(btnNew);
+			btns.appendChild(btnList);
 
-    } else if (hasErrors) {
-        // CASO 2: ERROR EN EL FORMULARIO
-        modal.style.display = "flex";
-        title.innerText = "Error al guardar";
-        title.style.color = "#c0392b";
-        icon.innerHTML = "⚠️";
+		} else if (hasErrors) {
+			// CASO 2: ERROR EN EL FORMULARIO
+			modal.style.display = "flex";
+			title.innerText = "Error al guardar";
+			title.style.color = "#c0392b";
+			icon.innerHTML = "⚠️";
 
-        // Recopilamos los errores que envía Django para mostrarlos
-        let errorText = "Por favor corrige los siguientes problemas:<br><ul style='text-align:left; display:inline-block;'>";
-        {% for field, errors in form.errors.items %}
-        {% for error in errors %}
-        errorText += "<li><strong>{{ field|title }}:</strong> {{ error }}</li>";
-        {% endfor %}
-        {% endfor %}
-        errorText += "</ul>";
+			// Recopilamos los errores que envía Django para mostrarlos
+			let errorText = "Por favor corrige los siguientes problemas:<br><ul style='text-align:left; display:inline-block;'>";
+			{% for field, errors in form.errors.items %}
+			{% for error in errors %}
+			errorText += "<li><strong>{{ field|title }}:</strong> {{ error }}</li>";
+			{% endfor %}
+			{% endfor %}
+			errorText += "</ul>";
 
-        msg.innerHTML = errorText;
+			msg.innerHTML = errorText;
 
-        // Botón 1: Continuar (Cierra el modal y deja editar)
-        const btnContinue = document.createElement('button');
-        btnContinue.className = 'modal-btn btn-secondary';
-        btnContinue.innerText = "Continuar Editando";
-        btnContinue.onclick = function () {
-            modal.style.display = "none";
-        };
+			// Botón 1: Continuar (Cierra el modal y deja editar)
+			const btnContinue = document.createElement('button');
+			btnContinue.className = 'modal-btn btn-secondary';
+			btnContinue.innerText = "Continuar Editando";
+			btnContinue.onclick = function () {
+				modal.style.display = "none";
+			};
 
-        // Botón 2: Cancelar (Recarga el formulario en blanco)
-        // Si quieres mantener el sistema seleccionado añade: + "?system={{ selected_system.slug }}"
-        const btnCancel = document.createElement('a');
-        btnCancel.className = 'modal-btn btn-danger';
-        btnCancel.innerText = "Cancelar y Borrar";
-        btnCancel.href = urlCreateNew;
+			// Botón 2: Cancelar (Recarga el formulario en blanco)
+			// Si quieres mantener el sistema seleccionado añade: + "?system={{ selected_system.slug }}"
+			const btnCancel = document.createElement('a');
+			btnCancel.className = 'modal-btn btn-danger';
+			btnCancel.innerText = "Cancelar y Borrar";
+			btnCancel.href = urlCreateNew;
 
-        btns.appendChild(btnContinue);
-        btns.appendChild(btnCancel);
-    }
+			btns.appendChild(btnContinue);
+			btns.appendChild(btnCancel);
+		}
     });
 </script>
 
@@ -286,7 +360,7 @@
             'sum_values': val => Math.floor(val),
             'misc_only': (val, mapping, arr) => {
                 if (!arr || arr.length === 0) return 0;
-                return arr[arr.length - 1]; 
+                return arr[arr.length - 1];
             },
             'dnd5e_2014_mod': val => Math.floor((val - 10) / 2),
             'dnd5e_2014_pb': val => Math.ceil((val / 4) + 1),
@@ -295,9 +369,9 @@
             'pf1e_mod': val => Math.floor((val - 10) / 2),
             'pf1e_skillcalc': (val, mapping, arr) => {
                 const mod = arr[0] || 0;
-                const classSkill = arr[1] || 0; 
-                const ranks = arr[2] || 0;                
-                const classBonus = (classSkill === 1 && ranks > 0) ? 3 : 0;                
+                const classSkill = arr[1] || 0;
+                const ranks = arr[2] || 0;
+                const classBonus = (classSkill === 1 && ranks > 0) ? 3 : 0;
                 return mod + classBonus + ranks;
             },
             'coc7e_hp': val => Math.floor(FORMULAS['sum_values'](val) / 10),
@@ -338,17 +412,17 @@
 
         // Lógica del Botón Homebrew
         const homebrewToggle = document.querySelector('.homebrew-toggle');
-        
+
         const toggleHomebrewMode = () => {
             const isHomebrew = homebrewToggle ? homebrewToggle.checked : false;
-            
+
             // Buscar todos los campos calculados (los que tienen readonly)
             document.querySelectorAll('.calculated-field').forEach(input => {
                 if (isHomebrew) {
                     // Desbloquear campo
                     input.removeAttribute('readonly');
                     // Cambiar estilo para avisar que está editando un campo del sistema
-                    input.style.backgroundColor = '#e8f4f8'; 
+                    input.style.backgroundColor = '#e8f4f8';
                     input.style.border = '1px dashed #bce8f1';
                 } else {
                     // Bloquear campo nuevamente
@@ -358,7 +432,7 @@
                     input.style.border = '';
                 }
             });
-            
+
             // PARA LOS LIMITES NUMERICOS (Min y Max)
             document.querySelectorAll('input[type="number"]').forEach(input => {
                 if (isHomebrew) {
@@ -369,7 +443,7 @@
                     if (input.hasAttribute('max') && !input.hasAttribute('data-orig-max')) {
                         input.setAttribute('data-orig-max', input.getAttribute('max'));
                     }
-                    
+
                     // 2. Quitar los atributos para que el navegador nos deje escribir números infinitos
                     input.removeAttribute('min');
                     input.removeAttribute('max');
@@ -387,7 +461,7 @@
             // PARA LOS CAMPOS SELECT (CHOICE)
             document.querySelectorAll('select[data-is-choice="true"]').forEach(select => {
                 let textInput = select.nextElementSibling;
-                
+
                 // Si el input de texto no existe aun, lo creamos
                 if (!textInput || !textInput.classList.contains('homebrew-choice-input')) {
                     textInput = document.createElement('input');
@@ -397,18 +471,18 @@
                     textInput.style.display = 'none';
                     textInput.value = select.value;
                     select.parentNode.insertBefore(textInput, select.nextSibling);
-                    
+
                     // Si el jugador escribe algo nuevo, lo guardamos en la lista original por si apaga el homebrew
                     textInput.addEventListener('input', () => {
 
                         const val = textInput.value.trim();
-                        
+
                         //Si el campo está vacío, no hacemos nada para evitar opciones fantasma
                         if (val === "") {
                             select.value = "";
                             return;
                         }
-                       
+
                         let option = select.querySelector(`option[value="${val}"]`);
                         if (!option) {
                             option = document.createElement('option');
@@ -423,19 +497,19 @@
                 if (isHomebrew) {
                     // Ocultar la lista, quitarle el nombre para que no envíe datos
                     select.style.display = 'none';
-                    select.removeAttribute('name'); 
-                    
+                    select.removeAttribute('name');
+
                     // Mostrar el input de texto, darle el nombre oficial del campo y estilo de edición libre
                     textInput.style.display = 'block';
-                    textInput.name = select.id.replace('id_', ''); 
-                    textInput.value = select.value; 
+                    textInput.name = select.id.replace('id_', '');
+                    textInput.value = select.value;
                     textInput.style.backgroundColor = '#e8f4f8';
                     textInput.style.border = '1px dashed #bce8f1';
                 } else {
                     // Ocultar input, quitarle el nombre
                     textInput.style.display = 'none';
                     textInput.removeAttribute('name');
-                    
+
                     // Mostrar la lista original y restaurar su nombre
                     select.style.display = 'block';
                     select.name = select.id.replace('id_', '');
@@ -444,8 +518,8 @@
 
             // Forzamos un recalculo en caso de que lo hayan apagado
             if (!isHomebrew) {
-                    document.querySelectorAll('input:not(.homebrew-choice-input)').forEach(input => {
-                        input.dispatchEvent(new Event('input'));
+                document.querySelectorAll('input:not(.homebrew-choice-input)').forEach(input => {
+                    input.dispatchEvent(new Event('input'));
                 });
             }
         };
@@ -453,7 +527,7 @@
         if (homebrewToggle) {
             homebrewToggle.addEventListener('change', toggleHomebrewMode);
             // Ejecutar al cargar la pagina por si el personaje ya tenia Homebrew guardado
-            toggleHomebrewMode(); 
+            toggleHomebrewMode();
         }
 
         const calculatedFields = document.querySelectorAll('.calculated-field');
@@ -485,7 +559,7 @@
                             valuesArr.push(0);
                         }
                     });
-                    
+
                     let newValue;
                     if (formulaName === 'map_value' && mapping) {
                         newValue = FORMULAS[formulaName](lastValue, mapping);
@@ -520,7 +594,7 @@
                 const sourceIds = JSON.parse(sourceIdsRaw);
                 const mapping = JSON.parse(mappingRaw);
                 // Generalmente el primer ID en sourceIds es de donde leemos (ej: id_race)
-                const sourceInput = document.getElementById(sourceIds[0]); 
+                const sourceInput = document.getElementById(sourceIds[0]);
 
                 if (sourceInput) {
                     const updateLimits = () => {
@@ -539,7 +613,7 @@
 
                             const container = targetField.parentElement;
                             const helpTextEl = container.querySelector('.helptext, .text-muted, .form-text');
-                            
+
                             if (helpTextEl) {
                                 helpTextEl.textContent = 'Valor permitido: entre ${limits.min} y ${limits.max}.';
                                 helpTextEl.style.color = '#3498db';
@@ -554,7 +628,7 @@
             }
         });
 
-        // --- GENERADOR DINÁMICO DE LISTAS DE HABILIDADES ---
+        // --- GENERADOR DINAMICO DE LISTAS DE HABILIDADES ---
         const skillListInputs = document.querySelectorAll('input[data-is-skill-list="true"]');
 
         skillListInputs.forEach(hiddenInput => {
@@ -562,14 +636,14 @@
             const formulaName = hiddenInput.getAttribute('data-formula');
             const hasMisc = hiddenInput.getAttribute('data-has-misc') === 'true';
             let currentData = {};
-            try { currentData = JSON.parse(hiddenInput.value || '{}'); } catch(e) {}
+            try { currentData = JSON.parse(hiddenInput.value || '{}'); } catch (e) { }
 
             const isMasterManual = currentData['_meta']?.manual_mode || false;
 
             const container = document.createElement('div');
             container.className = 'skill-list-container stat-box';
             container.style.gridColumn = 'span 2';
-            
+
             let html = `
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 10px; padding-bottom: 5px;">
                     <label style="font-size: 0.85em; cursor: pointer; color: #7f8c8d;">
@@ -594,7 +668,7 @@
                 const savedTotal = currentData[skill.id]?.total || 0;
                 const savedMisc = currentData[skill.id]?.misc || 0;
                 const filterValuesStr = skill.filter_values ? skill.filter_values.join(',') : 'all';
-                
+
                 html += `
                     <tr class="skill-row" data-skill-id="${skill.id}" data-filter-values="${filterValuesStr}">
                         <td style="text-align:center; width: 50px;">
@@ -617,7 +691,7 @@
             });
 
             html += `</tbody></table>`;
-            container.innerHTML = html;            
+            container.innerHTML = html;
 
             hiddenInput.parentNode.insertBefore(container, hiddenInput);
 
@@ -625,30 +699,30 @@
             const updateSkillList = () => {
                 const newData = {};
                 const rows = container.querySelectorAll('.skill-row');
-                
+
                 const isManual = container.querySelector('.master-manual-toggle').checked;
                 newData['_meta'] = { manual_mode: isManual };
 
                 rows.forEach(row => {
-                    if (row.style.display === 'none') return;                    
+                    if (row.style.display === 'none') return;
                     const skillId = row.getAttribute('data-skill-id');
                     const profCheckbox = row.querySelector('.skill-prof-checkbox');
                     const miscInput = row.querySelector('.skill-misc-input');
-                    const totalInput = row.querySelector('.skill-total-input');                    
+                    const totalInput = row.querySelector('.skill-total-input');
                     const profValue = profCheckbox ? (profCheckbox.checked ? 1 : 0) : 0;
                     const miscValue = miscInput ? (parseInt(miscInput.value) || 0) : 0;
                     const skillConfig = catalog.find(s => s.id === skillId);
-                    
+
                     let total = 0;
 
                     if (isManual) {
-                        if(totalInput) {
+                        if (totalInput) {
                             totalInput.readOnly = false;
                             totalInput.style.backgroundColor = '#fff';
                             total = parseInt(totalInput.value) || 0;
                         }
                     } else {
-                        if(totalInput) {
+                        if (totalInput) {
                             totalInput.readOnly = true;
                             totalInput.style.backgroundColor = '#f0f0f0';
                         }
@@ -662,11 +736,11 @@
                         }
 
                         if (formulaName && FORMULAS[formulaName]) {
-                            const formulaArgs = [...sourceValues, profValue, miscValue]; 
+                            const formulaArgs = [...sourceValues, profValue, miscValue];
                             total = FORMULAS[formulaName](0, null, formulaArgs);
                         }
 
-                        if(totalInput) totalInput.value = total;
+                        if (totalInput) totalInput.value = total;
                     }
 
                     newData[skillId] = {
@@ -681,11 +755,11 @@
 
             // Event Listeners
             container.querySelector('.master-manual-toggle').addEventListener('change', updateSkillList);
-            
+
             container.querySelectorAll('.skill-prof-checkbox').forEach(el => {
                 el.addEventListener('change', updateSkillList);
             });
-            
+
             if (hasMisc) {
                 container.querySelectorAll('.skill-misc-input').forEach(el => {
                     el.addEventListener('input', updateSkillList);
@@ -697,10 +771,10 @@
             });
 
             catalog.forEach(skill => {
-                if(skill.sources) {
+                if (skill.sources) {
                     skill.sources.forEach(sourceName => {
                         const sourceEl = document.getElementById('id_' + sourceName);
-                        if(sourceEl) {
+                        if (sourceEl) {
                             sourceEl.addEventListener('change', updateSkillList);
                             sourceEl.addEventListener('input', updateSkillList);
                         }
@@ -714,29 +788,29 @@
             const filterByFieldName = hiddenInput.getAttribute('data-filter-by');
             if (filterByFieldName) {
                 const triggerElement = document.getElementById('id_' + filterByFieldName);
-                
+
                 if (triggerElement) {
                     const filterListItems = () => {
-                        const selectedValue = triggerElement.value; 
+                        const selectedValue = triggerElement.value;
                         const rows = container.querySelectorAll('.skill-row');
-                        
+
                         rows.forEach(row => {
                             const allowedValues = row.getAttribute('data-filter-values');
-                            
+
                             if (allowedValues === 'all' || allowedValues.split(',').includes(selectedValue) || !selectedValue) {
-                                row.style.display = ''; 
+                                row.style.display = '';
                             } else {
-                                row.style.display = 'none';                                 
+                                row.style.display = 'none';
                                 // Reseteamos visualmente los inputs para que no haya datos "fantasma"
                                 const totalInput = row.querySelector('.skill-total-input');
-                                if(totalInput) totalInput.value = 0;
+                                if (totalInput) totalInput.value = 0;
                                 const profCheckbox = row.querySelector('.skill-prof-checkbox');
-                                if(profCheckbox) profCheckbox.checked = false;
+                                if (profCheckbox) profCheckbox.checked = false;
                                 const miscInput = row.querySelector('.skill-misc-input');
-                                if(miscInput) miscInput.value = 0;
+                                if (miscInput) miscInput.value = 0;
                             }
                         });
-                        
+
                         // Forzamos a que guarde la lista inmediatamente después de ocultar las filas
                         updateSkillList();
                     };
@@ -749,31 +823,31 @@
 
         // --- SISTEMA DE LIMITES DINAMICOS ---
         const enforceDynamicLimits = () => {
-            
+
             if (homebrewToggle && homebrewToggle.checked) return;
 
             document.querySelectorAll('input[data-max-field], input[data-min-field]').forEach(input => {
-                
+
                 const maxFieldId = input.getAttribute('data-max-field');
                 if (maxFieldId) {
                     const maxField = document.getElementById('id_' + maxFieldId);
                     if (maxField && maxField.value !== "") {
                         const maxVal = parseInt(maxField.value) || 0;
                         input.setAttribute('max', maxVal);
-                        
+
                         if (parseInt(input.value) > maxVal) {
                             input.value = maxVal;
                         }
                     }
                 }
-                
+
                 const minFieldId = input.getAttribute('data-min-field');
                 if (minFieldId) {
                     const minField = document.getElementById('id_' + minFieldId);
                     if (minField && minField.value !== "") {
                         const minVal = parseInt(minField.value) || 0;
                         input.setAttribute('min', minVal);
-                        
+
                         if (parseInt(input.value) < minVal) {
                             input.value = minVal;
                         }
@@ -783,10 +857,10 @@
         };
 
         const formContainer = document.querySelector('form');
-        if(formContainer) {
+        if (formContainer) {
             formContainer.addEventListener('input', enforceDynamicLimits);
             formContainer.addEventListener('change', enforceDynamicLimits);
-        }        
+        }
 
         // Ejecutar 100ms después de cargar la página para dar tiempo a que tus fórmulas iniciales terminen
         setTimeout(enforceDynamicLimits, 100);
@@ -800,6 +874,294 @@
                 });
             });
         }
+    });
+</script>
+
+<script>
+    // --- SISTEMA DE CAMPOS PERSONALIZADOS ---
+    document.addEventListener('DOMContentLoaded', function () {
+        let customFieldsArray = [];
+        const hiddenCustomData = document.getElementById('custom_homebrew_data');
+
+        function initCustomFields() {
+            if (hiddenCustomData && hiddenCustomData.value) {
+                try {
+                    customFieldsArray = JSON.parse(hiddenCustomData.value);
+                    renderCustomFields();
+                } catch (e) { console.error("Error al cargar memoria custom", e); }
+            }
+        }
+
+        function openCustomFieldModal() {
+            document.getElementById('new_custom_name').value = '';
+            document.getElementById('customFieldModal').showModal();
+        }
+		
+		// Abre el modal de edicion pre-llenado con los datos actuales del campo
+		function openEditCustomFieldModal(index) {
+			const field = customFieldsArray[index];
+			if (!field) return;
+
+			// Guardamos el índice para saber cuál campo modificar al guardar
+			document.getElementById('edit_field_index').value = index;
+			document.getElementById('edit_custom_name').value = field.label;
+			
+			// Seleccionamos el tipo actual en el <select>
+			const typeSelect = document.getElementById('edit_custom_type');
+			typeSelect.value = field.type;
+			
+			// Ocultamos la advertencia de cambio de tipo (empieza sin cambios)
+			document.getElementById('edit_type_warning').style.display = 'none';
+			
+			// Mostramos la advertencia solo si el usuario cambia el tipo
+			typeSelect.onchange = function() {
+				const warning = document.getElementById('edit_type_warning');
+				warning.style.display = (this.value !== field.type) ? 'block' : 'none';
+			};
+
+			document.getElementById('editCustomFieldModal').showModal();
+		}
+
+		// Aplica los cambios al array en memoria y re-renderiza
+		function saveEditCustomField() {
+			const index = parseInt(document.getElementById('edit_field_index').value);
+			const newLabel = document.getElementById('edit_custom_name').value.trim();
+			const newType = document.getElementById('edit_custom_type').value;
+
+			if (!newLabel) {
+				alert('Por favor, ingresa un nombre para el campo.');
+				return;
+			}
+
+			const field = customFieldsArray[index];
+			const typeChanged = field.type !== newType;
+
+			// Actualizamos el label siempre
+			field.label = newLabel;
+
+			// Si el tipo cambio, reseteamos el valor para evitar inconsistencias de datos
+			if (typeChanged) {
+				field.type = newType;
+				if (newType === 'number') field.value = 0;
+				else if (newType === 'homebrew_list') field.value = [];
+				else field.value = ''; // text
+			}
+
+			document.getElementById('editCustomFieldModal').close();
+			
+			// Sincronizamos el hidden input y redibujamos los campos
+			updateHiddenCustomData();
+			renderCustomFields();
+		}
+
+        function saveCustomField() {
+            const name = document.getElementById('new_custom_name').value.trim();
+            const type = document.getElementById('new_custom_type').value;
+
+            if (!name) return alert('Por favor, ingresa un nombre para el campo.');
+
+            const uniqueId = 'custom_' + Date.now();
+
+            // Asignamos el valor base correcto dependiendo del tipo
+            let initialValue = '';
+            if (type === 'number') initialValue = 0;
+            if (type === 'homebrew_list') initialValue = []; // Las listas inician como arreglos vacíos
+
+            customFieldsArray.push({
+                id: uniqueId,
+                label: name,
+                type: type,
+                value: initialValue
+            });
+
+            document.getElementById('customFieldModal').close();
+            renderCustomFields();
+        }
+
+        function removeCustomField(index) {
+            if (confirm("¿Seguro que quieres borrar este campo completo?")) {
+                customFieldsArray.splice(index, 1);
+                renderCustomFields();
+            }
+        }
+
+        function updateCustomFieldValue(index, val) {
+            customFieldsArray[index].value = val;
+            updateHiddenCustomData();
+        }
+
+        function updateHiddenCustomData() {
+            if (hiddenCustomData) {
+                hiddenCustomData.value = JSON.stringify(customFieldsArray);
+            }
+        }
+
+        // --- FUNCIONES EXCLUSIVAS PARA CAMPOS TIPO LISTA ---
+        function addCustomListItem(fieldIndex) {
+            const input = document.getElementById('add_item_' + fieldIndex);
+            if (!input) return;
+            const val = input.value.trim();
+            if (val) {
+                if (!Array.isArray(customFieldsArray[fieldIndex].value)) {
+                    customFieldsArray[fieldIndex].value = [];
+                }                
+                customFieldsArray[fieldIndex].value.push({ name: val, value: 0 });                 
+                updateHiddenCustomData();
+                renderCustomFields(); 
+                
+                setTimeout(() => {
+                    const new_input = document.getElementById('add_item_' + fieldIndex);
+                    if (new_input) new_input.focus();
+                }, 50);
+            }
+        }
+
+        function updateCustomListValue(fieldIndex, itemIndex, newVal) {
+            const item = customFieldsArray[fieldIndex].value[itemIndex];           
+            if (typeof item === 'string') {
+                customFieldsArray[fieldIndex].value[itemIndex] = {
+                    name: item,
+                    value: newVal
+                };
+            } else {
+                item.value = newVal;
+            }
+            updateHiddenCustomData();
+        }
+
+        function removeCustomListItem(fieldIndex, itemIndex) {
+            customFieldsArray[fieldIndex].value.splice(itemIndex, 1);
+            updateHiddenCustomData();
+            renderCustomFields();
+        }
+
+        // Pinta los campos en la pantalla basándose en el Array
+        function renderCustomFields() {
+            const container = document.getElementById('custom-fields-container');
+            if(!container) return;
+            
+            container.innerHTML = ''; // Limpiamos la pantalla
+            
+            customFieldsArray.forEach((field, index) => {
+                const div = document.createElement('div');
+                // div.className = 'form-group'; // Eliminamos la clase form-group para evitar span 2 global
+                div.style.marginBottom = '15px';
+                div.style.padding = '12px';
+                div.style.backgroundColor = '#fdfefe';
+                div.style.border = '1px dashed #bdc3c7';
+                div.style.borderRadius = '5px';
+                // NUEVO: Cada campo ocupa solo una columna de la cuadrícula
+                div.style.gridColumn = 'span 1';
+                
+                let inputHtml = '';
+
+                if (field.type === 'number') {
+                    inputHtml = `<input type="number" class="form-control" value="${field.value}" oninput="updateCustomFieldValue(${index}, this.value)" style="width: 100%;">`;
+                } else if (field.type === 'text') {
+                    inputHtml = `<input type="text" class="form-control" value="${field.value}" oninput="updateCustomFieldValue(${index}, this.value)" style="width: 100%;">`;
+                } else if (field.type === 'homebrew_list') {
+                    const items = Array.isArray(field.value) ? field.value : [];                    
+                    let listHtml = items.map((item, itemIdx) => {
+                        // Compatibilidad con personajes guardados previamente
+                        const itemName = typeof item === 'string' ? item : item.name;
+                        const itemValue = typeof item === 'string' ? 0 : (item.value || 0);
+
+                        return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: #ecf0f1; padding: 6px 10px; margin-bottom: 5px; border-radius: 4px; gap: 10px;">
+                            <span style="color: #2c3e50; flex-grow: 1; font-weight: 500;">${itemName}</span>
+                            
+                            <input type="number" class="form-control" value="${itemValue}" 
+                                oninput="updateCustomListValue(${index}, ${itemIdx}, this.value)" 
+                                style="width: 70px; padding: 4px; text-align: center; margin: 0; border: 1px solid #bdc3c7;">
+                            
+                            <button type="button" onclick="removeCustomListItem(${index}, ${itemIdx})" style="color: #e74c3c; border: none; background: none; cursor: pointer;" title="Quitar habilidad">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        `;
+                    }).join('');
+
+                    inputHtml = `
+                        <div style="width: 100%; margin-top: 5px;">
+                            ${listHtml}
+                            <div style="display: flex; gap: 5px; margin-top: 5px;">
+                                <input type="text" id="add_item_${index}" class="form-control" placeholder="Añadir nueva habilidad..." onkeypress="if(event.key === 'Enter') { event.preventDefault(); addCustomListItem(${index}); }">
+                                <button type="button" onclick="addCustomListItem(${index})" style="background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                // Header del campo personalizado con su botón general de Borrar
+				div.innerHTML = `
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+						<label style="font-weight: 600; color: #2980b9; margin: 0;">
+							${field.label} <small style="color: #7f8c8d;">(${field.type === 'homebrew_list' ? 'Lista' : 'Personalizado'})</small>
+						</label>
+						<div style="display: flex; gap: 6px;">
+							<!-- Botón nuevo de editar -->
+							<button type="button" onclick="openEditCustomFieldModal(${index})" 
+								style="background: #2980b9; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" 
+								title="Editar campo">
+								<i class="fas fa-pencil-alt"></i>
+							</button>
+							<!-- Botón existente de borrar -->
+							<button type="button" onclick="removeCustomField(${index})" 
+								style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;" 
+								title="Borrar campo completo">
+								<i class="fas fa-trash"></i>
+							</button>
+						</div>
+					</div>
+					<div>${inputHtml}</div>
+				`;
+                container.appendChild(div);
+            });
+
+            updateHiddenCustomData(); 
+        }
+
+        initCustomFields();
+
+        window.openCustomFieldModal = function () {
+            document.getElementById('new_custom_name').value = '';
+            document.getElementById('customFieldModal').showModal();
+        }
+
+        window.saveCustomField = function () {
+            const name = document.getElementById('new_custom_name').value.trim();
+            const type = document.getElementById('new_custom_type').value;
+
+            if (!name) {
+                alert('Por favor, ingresa un nombre para el campo.');
+                return;
+            }
+
+            const uniqueId = 'custom_' + Date.now();
+
+            let initialValue = '';
+            if (type === 'number') initialValue = 0;
+            if (type === 'homebrew_list') initialValue = [];
+
+            customFieldsArray.push({
+                id: uniqueId,
+                label: name,
+                type: type,
+                value: initialValue
+            });
+
+            document.getElementById('customFieldModal').close();
+            renderCustomFields();
+        }
+
+        window.removeCustomField = removeCustomField;
+        window.addCustomListItem = addCustomListItem;
+        window.removeCustomListItem = removeCustomListItem;
+        window.updateCustomFieldValue = updateCustomFieldValue;
+        window.updateCustomListValue = updateCustomListValue;
+		window.openEditCustomFieldModal = openEditCustomFieldModal;
+		window.saveEditCustomField = saveEditCustomField;
     });
 </script>
 

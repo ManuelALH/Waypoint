@@ -45,6 +45,11 @@ def create_character_form(schema_data):
         widget=forms.CheckboxInput(attrs={'class': 'homebrew-toggle form-check-input'})
     )
 
+    form_fields['custom_fields'] = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'custom_homebrew_data'})
+    )
+
     for field_name, field_config in schema_data.items():
         if field_name == "meta":
             continue
@@ -150,8 +155,14 @@ def create_character_form(schema_data):
 
     def custom_clean(self):
         cleaned_data = super(self.__class__, self).clean()
-
         is_homebrew = cleaned_data.get('is_homebrew', False)
+
+        custom_str = cleaned_data.get('custom_fields')
+        if custom_str:
+            try:
+                cleaned_data['custom_fields'] = json.loads(custom_str)
+            except json.JSONDecodeError:
+                cleaned_data['custom_fields'] = []
         
         for f_name, f_config in schema_data.items():
             if f_name == "meta": continue
@@ -330,14 +341,18 @@ def create_character_form(schema_data):
                         except ValueError:
                             pass
 
-        return cleaned_data
-    
+        return cleaned_data    
     
     # Esta función inyecta la opción personalizada en el Select para que se vea correctamente al editar
     def custom_init(self, *args, **kwargs):
         forms.Form.__init__(self, *args, **kwargs)
+        
+        if 'custom_fields' in self.initial and isinstance(self.initial['custom_fields'], list):
+            self.initial['custom_fields'] = json.dumps(self.initial['custom_fields'])
+            
         for f_name, f_config in schema_data.items():
             if f_name == "meta": continue
+            
             if f_config.get("type") in ["select", "choice"]:
                 current_val = self.data.get(f_name) if self.is_bound else self.initial.get(f_name)
                 field = self.fields.get(f_name)
@@ -347,6 +362,7 @@ def create_character_form(schema_data):
                     existing_choices = [str(c[0]) for c in field.widget.choices]
                     if str(current_val) not in existing_choices:
                         field.widget.choices = list(field.widget.choices) + [(current_val, f"{current_val} (Homebrew)")]
+                        
             if f_config.get("type") == "skill_list":
                 current_val = self.initial.get(f_name)
                 if isinstance(current_val, dict):
