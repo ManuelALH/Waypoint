@@ -20,6 +20,112 @@
                 "icon": "fa-star",
                 "label": "Level"
             }
+        ],
+        "sections": [
+            {
+                "section": "character_info",
+                "label": "Character Info",
+                "icon": "fa-user",
+                "fields": [
+                    "character_name",
+                    "class",
+                    "level",
+                    "race",
+                    "size",
+                    "alignment",
+                    "experience_points"
+                ]
+            },
+            {
+                "section": "ability_scores",
+                "label": "Ability Scores & Modifiers",
+                "icon": "fa-fist-raised",
+                "fields": [
+                    "strength",
+                    "dexterity",
+                    "constitution",
+                    "intelligence",
+                    "wisdom",
+                    "charisma",
+                    "mod_strength",
+                    "mod_dexterity",
+                    "mod_constitution",
+                    "mod_intelligence",
+                    "mod_wisdom",
+                    "mod_charisma"
+                ]
+            },
+            {
+                "section": "combat_stats",
+                "label": "Combat Stats",
+                "icon": "fa-shield-alt",
+                "fields": [
+                    "hit_points_max",
+                    "hit_points_current",
+                    "dr",
+                    "hit_die",
+                    "speed",
+                    "initiative",
+                    "armor_class",
+                    "touch_armor_class",
+                    "flat_footed_armor_class",
+                    "armor_bonus",
+                    "shield_bonus",
+                    "armor_size_mod",
+                    "natural_armor",
+                    "deflection_armor",
+                    "dodge_armor",
+                    "misc_armor"
+                ]
+            },
+            {
+                "section": "saving_throws",
+                "label": "Saving Throws",
+                "icon": "fa-dice-d20",
+                "fields": [
+                    "fortitude",
+                    "reflex",
+                    "will",
+                    "fortitude_base_save",
+                    "reflex_base_save",
+                    "will_base_save",
+                    "save_magic_mod",
+                    "save_misc_mod",
+                    "sr"
+                ]
+            },
+            {
+                "section": "combat_actions",
+                "label": "Combat Actions",
+                "icon": "fa-user-shield",
+                "fields": [
+                    "bab",
+                    "cmb",
+                    "cmd",
+                    "cm_size_stat",
+                    "cm_size_mod",
+                    "cm_misc"
+                ]
+            },
+            {
+                "section": "currency",
+                "label": "Currency",
+                "icon": "fa-coins",
+                "fields": [
+                    "copper_pieces",
+                    "silver_pieces",
+                    "gold_pieces",
+                    "platinum_pieces"
+                ]
+            },
+            {
+                "section": "lists",
+                "label": "Skills",
+                "icon": "fa-dice-d20",
+                "fields": [
+                    "skills"
+                ]
+            }
         ]
     },
     "character_name": {
@@ -171,7 +277,7 @@
                 "Gnome"
             ],
             [
-                "half-elf",
+                "half_elf",
                 "Half-Elf"
             ],
             [
@@ -179,7 +285,7 @@
                 "Halfling"
             ],
             [
-                "half-orc",
+                "half_orc",
                 "Half-Orc"
             ],
             [
@@ -249,6 +355,49 @@
             [
                 "undine",
                 "Undine"
+            ]
+        ]
+    },
+    "size": {
+        "type": "choice",
+        "label": "Size",
+        "default": "medium",
+        "choices": [
+            [
+                "fine",
+                "Fine"
+            ],
+            [
+                "diminutive",
+                "Diminutive"
+            ],
+            [
+                "tiny",
+                "Tiny"
+            ],
+            [
+                "small",
+                "Small"
+            ],
+            [
+                "medium",
+                "Medium"
+            ],
+            [
+                "large",
+                "Large"
+            ],
+            [
+                "huge",
+                "Huge"
+            ],
+            [
+                "gargantuan",
+                "Gargantuan"
+            ],
+            [
+                "colossal",
+                "Colossal"
             ]
         ]
     },
@@ -391,12 +540,18 @@
         "formula": "pf1e_mod",
         "source_field": "charisma"
     },
-    "hit_points": {
+    "hit_points_max": {
         "type": "int",
-        "label": "Hit Points",
+        "label": "Hit Points Max",
         "min_value": 1,
-        "default": 10,
-        "help_text": "Total hit points"
+        "default": 1,
+        "help_text": "Total Hit Points"
+    },
+    "hit_points_current": {
+        "type": "int",
+        "label": "Hit Points Current",
+        "default": 1,
+        "help_text": "Current Hit Points"
     },
     "hit_die": {
         "type": "str",
@@ -435,48 +590,17 @@
             "samurai": "d10"
         }
     },
-    "size": {
-        "type": "choice",
-        "label": "Size",
-        "default": "human",
-        "choices": [
-            [
-                "fine",
-                "Fine"
-            ],
-            [
-                "diminutive",
-                "Diminutive"
-            ],
-            [
-                "tiny",
-                "Tiny"
-            ],
-            [
-                "small",
-                "Small"
-            ],
-            [
-                "medium",
-                "Medium"
-            ],
-            [
-                "large",
-                "Large"
-            ],
-            [
-                "huge",
-                "Huge"
-            ],
-            [
-                "gargantuan",
-                "Gargantuan"
-            ],
-            [
-                "colossal",
-                "Colossal"
-            ]
-        ]
+    "dr": {
+        "type": "int",
+        "label": "Damage Reduction",
+        "min_value": 0,
+        "default": 0
+    },
+    "sr": {
+        "type": "int",
+        "label": "Spell Resistance",
+        "min_value": 0,
+        "default": 0
     },
     "speed": {
         "type": "int",
@@ -488,9 +612,9 @@
             "dwarf": 20,
             "elf": 30,
             "gnome": 20,
-            "half-elf": 30,
+            "half_elf": 30,
             "halfling": 20,
-            "half-orc": 30,
+            "half_orc": 30,
             "human": 30,
             "aasimar": 30,
             "catfolk": 30,
@@ -521,44 +645,188 @@
     "armor_class": {
         "type": "int",
         "label": "Armor Class",
+        "read_only": true,
         "min_value": 1,
         "default": 10,
+        "formula": "sum_values",
+        "source_fields": [
+            10,
+            "armor_bonus",
+            "shield_bonus",
+            "mod_dexterity",
+            "armor_size_mod",
+            "natural_armor",
+            "deflection_armor",
+            "misc_armor"
+        ],
         "help_text": "Total Armor Class"
     },
     "touch_armor_class": {
         "type": "int",
         "label": "Touch Armor Class",
-        "min_value": 1,
-        "default": 10,
-        "help_text": "Total Touch Armor Class"
+        "read_only": true,
+        "help_text": "Total Touch Armor Class",
+        "formula": "sum_values",
+        "source_fields": [
+            10,
+            "mod_dexterity",
+            "armor_size_mod",
+            "deflection_armor",
+            "dodge_armor",
+            "misc_armor"
+        ]
     },
     "flat_footed_armor_class": {
         "type": "int",
         "label": "Flat Footed Armor Class",
-        "min_value": 1,
-        "default": 10,
-        "help_text": "Total Flat Footed Armor Class"
+        "read_only": true,
+        "help_text": "Total Flat Footed Armor Class",
+        "formula": "sum_values",
+        "source_fields": [
+            10,
+            "armor_bonus",
+            "shield_bonus",
+            "natural_armor",
+            "deflection_armor",
+            "armor_size_mod",
+            "misc_armor"
+        ]
+    },
+    "armor_bonus": {
+        "type": "int",
+        "label": "Armor Bonus",
+        "min_value": 0,
+        "default": 0
+    },
+    "shield_bonus": {
+        "type": "int",
+        "label": "Shield Bonus",
+        "min_value": 0,
+        "default": 0
+    },
+    "armor_size_mod": {
+        "type": "int",
+        "label": "Size Modifier",
+        "read_only": true,
+        "source_field": "size",
+        "formula": "map_value",
+        "mapping": {
+            "fine": 8,
+            "diminutive": 4,
+            "tiny": 2,
+            "small": 1,
+            "medium": 0,
+            "large": -1,
+            "huge": -2,
+            "gargantuan": -4,
+            "colossal": -8
+        },
+        "help_text": "Based on Size"
+    },
+    "natural_armor": {
+        "type": "int",
+        "label": "Natural Armor",
+        "min_value": 0,
+        "default": 0
+    },
+    "deflection_armor": {
+        "type": "int",
+        "label": "Deflection Modifier",
+        "min_value": 0,
+        "default": 0
+    },
+    "dodge_armor": {
+        "type": "int",
+        "label": "Dodge Modifier",
+        "min_value": 0,
+        "default": 0
+    },
+    "misc_armor": {
+        "type": "int",
+        "label": "Miscelaneous Modifier",
+        "min_value": 0,
+        "default": 0
     },
     "fortitude": {
         "type": "int",
         "label": "Fortitude Save",
-        "min_value": 0,
-        "default": 0,
-        "help_text": "Total Fortitude Save"
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "fortitude_base_save",
+            "mod_constitution",
+            "save_magic_mod",
+            "save_misc_mod"
+        ]
     },
     "reflex": {
         "type": "int",
         "label": "Reflex Save",
-        "min_value": 0,
-        "default": 0,
-        "help_text": "Total Reflex Save"
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "reflex_base_save",
+            "mod_dexterity",
+            "save_magic_mod",
+            "save_misc_mod"
+        ]
     },
     "will": {
         "type": "int",
         "label": "Will Save",
-        "min_value": 0,
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "will_base_save",
+            "mod_wisdom",
+            "save_magic_mod",
+            "save_misc_mod"
+        ]
+    },
+    "fortitude_base_save": {
+        "type": "int",
+        "label": "Fortitude Base Save",
+        "read_only": true,
+        "formula": "pf1e_fort_base_save",
+        "source_fields": [
+            "class",
+            "level"
+        ],
+        "help_text": "Based on your Class and Level"
+    },
+    "reflex_base_save": {
+        "type": "int",
+        "label": "Reflex Base Save",
+        "read_only": true,
+        "formula": "pf1e_ref_base_save",
+        "source_fields": [
+            "class",
+            "level"
+        ],
+        "help_text": "Based on your Class and Level"
+    },
+    "will_base_save": {
+        "type": "int",
+        "label": "Will Base Save",
+        "read_only": true,
+        "formula": "pf1e_will_base_save",
+        "source_fields": [
+            "class",
+            "level"
+        ],
+        "help_text": "Based on your Class and Level"
+    },
+    "save_magic_mod": {
+        "type": "int",
+        "label": "Savings Magic Modifier",
         "default": 0,
-        "help_text": "Total Will Save"
+        "help_text": "Total Saves Magic Modifier"
+    },
+    "save_misc_mod": {
+        "type": "int",
+        "label": "Savings Miscelaneus Modifier",
+        "default": 0,
+        "help_text": "Total Saves Misc Modifier"
     },
     "bab": {
         "type": "int",
@@ -570,15 +838,88 @@
     "cmb": {
         "type": "int",
         "label": "Combat Maneuver Bonus",
-        "min_value": 0,
-        "default": 0,
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "bab",
+            "cm_size_mod",
+            "cm_stat_mod",
+            "cm_misc"
+        ],
         "help_text": "Total Combat Maneuver Bonus"
     },
     "cmd": {
         "type": "int",
         "label": "Combat Maneuver Defenses",
-        "min_value": 10,
+        "read_only": true,
+        "formula": "pf1e_cmd",
+        "source_fields": [
+            "cm_size_stat",
+            "mod_strength",
+            10,
+            "bab",
+            "mod_dexterity",
+            "cm_size_mod",
+            "dodge_armor",
+            "deflection_armor",
+            "cm_misc"
+        ],
         "help_text": "Total Combat Maneuver Defenses"
+    },
+    "cm_size_stat": {
+        "type": "str",
+        "label": "Stat Modifier",
+        "read_only": true,
+        "source_field": "size",
+        "formula": "map_value",
+        "mapping": {
+            "fine": "Dexterity",
+            "diminutive": "Dexterity",
+            "tiny": "Dexterity",
+            "small": "Strength",
+            "medium": "Strength",
+            "large": "Strength",
+            "huge": "Strength",
+            "gargantuan": "Strength",
+            "colossal": "Strength"
+        },
+        "help_text": "Based on Size"
+    },
+    "cm_stat_mod": {
+        "type": "int",
+        "label": "Stat Modifier Value",
+        "hidden": true,
+        "read_only": true,
+        "source_fields": [
+            "cm_size_stat",
+            "mod_strength",
+            "mod_dexterity"
+        ],
+        "formula": "pf1e_cmstat"
+    },
+    "cm_size_mod": {
+        "type": "int",
+        "label": "Size Modifier",
+        "read_only": true,
+        "source_field": "size",
+        "formula": "map_value",
+        "mapping": {
+            "fine": -8,
+            "diminutive": -4,
+            "tiny": -2,
+            "small": -1,
+            "medium": 0,
+            "large": 1,
+            "huge": 2,
+            "gargantuan": 4,
+            "colossal": 8
+        },
+        "help_text": "Based on Size"
+    },
+    "cm_misc": {
+        "type": "int",
+        "label": "Miscelaneous Modifier",
+        "default": 0
     },
     "copper_pieces": {
         "type": "int",

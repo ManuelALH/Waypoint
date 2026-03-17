@@ -3,18 +3,97 @@ import json
 import math
 from .models import Character
 
+def _dnd5e_ac_dex(arr):
+    try:
+        mod_dex = int(arr[0]) if len(arr) > 0 else 0
+        dex_cap = int(arr[1]) if len(arr) > 1 else 99
+    except (ValueError, TypeError):
+        return 0
+    if dex_cap == 0:
+        return 0
+    return min(mod_dex, dex_cap)
+
+def _calc_pf1e_save(class_name, level, save_type):
+    try:
+        lvl = int(level or 0)
+    except (ValueError, TypeError):
+        lvl = 0
+
+    save_table = {
+        # --- Core Rulebook ---
+        'barbarian':  {'fort': 'G', 'ref': 'P', 'will': 'P'},
+        'bard':       {'fort': 'P', 'ref': 'G', 'will': 'G'},
+        'cleric':     {'fort': 'G', 'ref': 'P', 'will': 'G'},
+        'druid':      {'fort': 'G', 'ref': 'P', 'will': 'G'},
+        'fighter':    {'fort': 'G', 'ref': 'P', 'will': 'P'},
+        'monk':       {'fort': 'G', 'ref': 'G', 'will': 'G'},
+        'paladin':    {'fort': 'G', 'ref': 'P', 'will': 'G'},
+        'ranger':     {'fort': 'G', 'ref': 'G', 'will': 'P'},
+        'rogue':      {'fort': 'P', 'ref': 'G', 'will': 'P'},
+        'sorcerer':   {'fort': 'P', 'ref': 'P', 'will': 'G'},
+        'wizard':     {'fort': 'P', 'ref': 'P', 'will': 'G'},
+        # --- Advanced Player's Guide ---
+        'alchemist':  {'fort': 'G', 'ref': 'G', 'will': 'P'},
+        'cavalier':   {'fort': 'G', 'ref': 'P', 'will': 'P'},
+        'inquisitor': {'fort': 'G', 'ref': 'P', 'will': 'G'},
+        'oracle':     {'fort': 'P', 'ref': 'P', 'will': 'G'},
+        'summoner':   {'fort': 'P', 'ref': 'P', 'will': 'G'},
+        'witch':      {'fort': 'P', 'ref': 'P', 'will': 'G'},
+        # --- Ultimate Combat / Ultimate Magic ---
+        'gunslinger': {'fort': 'G', 'ref': 'G', 'will': 'P'},
+        'magus':      {'fort': 'G', 'ref': 'P', 'will': 'P'},
+        'vigilante':  {'fort': 'P', 'ref': 'G', 'will': 'G'},
+        # --- Ultimate Wilderness ---
+        'shifter':    {'fort': 'G', 'ref': 'G', 'will': 'P'},
+        # --- Unchained ---
+        'barbarian_unchained': {'fort': 'G', 'ref': 'P', 'will': 'P'},
+        'monk_unchained':      {'fort': 'G', 'ref': 'G', 'will': 'G'},
+        'rogue_unchained':     {'fort': 'P', 'ref': 'G', 'will': 'P'},
+        'summoner_unchained':  {'fort': 'P', 'ref': 'P', 'will': 'G'},
+        # --- Variantes ---
+        'antipaladin': {'fort': 'G', 'ref': 'P', 'will': 'G'},
+        'ninja':       {'fort': 'P', 'ref': 'G', 'will': 'P'},
+        'samurai':     {'fort': 'G', 'ref': 'P', 'will': 'P'},
+    }
+
+    class_data = save_table.get(str(class_name), {})
+    if not class_data:
+        return 0
+
+    progression = class_data.get(save_type, 'P')
+    return (2 + math.floor(lvl / 2)) if progression == 'G' else math.floor(lvl / 3)
+
 # Estas funciones son el espejo exacto del JS en create_character.html 
 # Reciben: el valor original (val), todos los datos del formulario (data), y el mapa (mapping)
 BACKEND_FORMULAS = {
     'map_value': lambda val, data, mapping: mapping.get(str(val), '') if mapping else '',
     'half_value': lambda val, data, mapping: math.floor(int(val or 0) / 2),
     'double_value': lambda val, data, mapping: math.floor(int(val or 0) * 2),
+    'fifth_value': lambda val, data, mapping: math.floor(int(val or 0) / 5),
     'sum_values': lambda val, data, mapping: int(val or 0),
+    'minus_values': lambda val, data, mapping, arr: max(0, (
+        (int(arr[0]) if arr else 0) -
+        sum(
+            int(v) if isinstance(v, (int, float))
+            else (int(v) if str(v).lstrip('-').isdigit() else 0)
+            for v in arr[1:]
+        )
+    )),
     'misc_only': lambda val, data, mapping, arr: arr[-1] if arr else 0,
     'dnd5e_2014_mod': lambda val, data, mapping: math.floor((int(val or 0) - 10) / 2),
     'dnd5e_2014_pb': lambda val, data, mapping: math.ceil((int(val or 0) / 4) + 1),
+    'dnd5e_ac_base': lambda val, data, mapping, arr: (10 if not arr or arr[0] in ('', 'unarmored') else 0),
+    'dnd5e_ac_dex': lambda val, data, mapping, arr: _dnd5e_ac_dex(arr),
     'dnd5e_2014_skillcalc': lambda val, data, mapping, arr: (arr[0] if len(arr)>0 else 0) + ((arr[1] if len(arr)>1 else 0) * (arr[2] if len(arr)>2 else 0)),
     'pf1e_mod': lambda val, data, mapping: math.floor((int(val or 0) - 10) / 2),
+    'pf1e_fort_base_save': lambda val, data, mapping, arr: _calc_pf1e_save(arr[0] if arr else '', arr[1] if len(arr) > 1 else 0, 'fort'),
+    'pf1e_ref_base_save':  lambda val, data, mapping, arr: _calc_pf1e_save(arr[0] if arr else '', arr[1] if len(arr) > 1 else 0, 'ref'),
+    'pf1e_will_base_save': lambda val, data, mapping, arr: _calc_pf1e_save(arr[0] if arr else '', arr[1] if len(arr) > 1 else 0, 'will'),
+    'pf1e_cmstat': lambda val, data, mapping, arr: arr[1] if arr[0] == "Strength" else arr[2],
+    'pf1e_cmd': lambda val, data, mapping, arr: sum(
+        (v if isinstance(v, (int, float)) else (int(v) if str(v).lstrip('-').isdigit() else 0))
+        for v in (arr[1:] if (arr[0] if arr else None) == "Strength" else arr[2:])
+    ),
     'pf1e_skillcalc': lambda val, data, mapping, arr: (
         (arr[0] if len(arr) > 0 else 0) + 
         (3 if (len(arr) > 1 and arr[1] == 1) and (len(arr) > 2 and arr[2] > 0) else 0) + 
@@ -28,6 +107,21 @@ BACKEND_FORMULAS = {
     'vtm5e_healthmax': lambda val, data, mapping: math.floor(int(val or 0) + 3),
     'gs_speed': lambda val, data, mapping: int(data.get('speed_roll', 0) or 0) * int(data.get('speed_bonus', 0) or 0),
     'gs_spelluses': lambda val, data, mapping: 0 if int(val or 0) <= 6 else (1 if int(val or 0) <= 9 else (2 if int(val or 0) <= 11 else 3)),
+    'gs_fatigue_rank': lambda val, data, mapping: (
+        0 if val <= 5  else
+        1 if val <= 10 else
+        2 if val <= 14 else
+        3 if val <= 17 else
+        4 if val <= 19 else
+        5
+    ),
+    'dh_proficiency': lambda val, data, mapping: (
+        1 if val <= 2  else
+        2 if val <= 4 else
+        3 if val <= 6 else
+        4 if val <= 9 else
+        5
+    )
 }
 
 class CharacterForm(forms.ModelForm):
@@ -54,6 +148,31 @@ def create_character_form(schema_data):
         if field_name == "meta":
             continue
 
+        if field_config.get("hidden", False):
+            hidden_attrs = {'id': f'id_{field_name}', 'class': 'calculated-field'}
+            if "source_fields" in field_config:
+                source_ids = []
+                for sf in field_config["source_fields"]:
+                    if isinstance(sf, int):
+                        source_ids.append(sf)
+                    else:
+                        source_ids.append(f"id_{sf}")
+                hidden_attrs['data-source-ids'] = json.dumps(source_ids)
+            elif "source_field" in field_config:
+                hidden_attrs['data-source-ids'] = json.dumps([f"id_{field_config['source_field']}"])
+
+            if "formula" in field_config:
+                hidden_attrs['data-formula'] = field_config['formula']
+
+            if "mapping" in field_config:
+                hidden_attrs['data-mapping'] = json.dumps(field_config['mapping'])
+
+            form_fields[field_name] = forms.CharField(
+                required=False,
+                widget=forms.HiddenInput(attrs=hidden_attrs)
+            )
+            continue
+
         widget_attrs = {}
         css_classes = "form-control"
         is_read_only = field_config.get("read_only", False)
@@ -64,8 +183,13 @@ def create_character_form(schema_data):
             css_classes += " calculated-field"
             
             if "source_fields" in field_config:
-                ids = [f"id_{sf}" for sf in field_config["source_fields"]]
-                widget_attrs['data-source-ids'] = json.dumps(ids)
+                source_ids = []
+                for sf in field_config["source_fields"]:
+                    if isinstance(sf, int):
+                        source_ids.append(sf)
+                    else:
+                        source_ids.append(f"id_{sf}")
+                widget_attrs['data-source-ids'] = json.dumps(source_ids)
             elif "source_field" in field_config:
                 widget_attrs['data-source-ids'] = json.dumps([f"id_{field_config['source_field']}"])                
             if "formula" in field_config:
@@ -136,6 +260,7 @@ def create_character_form(schema_data):
             widget_attrs['data-formula'] = field_config.get("formula", "")
             widget_attrs['data-allow-custom'] = str(field_config.get("allow_custom", False)).lower()
             widget_attrs['data-has-misc'] = "true" if field_config.get("has_misc_bonus") else "false"
+            widget_attrs['data-has-thresholds'] = "true" if field_config.get("has_thresholds") else "false"
             widget_attrs['data-filter-by'] = field_config.get("filter_by", "")
             
             form_fields[field_name] = forms.CharField(
@@ -166,6 +291,9 @@ def create_character_form(schema_data):
         
         for f_name, f_config in schema_data.items():
             if f_name == "meta": continue
+
+            if f_config.get("hidden", False):
+                continue
             
             if f_config.get("read_only") and "formula" in f_config:
                 if not is_homebrew:
@@ -178,17 +306,21 @@ def create_character_form(schema_data):
                         
                         if "source_fields" in f_config:
                             for sf in f_config["source_fields"]:
-                                val = cleaned_data.get(sf)
-                                if val is None: val = 0
-                                try:
-                                    val_int = int(val)
+                                if isinstance(sf, int):
+                                    source_values_arr.append(sf)
                                     if isinstance(total_val, int):
-                                        total_val += val_int
-                                    source_values_arr.append(val_int)
-                                except (ValueError, TypeError):
-                                    source_values_arr.append(0)
-                                    if total_val == 0:
-                                        total_val= val
+                                        total_val += sf
+                                else:
+                                    val = cleaned_data.get(sf)
+                                    if val is None:
+                                        val = 0
+                                    try:
+                                        val_int = int(val)
+                                        if isinstance(total_val, int):
+                                            total_val += val_int
+                                        source_values_arr.append(val_int)
+                                    except (ValueError, TypeError):
+                                        source_values_arr.append(val)                                    
                         elif "source_field" in f_config:
                             val = cleaned_data.get(f_config["source_field"])
                             if val is None: val = ""
@@ -198,7 +330,7 @@ def create_character_form(schema_data):
                                 source_values_arr.append(val_int)
                             except (ValueError, TypeError):
                                 total_val = val
-                                source_values_arr.append(0)
+                                source_values_arr.append(val)
                             
                         try:
                             try:

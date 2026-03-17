@@ -20,6 +20,119 @@
                 "icon": "fa-users",
                 "label": "Community"
             }
+        ],
+        "sections": [
+            {
+                "section": "identity",
+                "label": "Character Identity",
+                "icon": "fa-user",
+                "fields": [
+                    "pronouns",
+                    "class",
+                    "subclass",
+                    "heritage",
+                    "community",
+                    "level",
+                    "proficiency"
+                ]
+            },
+            {
+                "section": "traits",
+                "label": "Traits & Combat",
+                "icon": "fa-fist-raised",
+                "fields": [
+                    "brawn",
+                    "agility",
+                    "finesse",
+                    "instinct",
+                    "presence",
+                    "knowledge",
+                    "evasion_base",
+                    "evasion"
+                ]
+            },
+            {
+                "section": "vitality",
+                "label": "Vitality Trackers",
+                "icon": "fa-heart-pulse",
+                "fields": [
+                    "hit_points_max",
+                    "hit_points",
+                    "max_stress",
+                    "stress",
+                    "max_hope",
+                    "hope"
+                ]
+            },
+            {
+                "section": "combat",
+                "label": "Combat & Armor",
+                "icon": "fa-shield-alt",
+                "fields": [
+                    "threshold_minor",
+                    "threshold_major",
+                    "threshold_severe",
+                    "armor_score",
+                    "armor_slots_max",
+                    "armor_slots"
+                ]
+            },
+            {
+                "section": "weapons",
+                "label": "Weapons",
+                "icon": "fa-khanda",
+                "fields": [
+                    "primary_weapon_name",
+                    "primary_weapon_trait",
+                    "primary_weapon_damage",
+                    "primary_weapon_range",
+                    "secondary_weapon_name",
+                    "secondary_weapon_trait",
+                    "secondary_weapon_damage"
+                ]
+            },
+            {
+                "section": "experiences",
+                "label": "Experiences",
+                "icon": "fa-star",
+                "fields": [
+                    "experience_1_name",
+                    "experience_1_value",
+                    "experience_2_name",
+                    "experience_2_value"
+                ]
+            },
+            {
+                "section": "Wealth",
+                "label": "Wealth",
+                "icon": "fa-coins",
+                "fields": [
+                    "wealth_handfuls",
+                    "wealth_bags"
+                ]
+            },
+            {
+                "section": "connections",
+                "label": "Connections & Features",
+                "icon": "fa-link",
+                "fields": [
+                    "connection_1_name",
+                    "connection_1_bond",
+                    "connection_2_name",
+                    "connection_2_bond",
+                    "class_features"
+                ]
+            },
+            {
+                "section": "inventory_backstory",
+                "label": "Inventory & Backstory",
+                "icon": "fa-book-open",
+                "fields": [
+                    "active_loadout",
+                    "inventory",
+                    "backstory"
+                ]
+            }
         ]
     },
     "character_name": {
@@ -73,6 +186,21 @@
                 "Wizard"
             ]
         ]
+    },
+    "subclass": {
+        "type": "str",
+        "label": "Subclass (Foundation)",
+        "help_text": "Your chosen subclass path within your class"
+    },
+    "class_features": {
+        "type": "str",
+        "label": "Class Features & Abilities",
+        "help_text": "Active class features, domain cards, and special abilities"
+    },
+    "backstory": {
+        "type": "str",
+        "label": "Backstory & Notes",
+        "help_text": "Character history, personality, and campaign notes"
     },
     "heritage": {
         "type": "choice",
@@ -209,6 +337,14 @@
         "default": 0,
         "help_text": "Value between -1 and 5"
     },
+    "proficiency": {
+        "type": "int",
+        "label": "Proficiency",
+        "read_only": true,
+        "formula": "dh_proficiency",
+        "source_field": "level",
+        "help_text": "Added to action rolls with trained skills — scales with level"
+    },
     "hit_points_max": {
         "type": "int",
         "label": "Max Hit Points",
@@ -221,6 +357,24 @@
         "min_value": 0,
         "max_field": "hit_points_max",
         "default": 6
+    },
+    "evasion_base": {
+        "type": "int",
+        "label": "Evasion Base",
+        "min_value": 0,
+        "default": 8,
+        "help_text": "Base Evasion from your class or armor — typically 8-12"
+    },
+    "evasion": {
+        "type": "int",
+        "label": "Evasion",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "evasion_base",
+            "agility"
+        ],
+        "help_text": "Total Evasion — what enemies must beat to hit you"
     },
     "max_stress": {
         "type": "int",

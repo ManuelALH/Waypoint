@@ -20,6 +20,98 @@
                 "icon": "fa-hourglass-half",
                 "label": "Age"
             }
+        ],
+        "sections": [
+            {
+                "section": "character_info",
+                "label": "Character Info",
+                "icon": "fa-user",
+                "fields": [
+                    "era",
+                    "occupation",
+                    "age",
+                    "gender",
+                    "residence",
+                    "birthplace"
+                ]
+            },
+            {
+                "section": "characteristics",
+                "label": "Characteristics",
+                "icon": "fa-fist-raised",
+                "fields": [
+                    "strength",
+                    "dexterity",
+                    "power",
+                    "constitution",
+                    "appearance",
+                    "education",
+                    "size",
+                    "intelligence",
+                    "movement_rate"
+                ]
+            },
+            {
+                "section": "integrity",
+                "label": "Integrity",
+                "icon": "fa-heart-pulse",
+                "fields": [
+                    "hit_points_max",
+                    "hit_points_current",
+                    "major_wound",
+                    "cthulhu_mythos",
+                    "sanity_starting",
+                    "sanity_max",
+                    "sanity_current",
+                    "insane_temp",
+                    "insane_indef",
+                    "luck",
+                    "magic_points_max",
+                    "magic_points_current"
+                ]
+            },
+            {
+                "section": "lists",
+                "label": "Investigator Skills",
+                "icon": "fa-magnifying-glass",
+                "fields": [
+                    "skills"
+                ]
+            },
+            {
+                "section": "Combat",
+                "label": "Combat",
+                "icon": "fa-shield-alt",
+                "fields": [
+                    "damage_bonus",
+                    "build",
+                    "dodge",
+                    "armor"
+                ]
+            },
+            {
+                "section": "backstory",
+                "label": "Backstory",
+                "icon": "fa-book-open",
+                "fields": [
+                    "personal_description",
+                    "ideology_beliefs",
+                    "significant_people",
+                    "meaningful_locations",
+                    "treasured_possessions",
+                    "traits",
+                    "injuries_scars",
+                    "phobias_manias",
+                    "tomes_spells",
+                    "encounters"
+                ]
+            },
+            {
+                "section": "character_info",
+                "label": "Character Info",
+                "icon": "fa-user",
+                "fields": []
+            }
         ]
     },
     "character_name": {
@@ -71,69 +163,71 @@
         "type": "int",
         "label": "Strength",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
-        "help_text": "Value between 0 and 100"
+        "help_text": "Value between 0 and 99"
     },
     "dexterity": {
         "type": "int",
         "label": "Dexterity",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
-        "help_text": "Value between 0 and 100"
+        "help_text": "Value between 0 and 99"
     },
     "power": {
         "type": "int",
         "label": "Power",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
-        "help_text": "Value between 0 and 100"
+        "help_text": "Value between 0 and 99"
     },
     "constitution": {
         "type": "int",
         "label": "Constitution",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
-        "help_text": "Value between 0 and 100"
+        "help_text": "Value between 0 and 99"
     },
     "appearance": {
         "type": "int",
         "label": "Appearance",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
-        "help_text": "Value between 0 and 100"
+        "help_text": "Value between 0 and 99"
     },
     "education": {
         "type": "int",
         "label": "Education",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
-        "help_text": "Value between 0 and 100"
+        "help_text": "Value between 0 and 99"
     },
     "size": {
         "type": "int",
         "label": "Size",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
-        "help_text": "Value between 0 and 100"
+        "help_text": "Value between 0 and 99"
     },
     "intelligence": {
         "type": "int",
         "label": "Intelligence",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
-        "help_text": "Value between 0 and 100"
+        "help_text": "Value between 0 and 99"
     },
     "movement_rate": {
         "type": "int",
         "label": "Movement Rate (MOV)",
+        "min_value": 0,
+        "max_value": 50,
         "read_only": true,
         "formula": "coc7e_mov",
         "source_fields": [
@@ -146,38 +240,103 @@
         "type": "int",
         "label": "Max Hit Points(HP)",
         "read_only": true,
+        "min_value": 0,
+        "max_value": 20,
         "formula": "coc7e_hp",
         "source_fields": [
             "constitution",
             "size"
         ]
     },
-    "hit_points": {
+    "hit_points_current": {
         "type": "int",
         "label": "Current HP",
         "min_value": 0,
         "max_field": "hit_points_max",
         "default": 1
     },
+    "major_wound": {
+        "type": "choice",
+        "label": "Major Wound",
+        "choices": [
+            [
+                "no",
+                "No"
+            ],
+            [
+                "yes",
+                "Yes"
+            ]
+        ],
+        "help_text": "Suffered when HP drops to half or less"
+    },
+    "cthulhu_mythos": {
+        "type": "int",
+        "label": "Cthulhu Mythos",
+        "min_value": 0,
+        "max_value": 99,
+        "default": 0,
+        "help_text": "Increases through mythos encounters; reduces Max Sanity"
+    },
+    "sanity_starting": {
+        "type": "int",
+        "label": "Starting Sanity",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_field": "power",
+        "help_text": "Equal to POW at character creation"
+    },
     "sanity_max": {
         "type": "int",
         "label": "Max Sanity",
         "read_only": true,
-        "formula": "sum_values",
-        "source_field": "power"
+        "formula": "minus_values",
+        "source_fields": [
+            99,
+            "cthulhu_mythos"
+        ],
+        "help_text": "99 minus Cthulhu Mythos score"
     },
-    "sanity": {
+    "sanity_current": {
         "type": "int",
-        "label": "Sanity",
+        "label": "Current Sanity",
         "min_value": 0,
         "max_field": "sanity_max",
         "default": 1
+    },
+    "insane_temp": {
+        "type": "choice",
+        "label": "Temporal Insane",
+        "choices": [
+            [
+                "no",
+                "No"
+            ],
+            [
+                "yes",
+                "Yes"
+            ]
+        ]
+    },
+    "insane_indef": {
+        "type": "choice",
+        "label": "Indef Insane",
+        "choices": [
+            [
+                "no",
+                "No"
+            ],
+            [
+                "yes",
+                "Yes"
+            ]
+        ]
     },
     "luck": {
         "type": "int",
         "label": "Luck",
         "min_value": 0,
-        "max_value": 100,
+        "max_value": 99,
         "default": 50,
         "help_text": "Usually rolled separately (3d6 x 5)"
     },
@@ -185,14 +344,16 @@
         "type": "int",
         "label": "Max Magic Points(MP)",
         "read_only": true,
+        "min_value": 0,
+        "max_value": 24,
         "formula": "coc7e_mp",
         "source_fields": [
             "power"
         ]
     },
-    "magic_points": {
+    "magic_points_current": {
         "type": "int",
-        "label": "Magic Points",
+        "label": "Current Magic Points",
         "min_value": 0,
         "max_field": "magic_points_max",
         "default": 1
@@ -230,21 +391,53 @@
         "min_value": 0,
         "default": 0
     },
-    "cthulhu_mythos": {
-        "type": "int",
-        "label": "Chulhu Mythos",
-        "min_value": 0,
-        "max_value": 100,
-        "default": 50,
-        "help_text": "Value between 0 and 100"
+    "personal_description": {
+        "type": "str",
+        "label": "Personal Description"
+    },
+    "ideology_beliefs": {
+        "type": "str",
+        "label": "Ideology & Beliefs"
+    },
+    "significant_people": {
+        "type": "str",
+        "label": "Significant People"
+    },
+    "meaningful_locations": {
+        "type": "str",
+        "label": "Meaningful Locations"
+    },
+    "treasured_possessions": {
+        "type": "str",
+        "label": "Treasured Possessions"
+    },
+    "traits": {
+        "type": "str",
+        "label": "Traits"
+    },
+    "injuries_scars": {
+        "type": "str",
+        "label": "Injuries & Scars"
+    },
+    "phobias_manias": {
+        "type": "str",
+        "label": "Phobias & Manias"
+    },
+    "tomes_spells": {
+        "type": "str",
+        "label": "Arcane Tomes, Spells & Artifacts"
+    },
+    "encounters": {
+        "type": "str",
+        "label": "Encounters with Strange Entities"
     },
     "credit_rating": {
         "type": "int",
         "label": "Credit Rating",
         "min_value": 0,
-        "max_value": 100,
-        "default": 50,
-        "help_text": "Value between 0 and 100"
+        "max_value": 99,
+        "default": 0,
+        "help_text": "Value between 0 and 99"
     },
     "cash": {
         "type": "int",
@@ -253,11 +446,28 @@
         "default": 0,
         "help_text": "Your total currency"
     },
+    "occupation_points": {
+        "type": "int",
+        "label": "Occupation Skill Points",
+        "read_only": true,
+        "formula": "double_value",
+        "source_field": "education",
+        "help_text": "EDU x 2 — spend on occupation skills"
+    },
+    "interest_points": {
+        "type": "int",
+        "label": "Personal Interest Points",
+        "read_only": true,
+        "formula": "double_value",
+        "source_field": "intelligence",
+        "help_text": "INT x 2 — spend on personal interest skills"
+    },
     "skills": {
         "type": "skill_list",
         "label": "Skills",
         "formula": "misc_only",
         "has_misc_bonus": true,
+        "has_thresholds": true,
         "filter_by": "era",
         "catalog": [
             {

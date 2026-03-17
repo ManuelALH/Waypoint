@@ -6,16 +6,16 @@ from django.core.paginator import Paginator
 from tables.models import CampaignLog
 from characters.models import Character
 from characters.forms import create_character_form
-
 from gamesystems.models import GameSystem 
 
 @login_required
 def create_character(request):
     system_slug = request.GET.get("system")
-    
     form = None
     selected_system = None
     success = False 
+    form_sections = []
+    fields_placed = set()
 
     if system_slug:
         selected_system = get_object_or_404(GameSystem, slug=system_slug)
@@ -23,6 +23,30 @@ def create_character(request):
         
         DynamicFormClass = create_character_form(schema_data)
         form = DynamicFormClass(request.POST or None)
+        raw_sections = schema_data.get("meta", {}).get("sections", [])
+        fields_placed = set()
+
+        for section_def in raw_sections:
+            section_form_fields = []
+            for field_name in section_def.get("fields", []):
+                is_hidden = schema_data.get(field_name, {}).get("hidden", False)
+                if field_name in form.fields and field_name not in ('is_homebrew', 'custom_fields', 'character_name') and not is_hidden:
+                    section_form_fields.append(form[field_name])
+                    fields_placed.add(field_name)
+            if section_form_fields:
+                form_sections.append({
+                    "label": section_def["label"],
+                    "icon": section_def.get("icon", "fa-list"),
+                    "fields": section_form_fields
+                })
+
+        # Campos sin sección asignada
+        leftover = [
+            form[name] for name in form.fields
+            if name not in fields_placed and name not in ('is_homebrew', 'custom_fields', 'character_name') and not schema_data.get(name, {}).get("hidden", False)
+        ]
+        if leftover:
+            form_sections.append({"label": "Others", "icon": "fa-ellipsis-h", "fields": leftover})
 
     if request.method == "POST" and form:
         if form.is_valid():
@@ -44,7 +68,9 @@ def create_character(request):
         "systems": systems,
         "form": form,
         "selected_system": selected_system,
-        "success": success
+        "success": success,        
+        "form_sections": form_sections,
+        "section_field_names": fields_placed
     })
 
 @login_required
@@ -77,18 +103,25 @@ def my_characters(request):
 
 @login_required
 def character_sheet(request, pk):
-    character = get_object_or_404(Character, pk=pk)
-    
+    character = get_object_or_404(Character, pk=pk)    
     schema = character.system.schema_definition
     schema_meta = schema.get("meta", {})
     character_color = schema_meta.get("color", "#2c3e50")
-
     char_data = character.data
-    display_fields = []
+    display_fields = {}
+    hidden_fields = set()
 
     for f_name, f_config in schema.items():
         if f_name in ["meta", "character_name"]: 
             continue
+
+        if f_config.get("hidden", False):
+            hidden_fields.add(f_name)
+            display_fields[f_name] = {
+                "type": "normal",
+                "label": f_config.get("label", f_name),
+                "value": char_data.get(f_name, "-")
+            }
         
         field_type = f_config.get("type", "string")
         label = f_config.get("label", f_name.title())
@@ -103,18 +136,22 @@ def character_sheet(request, pk):
                 s_id = skill.get("id")
                 s_label = skill.get("label", s_id)
                 s_data = saved_skills.get(s_id, {})
+                total = s_data.get("total", 0)
                 
                 skills_to_display.append({
                     "label": s_label,
-                    "total": s_data.get("total", 0),
-                    "prof": int(s_data.get("prof", 0))
+                    "total": total,
+                    "prof": int(s_data.get("prof", 0)),
+                    "half":  total // 2,
+                    "fifth": total // 5,
                 })
                 
-            display_fields.append({
+            display_fields[f_name] = {
                 "type": "skill_list",
                 "label": label,
-                "skills": skills_to_display
-            })
+                "skills": skills_to_display,
+                "has_thresholds": f_config.get("has_thresholds", False),
+            }
             
         elif field_type in ["choice", "select"]:
             choices = f_config.get("choices", [])
@@ -124,44 +161,81 @@ def character_sheet(request, pk):
                     display_value = choice[1]
                     break
                     
-            display_fields.append({
+            display_fields[f_name] = {
                 "type": "normal",
                 "label": label,
-                "value": display_value
-            })
+                "value": display_value or "-"
+            }
             
         else:
-            display_fields.append({
+            display_fields[f_name] = {
                 "type": "normal",
                 "label": label,
                 "value": raw_value if raw_value not in [None, ""] else "-"
-            })
+            }
 
     #Normalizar custom_fields al mismo formato display_fields
     custom_fields = char_data.get("custom_fields", [])
+    display_custom = []
     if isinstance(custom_fields, list):
         for custom_field in custom_fields:
-            custom_field_type = custom_field.get("type")  # "number", "text" o "list"
-            label = custom_field.get("label", "Campo")
-            value = custom_field.get("value")
-
-            if custom_field_type == "homebrew_list":
-                display_fields.append({
+            if custom_field.get("type") == "homebrew_list":
+                display_custom.append({
                     "type": "homebrew_list",
-                    "label": label,
-                    "items": value if isinstance(value, list) else []
+                    "label": custom_field.get("label"),
+                    "items": custom_field.get("value", [])
                 })
             else:
-                display_fields.append({
+                display_custom.append({
                     "type": "normal",
-                    "label": label,
-                    "value": value if value not in [None, ""] else "-"
+                    "label": custom_field.get("label"),
+                    "value": custom_field.get("value", "-")
                 })
+
+    schema_sections = schema_meta.get("sections", [])
+    display_sections = []
+    fields_already_placed = set(hidden_fields)
+
+    for section_def in schema_sections:
+        section_fields = []
+        for field_name in section_def.get("fields", []):
+            if field_name in display_fields:
+                section_fields.append(display_fields[field_name])
+                fields_already_placed.add(field_name)
+
+        if section_fields:
+            display_sections.append({
+                "section": section_def["section"],
+                "label": section_def["label"],
+                "icon": section_def.get("icon", "fa-list"),
+                "fields": section_fields
+            })
+
+    leftover_fields = [
+        display_fields[name]
+        for name in display_fields
+        if name not in fields_already_placed
+    ]
+    if leftover_fields:
+        display_sections.append({
+            "sectionid": "other",
+            "label": "Otros",
+            "icon": "fa-ellipsis-h",
+            "fields": leftover_fields
+        })
+
+    if display_custom:
+        display_sections.append({
+            "section": "custom",
+            "label": "Atributos Personalizados",
+            "icon": "fa-hammer",
+            "fields": display_custom
+        })
 
     return render(request, "characters/character_sheet.html", {
         "character": character,
         "character_color": character_color,
-        "display_fields": display_fields,
+        "display_sections": display_sections
     })
 
 @login_required
@@ -188,12 +262,38 @@ def edit_character(request, pk):
     else:
         form = DynamicFormClass(initial=initial_data)
 
+    raw_sections = schema_data.get("meta", {}).get("sections", [])
+    form_sections = []
+    fields_placed = set()
+
+    for section_def in raw_sections:
+        section_form_fields = []
+        for field_name in section_def.get("fields", []):
+            is_hidden = schema_data.get(field_name, {}).get("hidden", False)
+            if field_name in form.fields and field_name not in ('is_homebrew', 'custom_fields', 'character_name') and not is_hidden:
+                section_form_fields.append(form[field_name])
+                fields_placed.add(field_name)
+        if section_form_fields:
+            form_sections.append({
+                "label": section_def["label"],
+                "icon": section_def.get("icon", "fa-list"),
+                "fields": section_form_fields
+            })
+
+    leftover = [
+        form[name] for name in form.fields
+        if name not in fields_placed and name not in ('is_homebrew', 'custom_fields', 'character_name') and not schema_data.get(name, {}).get("hidden", False)
+    ]
+    if leftover:
+        form_sections.append({"label": "Others", "icon": "fa-ellipsis-h", "fields": leftover})
+
     return render(request, "characters/create_character.html", {
         "form": form,
         "selected_system": selected_system, 
         "is_edit": True,
         "character": character,
-        # 'systems': GameSystem.objects.all()
+        "form_sections": form_sections,
+        "section_field_names": fields_placed
     })
 
 @login_required
@@ -229,4 +329,3 @@ def character_full_log(request, char_id):
         'current_sort': sort_order, 
     }
     return render(request, 'characters/character_log.html', context)
-

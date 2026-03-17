@@ -20,6 +20,85 @@
                 "icon": "fa-star",
                 "label": "Level"
             }
+        ],
+        "sections": [
+            {
+                "section": "character_info",
+                "label": "Character Info",
+                "icon": "fa-user",
+                "fields": [
+                    "character_name",
+                    "class",
+                    "level",
+                    "background",
+                    "race",
+                    "alignment",
+                    "experience_points"
+                ]
+            },
+            {
+                "section": "ability_scores",
+                "label": "Ability Scores",
+                "icon": "fa-fist-raised",
+                "fields": [
+                    "strength",
+                    "dexterity",
+                    "constitution",
+                    "intelligence",
+                    "wisdom",
+                    "charisma",
+                    "mod_strength",
+                    "mod_dexterity",
+                    "mod_constitution",
+                    "mod_intelligence",
+                    "mod_wisdom",
+                    "mod_charisma"
+                ]
+            },
+            {
+                "section": "combat",
+                "label": "Combat",
+                "icon": "fa-shield-alt",
+                "fields": [
+                    "proficiency_bonus",
+                    "passive_perception",
+                    "initiative",
+                    "speed",
+                    "hit_die",
+                    "hit_points_max",
+                    "hit_points_current",
+                    "death_saves_successes",
+                    "death_saves_failures",
+                    "armor_class",
+                    "armor_bonus",
+                    "armor_category",
+                    "armor_dexterity",
+                    "shield",
+                    "armor_magic",
+                    "armor_misc"
+                ]
+            },
+            {
+                "section": "currency",
+                "label": "Currency",
+                "icon": "fa-coins",
+                "fields": [
+                    "copper_pieces",
+                    "silver_pieces",
+                    "electrum_pieces",
+                    "gold_pieces",
+                    "platinum_pieces"
+                ]
+            },
+            {
+                "section": "lists",
+                "label": "Saving Throws & Skills",
+                "icon": "fa-dice-d20",
+                "fields": [
+                    "saving_throws",
+                    "skills"
+                ]
+            }
         ]
     },
     "character_name": {
@@ -380,20 +459,6 @@
         },
         "help_text": "Based on your Race"
     },
-    "armor_class": {
-        "type": "int",
-        "label": "Armor Class",
-        "min_value": 1,
-        "default": 10,
-        "help_text": "Total Armor Class"
-    },
-    "hit_points": {
-        "type": "int",
-        "label": "Hit Points",
-        "min_value": 1,
-        "default": 1,
-        "help_text": "Total hit points"
-    },
     "hit_die": {
         "type": "str",
         "label": "Hit Die",
@@ -415,6 +480,163 @@
             "wizard": "d6",
             "artificer": "d8"
         }
+    },
+    "hit_points_max": {
+        "type": "int",
+        "label": "Hit Points Max",
+        "min_value": 1,
+        "default": 1,
+        "help_text": "Total Hit Points"
+    },
+    "hit_points_current": {
+        "type": "int",
+        "label": "Hit Points Current",
+        "default": 1,
+        "help_text": "Current Hit Points"
+    },
+    "death_saves_successes": {
+        "type": "int",
+        "label": "Death Saves Successes",
+        "min_value": 0,
+        "max_value": 3,
+        "default": 0
+    },
+    "death_saves_failures": {
+        "type": "int",
+        "label": "Death Saves Failures",
+        "min_value": 0,
+        "max_value": 3,
+        "default": 0
+    },
+    "armor_class": {
+        "type": "int",
+        "label": "Armor Class",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "ac_base",
+            "armor_bonus",
+            "armor_dex_contribution",
+            "shield_armor",
+            "armor_magic",
+            "armor_misc"
+        ]
+    },
+    "armor_bonus": {
+        "type": "int",
+        "label": "Armor Bonus",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Your Armor Bonus"
+    },
+    "armor_category": {
+        "type": "choice",
+        "label": "Armor Category",
+        "choices": [
+            [
+                "unarmored",
+                "Unarmored"
+            ],
+            [
+                "light_armor",
+                "Light Armor"
+            ],
+            [
+                "medium_armor",
+                "Medium Armor"
+            ],
+            [
+                "heavy_armor",
+                "Heavy Armor"
+            ]
+        ]
+    },
+    "ac_base": {
+        "type": "int",
+        "label": "AC Base",
+        "hidden": true,
+        "read_only": true,
+        "formula": "dnd5e_ac_base",
+        "source_fields": [
+            "armor_category"
+        ],
+        "help_text": "10 when unarmored, 0 when armored (armor_bonus is the base)"
+    },
+    "armor_dexterity_max": {
+        "type": "int",
+        "label": "Max Dex To AC",
+        "read_only": true,
+        "hidden": true,
+        "default": 99,
+        "source_field": "armor_category",
+        "formula": "map_value",
+        "mapping": {
+            "unarmored": 99,
+            "light_armor": 99,
+            "medium_armor": 2,
+            "heavy_armor": 0
+        }
+    },
+    "armor_dex_contribution": {
+        "type": "int",
+        "label": "DEX Contribution to AC",
+        "read_only": true,
+        "hidden": true,
+        "formula": "dnd5e_ac_dex",
+        "source_fields": [
+            "mod_dexterity",
+            "armor_dexterity_max"
+        ]
+    },
+    "armor_dexterity": {
+        "type": "int",
+        "label": "Dexterity Bonus",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_field": "armor_dex_contribution",
+        "help_text": "DEX applied to AC — capped by your armor type"
+    },
+    "shield": {
+        "type": "choice",
+        "label": "Shield",
+        "help_text": "Shield Doff/on",
+        "choices": [
+            [
+                "shield_doff",
+                "Doff"
+            ],
+            [
+                "shield_don",
+                "Don"
+            ]
+        ]
+    },
+    "shield_armor": {
+        "type": "int",
+        "label": "Shield Bonus To Armor",
+        "read_only": true,
+        "hidden": true,
+        "default": 0,
+        "source_field": "shield",
+        "formula": "map_value",
+        "mapping": {
+            "shield_don": 2,
+            "shield_doff": 0
+        }
+    },
+    "armor_magic": {
+        "type": "int",
+        "label": "Armor Magic Bonus",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Armor Magic Bonus"
+    },
+    "armor_misc": {
+        "type": "int",
+        "label": "Armor Magic Miscelaneous",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Armor Magic Miscelaneous"
     },
     "copper_pieces": {
         "type": "int",

@@ -20,6 +20,113 @@
                 "icon": "fa-sitemap",
                 "label": "Generation"
             }
+        ],
+        "sections": [
+            {
+                "section": "identity",
+                "label": "Identity",
+                "icon": "fa-mask",
+                "fields": [
+                    "concept",
+                    "chronicle",
+                    "ambition",
+                    "desire",
+                    "sire"
+                ]
+            },
+            {
+                "section": "vampire_nature",
+                "label": "Vampire Nature",
+                "icon": "fa-tint",
+                "fields": [
+                    "predator_type",
+                    "clan",
+                    "generation",
+                    "blood_potency",
+                    "bane_severity",
+                    "hunger",
+                    "blood_resonance"
+                ]
+            },
+            {
+                "section": "physical_attributes",
+                "label": "Physical Attributes",
+                "icon": "fa-fist-raised",
+                "fields": [
+                    "strength",
+                    "dexterity",
+                    "stamina"
+                ]
+            },
+            {
+                "section": "social_attributes",
+                "label": "Social Attributes",
+                "icon": "fa-users",
+                "fields": [
+                    "charisma",
+                    "manipulation",
+                    "composure"
+                ]
+            },
+            {
+                "section": "mental_attributes",
+                "label": "Mental Attributes",
+                "icon": "fa-brain",
+                "fields": [
+                    "intelligence",
+                    "wits",
+                    "resolve"
+                ]
+            },
+            {
+                "section": "skills",
+                "label": "Skills",
+                "icon": "fa-tools",
+                "fields": [
+                    "skills_physics",
+                    "skills_social",
+                    "skills_mental"
+                ]
+            },
+            {
+                "section": "trackers",
+                "label": "Health & Willpower",
+                "icon": "fa-heart-pulse",
+                "fields": [
+                    "health_max",
+                    "health_superficial",
+                    "health_aggravated",
+                    "health_current",
+                    "willpower_max",
+                    "willpower_superficial",
+                    "willpower_aggravated",
+                    "willpower_current"
+                ]
+            },
+            {
+                "section": "humanity",
+                "label": "Humanity & Blood",
+                "icon": "fa-yin-yang",
+                "fields": [
+                    "humanity",
+                    "stains",
+                    "remorse_dice",
+                    "blood_surge_bonus"
+                ]
+            },
+            {
+                "section": "disciplines",
+                "label": "Disciplines & Backgrounds",
+                "icon": "fa-star-of-david",
+                "fields": [
+                    "disciplines",
+                    "touchstones",
+                    "haven",
+                    "mawla",
+                    "herd",
+                    "notes"
+                ]
+            }
         ]
     },
     "character_name": {
@@ -253,6 +360,18 @@
         "min_value": 0,
         "default": 0
     },
+    "health_current": {
+        "type": "int",
+        "label": "Health Current",
+        "read_only": true,
+        "formula": "minus_values",
+        "source_fields": [
+            "health_max",
+            "health_superficial",
+            "health_aggravated"
+        ],
+        "help_text": "Remaining health after all damage"
+    },
     "willpower_max": {
         "type": "int",
         "label": "Willpower Max",
@@ -274,6 +393,18 @@
         "label": "Willpower Dmg (Aggravated)",
         "min_value": 0,
         "default": 0
+    },
+    "willpower_current": {
+        "type": "int",
+        "label": "Willpower Current",
+        "read_only": true,
+        "formula": "minus_values",
+        "source_fields": [
+            "willpower_max",
+            "willpower_superficial",
+            "willpower_aggravated"
+        ],
+        "help_text": "Remaining willpower after all damage"
     },
     "humanity": {
         "type": "int",
@@ -304,10 +435,63 @@
         "max_value": 10,
         "default": 1
     },
+    "bane_severity": {
+        "type": "int",
+        "label": "Bane Severity",
+        "read_only": true,
+        "source_field": "blood_potency",
+        "formula": "map_value",
+        "mapping": {
+            "0": 0,
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 3,
+            "6": 3,
+            "7": 4,
+            "8": 4,
+            "9": 5,
+            "10": 5
+        },
+        "help_text": "Increases with Blood Potency"
+    },
+    "blood_surge_bonus": {
+        "type": "int",
+        "label": "Bane Severity",
+        "read_only": true,
+        "source_field": "blood_potency",
+        "formula": "map_value",
+        "mapping": {
+            "0": 0,
+            "1": 1,
+            "2": 1,
+            "3": 2,
+            "4": 2,
+            "5": 3,
+            "6": 3,
+            "7": 4,
+            "8": 4,
+            "9": 5,
+            "10": 5
+        },
+        "help_text": "Increases with Blood Potency"
+    },
     "blood_resonance": {
         "type": "str",
         "label": "Blood Resonance",
         "help_text": "Ej: Colérica, Melancólica, Flemática, Sanguínea"
+    },
+    "remorse_dice": {
+        "type": "int",
+        "label": "Remorse Dice Pool",
+        "read_only": true,
+        "formula": "minus_values",
+        "source_fields": [
+            10,
+            "stains"
+        ],
+        "help_text": "Dice rolled for Remorse check — reduces by Stains"
     },
     "disciplines": {
         "type": "str",

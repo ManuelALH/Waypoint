@@ -27,69 +27,129 @@
 
     <hr style="border: 0; border-top: 2px solid #eee; margin: 20px 0;">
 
-    <div class="attributes-grid">
-        {% for field in display_fields %}
-            
-            {% if field.type == "skill_list" %}
-                <div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">
-                    <div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-                        {{ field.label }}
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px 30px;">
-                        {% for skill in field.skills %}
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding-bottom: 5px;">
-                            <span style="color: #2c3e50; font-size: 0.95em;">
-                                {% if skill.prof > 0 %}
-                                    <span style="color: {{ character_color }}; margin-right: 6px; font-size: 1.3em; vertical-align: middle;">&bull;</span>
-                                {% else %}
-                                    <span style="color: #ddd; margin-right: 6px; font-size: 1.3em; vertical-align: middle;">&bull;</span>
-                                {% endif %}
-                                {{ skill.label }}
-                            </span>
-                            <strong style="font-size: 1.1em; color: #2c3e50;">
-                                {% if skill.total >= 0 %}+{{ skill.total }}{% else %}{{ skill.total }}{% endif %}
-                            </strong>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-				
-			{% elif field.type == "homebrew_list" %}
-				<div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">
-					<div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-						{{ field.label }}
-					</div>
-					<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px 30px;">
-						{% for item in field.items %}
-							<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding-bottom: 5px;">
-								<span style="color: #2c3e50; font-size: 0.95em;">{{ item.name }}</span>
-								<strong style="font-size: 1.1em; color: #2c3e50;">
-									{{ item.value }}
-								</strong>
+	{% for section in display_sections %}
+		<div class="sheet-section" style="margin-bottom: 35px;">
+		
+			<h3 class="section-title" style="color: {{ character_color }};">
+				<i class="fas {{ section.icon }}"></i> {{ section.label }}
+			</h3>
+		
+			<div class="attributes-grid">
+				{% for field in section.fields %}				
+					{% if field.type == "skill_list" %}
+						<div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">							
+							<div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+								{{ field.label }}
+							</div>							
+							{% if field.has_thresholds %}
+								<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+									<thead>
+										<tr style="border-bottom: 2px solid #eee;">
+											<th style="width: 20px; padding: 4px 8px;"></th>
+											<th style="text-align: left; padding: 4px 8px; color: #7f8c8d; font-size: 0.75em; letter-spacing: 1px; text-transform: uppercase;">
+												Skill
+											</th>
+											<th style="text-align: center; width: 55px; padding: 4px 8px; color: #7f8c8d; font-size: 0.75em; letter-spacing: 1px; text-transform: uppercase;">
+												Total
+											</th>
+											<th style="text-align: center; width: 50px; padding: 4px 8px; color: #95a5a6; font-size: 0.75em; letter-spacing: 1px;">
+												½
+											</th>
+											<th style="text-align: center; width: 50px; padding: 4px 8px; color: #95a5a6; font-size: 0.75em; letter-spacing: 1px;">
+												⅕
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for skill in field.skills %}
+											<tr style="border-bottom: 1px solid #f5f5f5;">
+												<td style="text-align: center; padding: 5px 8px;">
+													{% if skill.prof > 0 %}
+														<span style="color: {{ character_color }}; font-size: 1.2em;">&bull;</span>
+													{% else %}
+														<span style="color: #ddd; font-size: 1.2em;">&bull;</span>
+													{% endif %}
+												</td>											
+												<td style="padding: 5px 8px; color: #2c3e50;">
+													{{ skill.label }}
+												</td>										
+												<td style="text-align: center; padding: 5px 8px; 
+														   font-weight: bold; color: #2c3e50;">
+													{{ skill.total }}
+												</td>											
+												<td style="text-align: center; padding: 5px 8px; 
+														   color: #7f8c8d; font-size: 0.9em;">
+													{{ skill.half }}
+												</td>											
+												<td style="text-align: center; padding: 5px 8px; 
+														   color: #95a5a6; font-size: 0.9em;">
+													{{ skill.fifth }}
+												</td>
+												
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+								
+							{% else %}
+								<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px 30px;">
+									{% for skill in field.skills %}
+										<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding-bottom: 5px;">
+											<span style="color: #2c3e50; font-size: 0.95em;">
+												{% if skill.prof > 0 %}
+													<span style="color: {{ character_color }}; margin-right: 6px; font-size: 1.3em; vertical-align: middle;">&bull;</span>
+												{% else %}
+													<span style="color: #ddd; margin-right: 6px; font-size: 1.3em; vertical-align: middle;">&bull;</span>
+												{% endif %}
+												{{ skill.label }}
+											</span>
+											<strong style="font-size: 1.1em; color: #2c3e50;">
+												{% if skill.total >= 0 %}+{{ skill.total }}{% else %}{{ skill.total }}{% endif %}
+											</strong>
+										</div>
+									{% endfor %}
+								</div>
+							{% endif %}							
+						</div>
+						
+					{% elif field.type == "homebrew_list" %}
+						<div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">
+							<div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+								{{ field.label }}
 							</div>
-						{% empty %}
-						<span style="color: #95a5a6; font-style: italic; font-size: 0.85em;">Lista vacía</span>
-						{% endfor %}
-					</div>
-				</div>				
+							<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px 30px;">
+								{% for item in field.items %}
+									<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding-bottom: 5px;">
+										<span style="color: #2c3e50; font-size: 0.95em;">{{ item.name }}</span>
+										<strong style="font-size: 1.1em; color: #2c3e50;">
+											{{ item.value }}
+										</strong>
+									</div>
+								{% empty %}
+								<span style="color: #95a5a6; font-style: italic; font-size: 0.85em;">Lista vacía</span>
+								{% endfor %}
+							</div>
+						</div>				
 
-            {% else %}
-                <div class="attr-card">
-                    <div class="attr-label">{{ field.label }}</div>
-                    <div class="attr-value">
-                        {{ field.value }}
-                    </div>
-                </div>
-            {% endif %}
-
-        {% endfor %}
-    </div>
-
-    <div class="sheet-footer">
-        Registrado el: {{ character.created_at|date:"d F Y, H:i" }}
-    </div>
-
+					{% else %}
+						<div class="attr-card">
+							<div class="attr-label">{{ field.label }}</div>
+							<div class="attr-value">{{ field.value }}</div>
+						</div>
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+		
+		{% if not forloop.last %}
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 5px 0 30px 0;">
+		{% endif %}
+		
+	{% endfor %}
+	
+	<div class="sheet-footer">
+		Registrado el: {{ character.created_at|date:"d F Y, H:i" }}
+	</div>	
 </div>
 
 <div class="container" style="max-width: 900px; margin: 40px auto;">
@@ -216,166 +276,176 @@
     window.onclick = function (e) { if (e.target == modal1 || e.target == modal2) closeModals(); }
 </script>
 
-    <style>
-        .character-sheet-container {
-            background: white;
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 40px;
-            border-radius: 5px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e0e0e0;
-        }
+<style>
+	.character-sheet-container {
+		background: white;
+		max-width: 900px;
+		margin: 20px auto;
+		padding: 40px;
+		border-radius: 5px;
+		box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+		border: 1px solid #e0e0e0;
+	}
 
-        .sheet-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+	.sheet-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
 
-        .char-title {
-            margin: 0;
-            font-size: 2.5em;
-        }
+	.char-title {
+		margin: 0;
+		font-size: 2.5em;
+	}
 
-        .system-tag {
-            display: inline-block;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-            margin-top: 5px;
-            text-transform: uppercase;
-        }
+	.system-tag {
+		display: inline-block;
+		color: white;
+		padding: 4px 12px;
+		border-radius: 20px;
+		font-weight: bold;
+		font-size: 0.9em;
+		margin-top: 5px;
+		text-transform: uppercase;
+	}
 
-        .btn-back {
-            text-decoration: none;
-            color: #7f8c8d;
-            font-weight: bold;
-            margin-right: 15px;
-        }
+	.btn-back {
+		text-decoration: none;
+		color: #7f8c8d;
+		font-weight: bold;
+		margin-right: 15px;
+	}
 
-        .btn-edit {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+	.btn-edit {
+		background-color: #3498db;
+		color: white;
+		border: none;
+		padding: 8px 15px;
+		border-radius: 4px;
+		cursor: pointer;
+	}
 
-        .attributes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
+	.attributes-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		gap: 15px;
+	}
 
-        .attr-card {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
+	.attr-card {
+		background: #f8f9fa;
+		border: 1px solid #ddd;
+		padding: 15px;
+		border-radius: 8px;
+		text-align: center;
+	}
 
-        .attr-label {
-            font-size: 0.75em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #7f8c8d;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+	.attr-label {
+		font-size: 0.75em;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		color: #7f8c8d;
+		margin-bottom: 5px;
+		font-weight: bold;
+	}
 
-        .attr-value {
-            font-size: 1.2em;
-            color: #2c3e50;
-            font-weight: bold;
-        }
+	.attr-value {
+		font-size: 1.2em;
+		color: #2c3e50;
+		font-weight: bold;
+	}
 
-        .sheet-footer {
-            margin-top: 40px;
-            text-align: right;
-            color: #bdc3c7;
-            font-size: 0.8em;
-            font-style: italic;
-        }
+	.sheet-footer {
+		margin-top: 40px;
+		text-align: right;
+		color: #bdc3c7;
+		font-size: 0.8em;
+		font-style: italic;
+	}
 
-        .btn-delete {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-right: 10px;
-        }
+	.btn-delete {
+		background-color: #e74c3c;
+		color: white;
+		border: none;
+		padding: 8px 15px;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: bold;
+		margin-right: 10px;
+	}
 
-        .btn-delete:hover {
-            background-color: #c0392b;
-        }
+	.btn-delete:hover {
+		background-color: #c0392b;
+	}
 
-    .modal-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-    }
+	.modal-overlay {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.6);
+		justify-content: center;
+		align-items: center;
+		z-index: 2000;
+	}
 
-    .modal-box {
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        text-align: center;
-        max-width: 400px;
-        animation: fadeIn 0.3s;
-    }
+	.modal-box {
+		background: white;
+		padding: 30px;
+		border-radius: 8px;
+		text-align: center;
+		max-width: 400px;
+		animation: fadeIn 0.3s;
+	}
 
-    .modal-btn {
-        padding: 10px 20px;
-        margin: 10px 5px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-    }
+	.modal-btn {
+		padding: 10px 20px;
+		margin: 10px 5px;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		font-weight: bold;
+	}
 
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(-20px);
+		}
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
 
-        .btn-log-filter {
-            padding: 8px 15px;
-            border-radius: 20px;
-            color: white;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: transform 0.2s;
-            border: none;
-            font-weight: 500;
-        }
+	.btn-log-filter {
+		padding: 8px 15px;
+		border-radius: 20px;
+		color: white;
+		text-decoration: none;
+		font-size: 0.9rem;
+		transition: transform 0.2s;
+		border: none;
+		font-weight: 500;
+	}
 
-        .btn-log-filter:hover {
-            transform: scale(1.05);
-            opacity: 0.9;
-            color: white;
-        }
-    </style>
+	.btn-log-filter:hover {
+		transform: scale(1.05);
+		opacity: 0.9;
+		color: white;
+	}
+	
+	.section-title {
+		font-size: 0.95em;
+		text-transform: uppercase;
+		letter-spacing: 2px;
+		margin-bottom: 15px;
+		padding-bottom: 8px;
+		border-bottom: 2px solid currentColor;
+		opacity: 0.8;
+	}
+</style>
 
 {% endblock %}

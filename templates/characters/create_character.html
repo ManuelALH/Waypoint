@@ -39,7 +39,7 @@
     {% if form %}
 		<form method="post">
 			{% csrf_token %}
-
+			
 			{% if not selected_system.slug == 'homebrew' %}
 				<div
 					style="background-color: #e8f4f8; border: 1px solid #bce8f1; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
@@ -55,6 +55,18 @@
 					</div>
 				</div>
 			{% endif %}
+			
+			{% if form.character_name %}
+				<div class="form-group" style="margin-bottom: 25px;">
+					{{ form.character_name.label_tag }}
+					{{ form.character_name }}
+					{% if form.character_name.errors %}
+					<div style="color: #e74c3c; font-size: 0.8em;">{{ form.character_name.errors }}</div>
+					{% endif %}
+				</div>
+			<hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+			{% endif %}
+
 
 				{% if selected_system.slug == 'homebrew' %}      
 					{{ form.custom_fields }}
@@ -92,7 +104,7 @@
 						<dialog id="editCustomFieldModal" style="border: none; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); padding: 25px; width: 350px; background: white;">
 							<h3 style="margin-top: 0; color: #2c3e50;"><i class="fas fa-pencil-alt"></i> Editar Atributo</h3>
 							
-							<!-- Campo oculto para saber qué índice del array estamos editando -->
+							<!-- Campo oculto para saber que indice del array estamos editando -->
 							<input type="hidden" id="edit_field_index" value="">
 
 							<div class="form-group" style="margin-bottom: 15px;">
@@ -126,28 +138,34 @@
 						</dialog>						
 				{% endif %}
 
-				<div class="character-form-grid">
-					{% for field in form %}
-						{% if field.name != 'is_homebrew' and field.name != 'custom_fields' %}
+				{% for section in form_sections %}
+				<div style="margin-bottom: 30px;">
+					<h4 style="color: #2c3e50; text-transform: uppercase; letter-spacing: 2px; 
+								font-size: 0.85em; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 15px;">
+						<i class="fas {{ section.icon }}"></i> {{ section.label }}
+					</h4>
+					<div class="character-form-grid">
+						{% for field in section.fields %}
 						<div class="form-group">
 							{{ field.label_tag }}
 							{{ field }}
-							{% if field.errors %}
-								<div style="color: #e74c3c; font-size: 0.8em;">
-									{{ field.errors }}
-								</div>
-							{% endif %}
-
-							{% if field.help_text %}
-								<small class="help-text">{{ field.help_text }}</small>
-							{% endif %}
+							{% if field.errors %}<div style="color: #e74c3c; font-size: 0.8em;">{{ field.errors }}</div>{% endif %}
+							{% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
 						</div>
-						{% endif %}
-					{% endfor %}
+						{% endfor %}
+					</div>
+				</div>
+				{% endfor %}
 
-					{% if selected_system.slug == 'homebrew' %}
-						<div id="custom-fields-container" style="grid-column: span 1; margin-top: 15px;"></div>
+				{% if selected_system.slug == 'homebrew' %}
+					<div id="custom-fields-container" style="grid-column: span 1; margin-top: 15px;"></div>
+				{% endif %}
+				
+				{% for hidden_field in form.hidden_fields %}
+					{% if hidden_field.html_name not in section_field_names %}
+						{{ hidden_field }}
 					{% endif %}
+				{% endfor %}
 
 				<div class="form-actions">
 					<button type="submit" class="btn-login" style="width: auto; padding: 12px 50px;">
@@ -352,21 +370,50 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // --- MOTOR DE FÓRMULAS ---
+        // --- MOTOR DE FORMULAS ---
         const FORMULAS = {
-            'map_value': (val, mapping) => mapping[val] || '',
+            'map_value': (val, mapping) => mapping[val] !== undefined ? mapping[val] : '',
             'half_value': val => Math.floor(val / 2),
             'double_value': val => Math.floor(val * 2),
+			'fifth_value': val => Math.floor(val / 5),
             'sum_values': val => Math.floor(val),
+			'minus_values': (val, mapping, arr) => {
+				if (!arr || arr.length === 0) return 0;
+				const toNum = v => typeof v === 'number' ? v : (parseInt(v) || 0);
+				const base = toNum(arr[0]);
+				const toSubtract = arr.slice(1).reduce((acc, v) => acc + toNum(v), 0);
+				return Math.max(0, base - toSubtract);
+			},
             'misc_only': (val, mapping, arr) => {
                 if (!arr || arr.length === 0) return 0;
                 return arr[arr.length - 1];
             },
             'dnd5e_2014_mod': val => Math.floor((val - 10) / 2),
             'dnd5e_2014_pb': val => Math.ceil((val / 4) + 1),
+			'dnd5e_ac_base': (val, mapping, arr) => {
+				const category = arr[0];
+				return (!category || category === 'unarmored') ? 10 : 0;
+			},
+			'dnd5e_ac_dex': (val, mapping, arr) => {
+				const modDex = typeof arr[0] === 'number' ? arr[0] : (parseInt(arr[0]) || 0);
+				const dexCap = typeof arr[1] === 'number' ? arr[1] : (parseInt(arr[1]) || 0);
+				if (dexCap === 0) return 0;
+				return Math.min(modDex, dexCap);
+			},			
             'dnd5e_2014_skillcalc': (val, mapping, arr) => (arr[0] || 0) + ((arr[1] || 0) * (arr[2] || 0)),
             'dnd5e_2014_savescalc': (val, mapping, arr) => (arr[0] || 0) + ((arr[1] || 0) * (arr[2] || 0)),
             'pf1e_mod': val => Math.floor((val - 10) / 2),
+			'pf1e_fort_base_save': (val, mapping, arr) => calcPF1eSave(arr[0], arr[1], 'fort'),
+			'pf1e_ref_base_save':  (val, mapping, arr) => calcPF1eSave(arr[0], arr[1], 'ref'),
+			'pf1e_will_base_save': (val, mapping, arr) => calcPF1eSave(arr[0], arr[1], 'will'),
+			'pf1e_cmstat': (val, mapping, arr) => arr[0] === "Strength" ? (arr[1] || 0) : (arr[2] || 0),
+			'pf1e_cmd': (val, mapping, arr) => {
+				const statName = arr[0];
+				const toSum = statName === "Strength" ? arr.slice(1) : arr.slice(2);
+				return toSum.reduce((acc, v) => {
+					return acc + (typeof v === 'number' ? v : (parseInt(v) || 0));
+				}, 0);
+			},
             'pf1e_skillcalc': (val, mapping, arr) => {
                 const mod = arr[0] || 0;
                 const classSkill = arr[1] || 0;
@@ -407,9 +454,77 @@
                 if (val <= 9) return 1;
                 if (val <= 11) return 2;
                 return 3;
-            }
+            },
+			'gs_fatigue_rank': val => {
+				if (val <= 5)  return 0;
+				if (val <= 10) return 1;
+				if (val <= 14) return 2;
+				if (val <= 17) return 3;
+				if (val <= 19) return 4;
+				return 5;
+			},
+			'dh_proficiency': val => {
+				if (val <= 2) return 1;
+				if (val <= 4) return 2;
+				if (val <= 6) return 3;
+				if (val <= 9) return 4;
+				return 5;
+			},
         };
 
+		const calcPF1eSave = (className, level, saveType) => {
+			const lvl = parseInt(level) || 0;
+			// Tabla de progresiones por clase.
+			// 'G' = Good (2 + floor(lvl/2)), 'P' = Poor (floor(lvl/3))
+			// Orden de las keys: [fort, ref, will]
+			const saveTable = {
+				// --- Clases del Core Rulebook ---
+				'barbarian':  { fort: 'G', ref: 'P', will: 'P' },
+				'bard':       { fort: 'P', ref: 'G', will: 'G' },
+				'cleric':     { fort: 'G', ref: 'P', will: 'G' },
+				'druid':      { fort: 'G', ref: 'P', will: 'G' },
+				'fighter':    { fort: 'G', ref: 'P', will: 'P' },
+				'monk':       { fort: 'G', ref: 'G', will: 'G' },
+				'paladin':    { fort: 'G', ref: 'P', will: 'G' },
+				'ranger':     { fort: 'G', ref: 'G', will: 'P' },
+				'rogue':      { fort: 'P', ref: 'G', will: 'P' },
+				'sorcerer':   { fort: 'P', ref: 'P', will: 'G' },
+				'wizard':     { fort: 'P', ref: 'P', will: 'G' },
+				// --- Advanced Player's Guide ---
+				'alchemist':  { fort: 'G', ref: 'G', will: 'P' },
+				'cavalier':   { fort: 'G', ref: 'P', will: 'P' },
+				'inquisitor': { fort: 'G', ref: 'P', will: 'G' },
+				'oracle':     { fort: 'P', ref: 'P', will: 'G' },
+				'summoner':   { fort: 'P', ref: 'P', will: 'G' },
+				'witch':      { fort: 'P', ref: 'P', will: 'G' },
+				// --- Ultimate Combat / Ultimate Magic ---
+				'gunslinger': { fort: 'G', ref: 'G', will: 'P' },
+				'magus':      { fort: 'G', ref: 'P', will: 'P' },
+				'vigilante':  { fort: 'P', ref: 'G', will: 'G' },
+				// --- Ultimate Wilderness ---
+				'shifter':    { fort: 'G', ref: 'G', will: 'P' },
+				// --- Clases Unchained (Pathfinder Unchained) ---
+				// Las versiones unchained mantienen la misma progresión que sus originales
+				'barbarian_unchained': { fort: 'G', ref: 'P', will: 'P' },
+				'monk_unchained':      { fort: 'G', ref: 'G', will: 'G' },
+				'rogue_unchained':     { fort: 'P', ref: 'G', will: 'P' },
+				'summoner_unchained':  { fort: 'P', ref: 'P', will: 'G' },
+				// --- Advanced Race Guide / Oriental Adventures ---
+				// Antipaladin es el espejo exacto del Paladin en salvaciones
+				'antipaladin': { fort: 'G', ref: 'P', will: 'G' },
+				// Ninja y Samurai son variantes de Rogue y Cavalier respectivamente
+				'ninja':       { fort: 'P', ref: 'G', will: 'P' },
+				'samurai':     { fort: 'G', ref: 'P', will: 'P' },
+			};
+			const classData = saveTable[className];
+			// Si la clase no existe en la tabla aún, retornamos 0 como fallback seguro
+			if (!classData) return 0;
+			const progression = classData[saveType]; // 'G' o 'P'
+			return progression === 'G'
+				? 2 + Math.floor(lvl / 2)   // progresión buena
+				: Math.floor(lvl / 3);      // progresión mala
+		};
+		
         // Lógica del Botón Homebrew
         const homebrewToggle = document.querySelector('.homebrew-toggle');
 
@@ -533,32 +648,42 @@
         const calculatedFields = document.querySelectorAll('.calculated-field');
 
         calculatedFields.forEach(targetField => {
-            const sourceIdsRaw = targetField.getAttribute('data-source-ids');
-            const formulaName = targetField.getAttribute('data-formula');
-            const mappingRaw = targetField.getAttribute('data-mapping');
-            const mapping = mappingRaw ? JSON.parse(mappingRaw) : null;
+			const sourceIdsRaw = targetField.getAttribute('data-source-ids');
+			const formulaName = targetField.getAttribute('data-formula');
+			const mappingRaw = targetField.getAttribute('data-mapping');
+			const mapping = mappingRaw ? JSON.parse(mappingRaw) : null;
 
             if (sourceIdsRaw && formulaName && FORMULAS[formulaName]) {
                 const sourceIds = JSON.parse(sourceIdsRaw);
-                const sourceInputs = sourceIds.map(id => document.getElementById(id)).filter(el => el !== null);
+				const resolvedSources = sourceIds.map(id => {
+					if (typeof id === 'number') {
+						return id;
+					} else {
+						return document.getElementById(id);
+					}
+				});
 
                 const updateValue = () => {
-                    let totalSum = 0;
-                    let lastValue = "";
-                    let valuesArr = [];
+					let totalSum  = 0;
+					let lastValue = "";
+					let valuesArr = [];
 
-                    sourceInputs.forEach(input => {
-                        const val = input.value;
-                        lastValue = val;
-                        const num = parseInt(val);
-                        if (!isNaN(num)) {
-                            totalSum += num;
-                            valuesArr.push(num);
-                        }
-                        else {
-                            valuesArr.push(0);
-                        }
-                    });
+					resolvedSources.forEach(source => {
+						if (typeof source === 'number') {
+							totalSum += source;
+							valuesArr.push(source);
+						} else if (source !== null) {
+							const val = source.value;
+							lastValue = val;
+							const num = parseInt(val);
+							if (!isNaN(num)) {
+								totalSum += num;
+								valuesArr.push(num);
+							} else {
+								valuesArr.push(val);
+							}
+						}
+					});
 
                     let newValue;
                     if (formulaName === 'map_value' && mapping) {
@@ -567,16 +692,18 @@
                         newValue = FORMULAS[formulaName](totalSum, mapping, valuesArr);
                     }
 
-                    if (targetField.value !== String(newValue)) {
-                        targetField.value = newValue;
-                        targetField.dispatchEvent(new Event('change'));
-                    }
+					if (targetField.value !== String(newValue)) {
+						targetField.value = newValue;
+						targetField.dispatchEvent(new Event('change', { bubbles: true }));
+					}
                 };
 
-                sourceInputs.forEach(input => {
-                    input.addEventListener('input', updateValue);
-                    input.addEventListener('change', updateValue);
-                });
+				resolvedSources.forEach(source => {
+					if (source !== null && typeof source !== 'number') {
+						source.addEventListener('input', updateValue);
+						source.addEventListener('change', updateValue);
+					}
+				});
 
                 // Calcular en la carga inicial
                 updateValue();
@@ -635,6 +762,7 @@
             const catalog = JSON.parse(hiddenInput.getAttribute('data-catalog') || '[]');
             const formulaName = hiddenInput.getAttribute('data-formula');
             const hasMisc = hiddenInput.getAttribute('data-has-misc') === 'true';
+			const hasThresholds = hiddenInput.getAttribute('data-has-thresholds') === 'true';
             let currentData = {};
             try { currentData = JSON.parse(hiddenInput.value || '{}'); } catch (e) { }
 
@@ -653,12 +781,14 @@
                 </div>
                 <table class="compact-list-table" style="width: 100%; text-align: left;">
                     <thead>
-                        <tr>
-                            <th style="text-align:center;">Prof.</th>
-                            <th style="text-align:center;">Skill</th>
-                            ${hasMisc ? '<th style="text-align:center;">Misc.</th>' : ''}
-                            <th style="text-align:center;">Total</th>
-                        </tr>
+						<tr>
+							<th style="text-align:center;">Prof.</th>
+							<th style="text-align:left;">Skill</th>
+							${hasMisc ? '<th style="text-align:center;">Misc.</th>' : ''}
+							<th style="text-align:center;">Total</th>
+							${hasThresholds ? '<th style="text-align:center; color:#7f8c8d;">½</th>' : ''}
+							${hasThresholds ? '<th style="text-align:center; color:#7f8c8d;">⅕</th>' : ''}
+						</tr>
                     </thead>
                     <tbody>
             `;
@@ -686,6 +816,22 @@
                                 style="width: 100%; padding: 2px; text-align: center; margin: 0; ${isMasterManual ? 'background-color:#fff;' : 'background-color:#f0f0f0;'}" 
                                 value="${savedTotal}" ${isMasterManual ? '' : 'readonly'}>
                         </td>
+						${hasThresholds ? `
+						<td style="text-align:center; width: 55px;">
+							<input type="number" class="skill-threshold-half form-control"
+								value="${Math.floor(savedTotal / 2)}"
+								style="width:100%; padding:2px; text-align:center; margin:0; 
+									   background-color:#f8f9fa; color:#7f8c8d;"
+								readonly tabindex="-1">
+						</td>
+						<td style="text-align:center; width: 55px;">
+							<input type="number" class="skill-threshold-fifth form-control"
+								value="${Math.floor(savedTotal / 5)}"
+								style="width:100%; padding:2px; text-align:center; margin:0;
+									   background-color:#f8f9fa; color:#7f8c8d;"
+								readonly tabindex="-1">
+						</td>
+						` : ''}
                     </tr>
                 `;
             });
@@ -740,7 +886,15 @@
                             total = FORMULAS[formulaName](0, null, formulaArgs);
                         }
 
-                        if (totalInput) totalInput.value = total;
+                        if (totalInput) {
+							totalInput.value = total;							
+							if (hasThresholds) {
+								const halfInput  = row.querySelector('.skill-threshold-half');
+								const fifthInput = row.querySelector('.skill-threshold-fifth');
+								if (halfInput) halfInput.value = Math.floor(total / 2);
+								if (fifthInput) fifthInput.value = Math.floor(total / 5);
+							}
+						}
                     }
 
                     newData[skillId] = {
@@ -821,60 +975,84 @@
             }
         });
 
-        // --- SISTEMA DE LIMITES DINAMICOS ---
-        const enforceDynamicLimits = () => {
+	// --- SISTEMA DE LIMITES DINAMICOS ---
+	// La función solo contiene lógica de validación/actualización,
+	// nunca el código de suscripción a eventos.
+	const enforceDynamicLimits = () => {
+		if (homebrewToggle && homebrewToggle.checked) return;
 
-            if (homebrewToggle && homebrewToggle.checked) return;
+		document.querySelectorAll('input[data-max-field], input[data-min-field]').forEach(input => {
+			const maxFieldId = input.getAttribute('data-max-field');
+			if (maxFieldId) {
+				const maxField = document.getElementById('id_' + maxFieldId);
+				if (maxField && maxField.value !== "") {
+					const maxVal = parseInt(maxField.value) || 0;
+					input.setAttribute('max', maxVal);
+					if (parseInt(input.value) > maxVal) {
+						input.value = maxVal;
+					}
+				}
+			}
+			const minFieldId = input.getAttribute('data-min-field');
+			if (minFieldId) {
+				const minField = document.getElementById('id_' + minFieldId);
+				if (minField && minField.value !== "") {
+					const minVal = parseInt(minField.value) || 0;
+					input.setAttribute('min', minVal);
+					if (parseInt(input.value) < minVal) {
+						input.value = minVal;
+					}
+				}
+			}
+		});
+	};
 
-            document.querySelectorAll('input[data-max-field], input[data-min-field]').forEach(input => {
+	// --- REGISTRO DE LISTENERS (se ejecuta UNA SOLA VEZ al cargar) ---
 
-                const maxFieldId = input.getAttribute('data-max-field');
-                if (maxFieldId) {
-                    const maxField = document.getElementById('id_' + maxFieldId);
-                    if (maxField && maxField.value !== "") {
-                        const maxVal = parseInt(maxField.value) || 0;
-                        input.setAttribute('max', maxVal);
+	// Listener general para interacciones del usuario en el formulario
+	const formContainer = document.querySelector('form');
+	if (formContainer) {
+		formContainer.addEventListener('input', enforceDynamicLimits);
+		formContainer.addEventListener('change', enforceDynamicLimits);
+	}
 
-                        if (parseInt(input.value) > maxVal) {
-                            input.value = maxVal;
-                        }
-                    }
-                }
+	// Listeners directos en las fuentes de límites dinámicos.
+	// Esto soluciona el problema de que los eventos sintéticos en campos
+	// readonly no siempre burbujean de forma confiable hasta el form container.
+	// Un listener registrado directamente en el elemento SIEMPRE se dispara
+	// en "fase target", sin importar el origen del evento.
+	document.querySelectorAll('input[data-max-field]').forEach(constrainedInput => {
+		const sourceId = 'id_' + constrainedInput.getAttribute('data-max-field');
+		const sourceEl = document.getElementById(sourceId);
+		if (sourceEl) {
+			sourceEl.addEventListener('change', enforceDynamicLimits);
+			sourceEl.addEventListener('input', enforceDynamicLimits);
+		}
+	});
 
-                const minFieldId = input.getAttribute('data-min-field');
-                if (minFieldId) {
-                    const minField = document.getElementById('id_' + minFieldId);
-                    if (minField && minField.value !== "") {
-                        const minVal = parseInt(minField.value) || 0;
-                        input.setAttribute('min', minVal);
+	document.querySelectorAll('input[data-min-field]').forEach(constrainedInput => {
+		const sourceId = 'id_' + constrainedInput.getAttribute('data-min-field');
+		const sourceEl = document.getElementById(sourceId);
+		if (sourceEl) {
+			sourceEl.addEventListener('change', enforceDynamicLimits);
+			sourceEl.addEventListener('input', enforceDynamicLimits);
+		}
+	});
 
-                        if (parseInt(input.value) < minVal) {
-                            input.value = minVal;
-                        }
-                    }
-                }
-            });
-        };
+	// Ejecución inicial con delay para que las fórmulas terminen su primer cálculo
+	setTimeout(enforceDynamicLimits, 100);
 
-        const formContainer = document.querySelector('form');
-        if (formContainer) {
-            formContainer.addEventListener('input', enforceDynamicLimits);
-            formContainer.addEventListener('change', enforceDynamicLimits);
-        }
-
-        // Ejecutar 100ms después de cargar la página para dar tiempo a que tus fórmulas iniciales terminen
-        setTimeout(enforceDynamicLimits, 100);
-        const form = document.querySelector('form');
-
-        if (form) {
-            form.addEventListener('submit', () => {
-                document.querySelectorAll('input[data-is-skill-list="true"]').forEach(input => {
-                    const event = new Event('change');
-                    input.dispatchEvent(event);
-                });
-            });
-        }
-    });
+	// Forzar recálculo de skill lists al hacer submit
+	const form = document.querySelector('form');
+	if (form) {
+		form.addEventListener('submit', () => {
+			document.querySelectorAll('input[data-is-skill-list="true"]').forEach(input => {
+				const event = new Event('change');
+				input.dispatchEvent(event);
+			});
+		});
+	}
+});
 </script>
 
 <script>

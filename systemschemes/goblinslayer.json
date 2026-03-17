@@ -20,6 +20,95 @@
                 "icon": "fa-id-badge",
                 "label": "Rank"
             }
+        ],
+        "sections": [
+            {
+                "section": "character_info",
+                "label": "Character Info",
+                "icon": "fa-user",
+                "fields": [
+                    "race",
+                    "age",
+                    "gender",
+                    "history",
+                    "origin",
+                    "past",
+                    "encounter"
+                ]
+            },
+            {
+                "section": "ability_scores",
+                "label": "Ability Scores",
+                "icon": "fa-fist-raised",
+                "fields": [
+                    "strength",
+                    "psyche",
+                    "technique",
+                    "intelligence",
+                    "focus",
+                    "endurance",
+                    "reflex",
+                    "strength_focus",
+                    "strength_endurance",
+                    "strength_reflex",
+                    "psyche_focus",
+                    "psyche_endurance",
+                    "psyche_reflex",
+                    "technique_focus",
+                    "technique_endurance",
+                    "technique_reflex",
+                    "intelligence_focus",
+                    "intelligence_endurance",
+                    "intelligence_reflex"
+                ]
+            },
+            {
+                "section": "adventurer_progression",
+                "label": "Adventurer Progression",
+                "icon": "fa-id-badge",
+                "fields": [
+                    "rank",
+                    "exp_cumulative",
+                    "exp_current",
+                    "adventures_total",
+                    "adventures_completed",
+                    "adventurer_level",
+                    "class",
+                    "advancement_points"
+                ]
+            },
+            {
+                "section": "combat",
+                "label": "Combat",
+                "icon": "fa-shield-alt",
+                "fields": [
+                    "life_force_roll",
+                    "life_force",
+                    "life_force_double",
+                    "speed_roll",
+                    "speed_bonus",
+                    "speed",
+                    "spells_roll",
+                    "spells_uses",
+                    "spell_resistance_bonus",
+                    "spell_resistance",
+                    "spells_used",
+                    "wounds",
+                    "fatigue",
+                    "fatigue_rank",
+                    "attrition"
+                ]
+            },
+            {
+                "section": "currency",
+                "label": "Currency",
+                "icon": "fa-coins",
+                "fields": [
+                    "copper_pieces",
+                    "silver_pieces",
+                    "gold_pieces"
+                ]
+            }
         ]
     },
     "character_name": {
@@ -56,6 +145,7 @@
     "age": {
         "type": "int",
         "label": "Age",
+        "default": 0,
         "source_fields": [
             "race"
         ],
@@ -501,112 +591,6 @@
             "reflex"
         ]
     },
-    "life_force_roll": {
-        "type": "int",
-        "label": "Life Force Roll",
-        "min_value": 2,
-        "max_value": 12,
-        "help_text": "Value between 2 and 12 (2d6)"
-    },
-    "life_force": {
-        "type": "int",
-        "label": "Life Force",
-        "read_only": true,
-        "formula": "sum_values",
-        "source_fields": [
-            "strength",
-            "psyche",
-            "endurance",
-            "life_force_roll"
-        ],
-        "help_text": "Strength+Psyche+Endurance+Life Force Roll"
-    },
-    "life_force_double": {
-        "type": "int",
-        "label": "Life Force x2",
-        "read_only": true,
-        "formula": "double_value",
-        "source_field": "life_force",
-        "help_text": "Double your Life Force"
-    },
-    "speed_roll": {
-        "type": "int",
-        "label": "Speed Roll",
-        "min_value": 2,
-        "max_value": 12,
-        "help_text": "Value between 2 and 12 (2d6)"
-    },
-    "speed_bonus": {
-        "type": "int",
-        "label": "Speed Bonus",
-        "read_only": true,
-        "formula": "map_value",
-        "source_fields": [
-            "race"
-        ],
-        "mapping": {
-            "human": 3,
-            "dwarf": 2,
-            "elf": 4,
-            "lizardman": 2,
-            "rhea": 3
-        },
-        "help_text": "Based on your Race"
-    },
-    "speed": {
-        "type": "int",
-        "label": "Speed",
-        "read_only": true,
-        "formula": "gs_speed",
-        "source_fields": [
-            "speed_roll",
-            "speed_bonus"
-        ],
-        "help_text": "Speed Roll * Speed Bonus"
-    },
-    "spells_roll": {
-        "type": "int",
-        "label": "Spell Uses Roll",
-        "min_value": 2,
-        "max_value": 12,
-        "help_text": "Value between 2 and 12 (2d6)"
-    },
-    "spells_uses": {
-        "type": "int",
-        "label": "Spell Uses",
-        "read_only": true,
-        "formula": "gs_spelluses",
-        "source_field": "spells_roll",
-        "help_text": "Based on your Spell Uses Roll"
-    },
-    "exp_cumulative": {
-        "type": "int",
-        "label": "Cumulative Experience Points",
-        "min_value": 0,
-        "default": 0,
-        "help_text": "Total Experience of your Adventurer"
-    },
-    "exp_current": {
-        "type": "int",
-        "label": "Current Experience Points",
-        "min_value": 0,
-        "default": 0,
-        "help_text": "Actual Experience of your Adventurer"
-    },
-    "adventures_total": {
-        "type": "int",
-        "label": "Adventures",
-        "min_value": 0,
-        "default": 0,
-        "help_text": "Total Adventures of your Adventurer"
-    },
-    "adventures_completed": {
-        "type": "int",
-        "label": "Completed",
-        "min_value": 0,
-        "default": 0,
-        "help_text": "Total Completed Adventures of your Adventurer"
-    },
     "rank": {
         "type": "choice",
         "label": "Rank",
@@ -653,6 +637,34 @@
             ]
         ]
     },
+    "exp_cumulative": {
+        "type": "int",
+        "label": "Cumulative Experience Points",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Total Experience of your Adventurer"
+    },
+    "exp_current": {
+        "type": "int",
+        "label": "Current Experience Points",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Actual Experience of your Adventurer"
+    },
+    "adventures_total": {
+        "type": "int",
+        "label": "Adventures",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Total Adventures of your Adventurer"
+    },
+    "adventures_completed": {
+        "type": "int",
+        "label": "Completed",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Total Completed Adventures of your Adventurer"
+    },
     "adventurer_level": {
         "type": "int",
         "label": "Level",
@@ -660,30 +672,6 @@
         "max_value": 20,
         "default": 1,
         "help_text": "Value between 1 and 20"
-    },
-    "spell_resistance_bonus": {
-        "type": "int",
-        "label": "Spell Resistance Bonus",
-        "min_value": 0,
-        "default": 0,
-        "help_text": "Any bonuses to Spell Resistance"
-    },
-    "spell_resistance": {
-        "type": "int",
-        "label": "Spell Resistance",
-        "read_only": true,
-        "formula": "sum_values",
-        "source_fields": [
-            "psyche_reflex",
-            "adventurer_level",
-            "spell_resistance_bonus"
-        ]
-    },
-    "advancement_points": {
-        "type": "int",
-        "label": "Advancement Points",
-        "min_value": 0,
-        "default": 0
     },
     "class": {
         "type": "choice",
@@ -722,6 +710,149 @@
                 "Shaman"
             ]
         ]
+    },
+    "advancement_points": {
+        "type": "int",
+        "label": "Advancement Points",
+        "min_value": 0,
+        "default": 0
+    },
+    "life_force_roll": {
+        "type": "int",
+        "label": "Life Force Roll",
+        "min_value": 2,
+        "max_value": 12,
+        "default": 0,
+        "help_text": "Value between 2 and 12 (2d6)"
+    },
+    "life_force": {
+        "type": "int",
+        "label": "Life Force",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "strength",
+            "psyche",
+            "endurance",
+            "life_force_roll"
+        ],
+        "help_text": "Strength+Psyche+Endurance+Life Force Roll"
+    },
+    "life_force_double": {
+        "type": "int",
+        "label": "Life Force x2",
+        "read_only": true,
+        "formula": "double_value",
+        "source_field": "life_force",
+        "help_text": "Double your Life Force"
+    },
+    "speed_roll": {
+        "type": "int",
+        "label": "Speed Roll",
+        "min_value": 2,
+        "max_value": 12,
+        "default": 0,
+        "help_text": "Value between 2 and 12 (2d6)"
+    },
+    "speed_bonus": {
+        "type": "int",
+        "label": "Speed Bonus",
+        "read_only": true,
+        "formula": "map_value",
+        "source_fields": [
+            "race"
+        ],
+        "mapping": {
+            "human": 3,
+            "dwarf": 2,
+            "elf": 4,
+            "lizardman": 2,
+            "rhea": 3
+        },
+        "help_text": "Based on your Race"
+    },
+    "speed": {
+        "type": "int",
+        "label": "Speed",
+        "read_only": true,
+        "formula": "gs_speed",
+        "source_fields": [
+            "speed_roll",
+            "speed_bonus"
+        ],
+        "help_text": "Speed Roll * Speed Bonus"
+    },
+    "spells_roll": {
+        "type": "int",
+        "label": "Spell Uses Roll",
+        "min_value": 2,
+        "max_value": 12,
+        "default": 0,
+        "help_text": "Value between 2 and 12 (2d6)"
+    },
+    "spells_uses": {
+        "type": "int",
+        "label": "Spells Uses",
+        "read_only": true,
+        "formula": "gs_spelluses",
+        "source_field": "spells_roll",
+        "help_text": "Based on your Spell Uses Roll"
+    },
+    "spells_used": {
+        "type": "int",
+        "label": "Spells Used",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Spell Used or Casted"
+    },
+    "spell_resistance_bonus": {
+        "type": "int",
+        "label": "Spell Resistance Bonus",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Any bonuses to Spell Resistance"
+    },
+    "spell_resistance": {
+        "type": "int",
+        "label": "Spell Resistance",
+        "read_only": true,
+        "formula": "sum_values",
+        "source_fields": [
+            "psyche_reflex",
+            "adventurer_level",
+            "spell_resistance_bonus"
+        ]
+    },
+    "wounds": {
+        "type": "int",
+        "label": "Wounds",
+        "min_value": 0,
+        "default": 0,
+        "help_text": "Your current Wounds"
+    },
+    "fatigue": {
+        "type": "int",
+        "label": "Fatigue",
+        "min_value": 0,
+        "max_value": 20,
+        "default": 0,
+        "help_text": "Your current Fatigue"
+    },
+    "fatigue_rank": {
+        "type": "int",
+        "label": "Fatigue Rank",
+        "read_only": true,
+        "formula": "gs_fatigue_rank",
+        "source_field": "fatigue",
+        "help_text": "Based on your Fatigue"
+    },
+    "attrition": {
+        "type": "int",
+        "label": "Attrition",
+        "min_value": 0,
+        "max_value": 40,
+        "default": 0,
+        "help_text": "Your current Attrition"
     },
     "copper_pieces": {
         "type": "int",
