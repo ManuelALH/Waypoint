@@ -12,5 +12,8 @@ urlpatterns = [
     path('<int:pk>/inventory/<str:item_id>/edit/', views.edit_inventory, name='edit_inventory'),
     path('<int:pk>/inventory/<str:item_id>/delete/', views.delete_inventory, name='delete_inventory'),
     path('<int:pk>/inventory/<str:item_id>/favorite/', views.favorite_inventory, name='favorite_inventory'),
-    path('<int:pk>/inventory/', views.character_inventory, name='character_inventory')
+    path('<int:pk>/inventory/', views.character_inventory, name='character_inventory'),
+    path('<int:pk>/actions/add/', views.add_action, name='add_action'),
+    path('<int:pk>/actions/<str:action_id>/edit/', views.edit_action, name='edit_action'),
+    path('<int:pk>/actions/<str:action_id>/delete/', views.delete_action, name='delete_action')
 ]

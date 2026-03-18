@@ -79,6 +79,21 @@
                 ]
             },
             {
+                "section": "actions",
+                "label": "Actions",
+                "icon": "fa-khanda",
+                "type": "actions"
+            },
+            {
+                "section": "lists",
+                "label": "Saving Throws & Skills",
+                "icon": "fa-dice-d20",
+                "fields": [
+                    "saving_throws",
+                    "skills"
+                ]
+            },
+            {
                 "section": "currency",
                 "label": "Currency",
                 "icon": "fa-coins",
@@ -89,15 +104,29 @@
                     "gold_pieces",
                     "platinum_pieces"
                 ]
+            }
+        ],
+        "actions": [
+            {
+                "action": "name",
+                "label": "Action",
+                "type": "str",
+                "required": true
             },
             {
-                "section": "lists",
-                "label": "Saving Throws & Skills",
-                "icon": "fa-dice-d20",
-                "fields": [
-                    "saving_throws",
-                    "skills"
-                ]
+                "action": "attack",
+                "label": "Attack Bonus",
+                "type": "int"
+            },
+            {
+                "action": "damage",
+                "label": "Damage",
+                "type": "dice"
+            },
+            {
+                "action": "notes",
+                "label": "Notes",
+                "type": "str"
             }
         ]
     },

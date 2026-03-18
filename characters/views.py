@@ -116,6 +116,7 @@ def character_sheet(request, pk):
     char_data = character.data
     display_fields = {}
     hidden_fields = set()
+    action_columns = schema_meta.get("actions", [])
     raw_inventory = character.inventory or []
 
     for f_name, f_config in schema.items():
@@ -202,8 +203,40 @@ def character_sheet(request, pk):
     schema_sections = schema_meta.get("sections", [])
     display_sections = []
     fields_already_placed = set(hidden_fields)
+    actions_for_template = []
+
+    for action in (character.actions or []):
+        actions_for_template.append({
+            "id": action.get("id"),
+            "cells": [
+                {"value": action.get(col["action"], ""), "col": col}
+                for col in action_columns
+            ],
+            "edit_fields": [
+                {
+                    "action":      col["action"],
+                    "label":    col["label"],
+                    "type":     col.get("type", "str"),
+                    "required": col.get("required", False),
+                    "value":    action.get(col["action"], ""),
+                }
+                for col in action_columns
+            ],
+        })
 
     for section_def in schema_sections:
+        if section_def.get("type") == "actions":
+            if action_columns:
+                display_sections.append({
+                    "id":             section_def.get("id", "actions"),
+                    "label":          section_def["label"],
+                    "icon":           section_def.get("icon", "fa-khanda"),
+                    "type":           "actions",
+                    "action_columns": action_columns,
+                    "actions":        actions_for_template,
+                })
+            continue
+
         section_fields = []
         for field_name in section_def.get("fields", []):
             if field_name in display_fields:
@@ -475,3 +508,74 @@ def redirect_to_inventory(request, pk):
     return HttpResponseRedirect(
         reverse('character_sheet', kwargs={'pk': pk}) + '#inventory'
     )
+
+def redirect_to_actions(request, pk):
+    next_url = request.POST.get('next', '')
+    if next_url:
+        return HttpResponseRedirect(next_url)
+    return HttpResponseRedirect(
+        reverse('character_sheet', kwargs={'pk': pk}) + '#actions'
+    )
+
+
+@login_required
+@require_POST
+def add_action(request, pk):
+    character = get_object_or_404(Character, pk=pk, owner=request.user)
+    action_columns = character.system.schema_definition.get("meta", {}).get("actions", [])
+    import time
+    new_action = {"id": f"action_{int(time.time() * 1000)}"}
+    for col in action_columns:
+        key = col["action"]
+        value = request.POST.get(key, "").strip()
+        if col.get("type") == "int" and value.lstrip('-').isdigit():
+            new_action[key] = int(value)
+        else:
+            new_action[key] = value
+
+    required_col = next((c for c in action_columns if c.get("required")), None)
+    if required_col and not new_action.get(required_col["action"]):
+        return redirect_to_actions(request, pk)
+
+    current_actions = character.actions or []
+    current_actions.append(new_action)
+    character.actions = current_actions
+    character.save()
+
+    return redirect_to_actions(request, pk)
+
+@login_required
+@require_POST
+def edit_action(request, pk, action_id):
+    character = get_object_or_404(Character, pk=pk, owner=request.user)
+    action_columns = character.system.schema_definition.get("meta", {}).get("actions", [])
+
+    updated_actions = []
+    for action in (character.actions or []):
+        if action.get('id') == action_id:
+            updated = {"id": action_id}
+            for col in action_columns:
+                key = col["action"]
+                value = request.POST.get(key, "").strip()
+                if col.get("type") == "int" and value.lstrip('-').isdigit():
+                    updated[key] = int(value)
+                else:
+                    updated[key] = value
+            updated_actions.append(updated)
+        else:
+            updated_actions.append(action)
+
+    character.actions = updated_actions
+    character.save()
+    return redirect_to_actions(request, pk)
+
+@login_required
+@require_POST
+def delete_action(request, pk, action_id):
+    character = get_object_or_404(Character, pk=pk, owner=request.user)
+    character.actions = [
+        a for a in (character.actions or [])
+        if a.get('id') != action_id
+    ]
+    character.save()
+    return redirect_to_actions(request, pk)

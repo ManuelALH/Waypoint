@@ -18,6 +18,7 @@ class Character(models.Model):
     
     data = models.JSONField(default=dict)
     inventory = models.JSONField(default=list)
+    actions = models.JSONField(default=list)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

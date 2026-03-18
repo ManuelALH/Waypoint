@@ -28,11 +28,172 @@
     <hr style="border: 0; border-top: 2px solid #eee; margin: 20px 0;">
 
 	{% for section in display_sections %}
-		<div class="sheet-section" style="margin-bottom: 35px;">
+		<div class="sheet-section" id="{{ section.id }}" style="margin-bottom: 35px;">
 		
 			<h3 class="section-title" style="color: {{ character_color }};">
 				<i class="fas {{ section.icon }}"></i> {{ section.label }}
 			</h3>
+			
+			    {% if section.type == "actions" %}
+					{% if section.actions %}
+					<div style="overflow-x: auto;">
+						<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;
+									  margin-bottom: 20px; min-width: 400px;">
+							<thead>
+								<tr style="border-bottom: 2px solid #eee;">
+									{% for col in section.action_columns %}
+									<th style="text-align: {% if forloop.first %}left{% else %}center{% endif %};
+											   padding: 8px; color: #7f8c8d; font-size: 0.75em;
+											   text-transform: uppercase; letter-spacing: 1px;">
+										{{ col.label }}
+									</th>
+									{% endfor %}
+									{% if request.user == character.owner %}
+										<th style="width: 80px;"></th>
+									{% endif %}
+								</tr>
+							</thead>
+							<tbody>
+								{% for action in section.actions %}
+								<tr style="border-bottom: 1px solid #f5f5f5;" id="action-row-{{ action.id }}">
+
+									{% for cell in action.cells %}
+										<td style="padding: 8px; color: #2c3e50;
+												   {% if forloop.first %}font-weight: 500;
+												   {% else %}text-align: center;{% endif %}">
+											{{ cell.value|default:"—" }}
+										</td>
+									{% endfor %}
+
+									{% if request.user == character.owner %}
+										<td style="text-align: center; padding: 8px; white-space: nowrap;">
+											<button type="button" onclick="toggleActionEdit('{{ action.id }}')"
+												style="background: #3498db; color: white; border: none;
+													   padding: 4px 8px; border-radius: 4px; cursor: pointer;
+													   font-size: 0.8em; margin-right: 4px;">
+												<i class="fas fa-pencil-alt"></i>
+											</button>
+											<form method="post"
+												  action="{% url 'delete_action' character.pk action.id %}"
+												  style="display: inline;"
+												  onsubmit="return confirm('Delete this action?')">
+												{% csrf_token %}
+												<button type="submit"
+													style="background: #e74c3c; color: white; border: none;
+														   padding: 4px 8px; border-radius: 4px; cursor: pointer;
+														   font-size: 0.8em;">
+													<i class="fas fa-trash"></i>
+												</button>
+											</form>
+										</td>
+									{% endif %}
+								</tr>
+
+								{% if request.user == character.owner %}
+								<tr id="action-edit-{{ action.id }}"
+									style="display: none; background: #f0f7ff;">
+									<td colspan="{{ section.action_columns|length|add:1 }}" style="padding: 12px;">
+										<form method="post"
+											  action="{% url 'edit_action' character.pk action.id %}">
+											{% csrf_token %}
+											<div style="display: flex; gap: 10px; 
+														align-items: flex-end; flex-wrap: wrap;">
+												
+												{% for field in action.edit_fields %}
+												<div {% if field.action == 'notes' %}style="flex-grow: 1;"{% endif %}>
+													<label style="font-size: 0.75em; color: #7f8c8d;
+																  display: block; margin-bottom: 4px;
+																  text-transform: uppercase;">
+														{{ field.label }}
+														{% if field.required %} *{% endif %}
+													</label>
+													<input
+														type="{% if field.type == 'int' %}number{% else %}text{% endif %}"
+														name="{{ field.action }}"
+														value="{{ field.value }}"
+														{% if field.required %}required{% endif %}
+														style="padding: 6px 10px; border: 1px solid #ddd;
+															   border-radius: 4px;
+															   width: {% if field.type == 'int' %}70px
+																	  {% elif field.action == 'notes' %}100%
+																	  {% else %}120px{% endif %};">
+												</div>
+												{% endfor %}
+
+												<div style="display: flex; gap: 6px;">
+													<button type="submit"
+														style="background: #27ae60; color: white; border: none;
+															   padding: 7px 14px; border-radius: 4px;
+															   cursor: pointer;">
+														<i class="fas fa-check"></i> Save
+													</button>
+													<button type="button"
+														onclick="toggleActionEdit('{{ action.id }}')"
+														style="background: #95a5a6; color: white; border: none;
+															   padding: 7px 14px; border-radius: 4px;
+															   cursor: pointer;">
+														Cancel
+													</button>
+												</div>
+											</div>
+										</form>
+									</td>
+								</tr>
+							{% endif %}
+
+						{% endfor %}
+						</tbody>
+						</table>
+					</div>
+				{% else %}
+				<p style="color: #95a5a6; font-style: italic; font-size: 0.9em;">
+					No actions defined yet.
+				</p>
+				{% endif %}
+					
+					{% if request.user == character.owner %}
+						<div style="background: #f8f9fa; border: 1px dashed #ddd;
+									border-radius: 8px; padding: 16px;">
+							<div style="font-size: 0.75em; color: #7f8c8d; text-transform: uppercase;
+										letter-spacing: 1px; margin-bottom: 12px; font-weight: bold;">
+								<i class="fas fa-plus"></i> Add Action
+							</div>
+							<form method="post" action="{% url 'add_action' character.pk %}">
+								{% csrf_token %}
+								<div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+
+									{% for col in section.action_columns %}
+									<div {% if col.action == 'notes' %}style="flex-grow: 1;"{% endif %}>
+										<label style="font-size: 0.75em; color: #7f8c8d;
+													  display: block; margin-bottom: 4px;
+													  text-transform: uppercase;">
+											{{ col.label }}
+											{% if col.required %} *{% endif %}
+										</label>
+										<input
+											type="{% if col.type == 'int' %}number{% else %}text{% endif %}"
+											name="{{ col.action }}"
+											placeholder="{{ col.label }}"
+											{% if col.required %}required{% endif %}
+											style="padding: 6px 10px; border: 1px solid #ddd;
+												   border-radius: 4px;
+												   width: {% if col.type == 'int' %}70px
+														  {% elif col.action == 'notes' %}100%
+														  {% else %}120px{% endif %};">
+									</div>
+									{% endfor %}
+
+									<button type="submit"
+										style="background: {{ character_color }}; color: white; border: none;
+											   padding: 7px 16px; border-radius: 4px; cursor: pointer;
+											   font-weight: bold;">
+										<i class="fas fa-plus"></i> Add
+									</button>
+								</div>
+							</form>
+						</div>
+					{% endif %}
+			{% else %}
 		
 			<div class="attributes-grid">
 				{% for field in section.fields %}				
@@ -139,13 +300,14 @@
 					{% endif %}
 				{% endfor %}
 			</div>
+			{% endif %}
 		</div>
 		
 		{% if not forloop.last %}
 			<hr style="border: 0; border-top: 1px solid #eee; margin: 5px 0 30px 0;">
 		{% endif %}
 		
-	{% endfor %}
+	{% endfor %}	
 	
 	<!-- ========== INVENTARIO ========== -->
 	<div id="inventory" style="margin-top: 35px;">
@@ -155,7 +317,7 @@
 			
 			<h3 class="section-title" style="color: {{ character_color }}; margin: 0; 
 											  border: none; padding: 0; opacity: 0.8;">
-				<i class="fas fa-backpack"></i> Inventory
+				<i class="fas fa-sack-xmark"></i> Inventory
 				<span style="font-size: 0.75em; color: #95a5a6; font-weight: normal; 
 							 text-transform: none; letter-spacing: 0;">
 					({{ inventory_total }} item{{ inventory_total|pluralize }})
@@ -468,50 +630,50 @@
         </div>
 
         {% if recent_logs %}
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="{% url 'character_full_log' character.id %}"
-                style="text-decoration: none; color: #3498db; font-weight: bold;">
-                Ver historial completo &rarr;
-            </a>
-        </div>
+			<div style="text-align: center; margin-top: 20px;">
+				<a href="{% url 'character_full_log' character.id %}"
+					style="text-decoration: none; color: #3498db; font-weight: bold;">
+					Ver historial completo &rarr;
+				</a>
+			</div>
         {% endif %}
 		
     </div>
 
     {% if request.user == character.owner %}
-    <div id="deleteModal1" class="modal-overlay">
-        <div class="modal-box">
-            <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
-            <h3 style="color: #f39c12; margin-top: 0;">¿Estás seguro?</h3>
-            <p>Estás a punto de eliminar a <strong>{{ character.name }}</strong>.</p>
+		<div id="deleteModal1" class="modal-overlay">
+			<div class="modal-box">
+				<div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+				<h3 style="color: #f39c12; margin-top: 0;">¿Estás seguro?</h3>
+				<p>Estás a punto de eliminar a <strong>{{ character.name }}</strong>.</p>
 
-            <button onclick="closeModals()" class="modal-btn" style="background: #95a5a6; color: white;">
-                Cancelar
-            </button>
-            <button onclick="openDeleteModal2()" class="modal-btn" style="background: #f39c12; color: white;">
-                Sí, continuar
-            </button>
-        </div>
-    </div>
+				<button onclick="closeModals()" class="modal-btn" style="background: #95a5a6; color: white;">
+					Cancelar
+				</button>
+				<button onclick="openDeleteModal2()" class="modal-btn" style="background: #f39c12; color: white;">
+					Sí, continuar
+				</button>
+			</div>
+		</div>
 
-    <div id="deleteModal2" class="modal-overlay">
-        <div class="modal-box" style="border: 2px solid #c0392b;">
-            <div style="font-size: 40px; margin-bottom: 10px;">🛑</div>
-            <h3 style="color: #c0392b; margin-top: 0;">¡Esta acción es irreversible!</h3>
-            <p>Si eliminas este personaje, se perderán todos sus datos para siempre.</p>
+		<div id="deleteModal2" class="modal-overlay">
+			<div class="modal-box" style="border: 2px solid #c0392b;">
+				<div style="font-size: 40px; margin-bottom: 10px;">🛑</div>
+				<h3 style="color: #c0392b; margin-top: 0;">¡Esta acción es irreversible!</h3>
+				<p>Si eliminas este personaje, se perderán todos sus datos para siempre.</p>
 
-            <form action="{% url 'delete_character' character.pk %}" method="POST" style="display: inline;">
-                {% csrf_token %}
-                <button type="button" onclick="closeModals()" class="modal-btn"
-                    style="background: #95a5a6; color: white;">
-                    Me arrepentí
-                </button>
-                <button type="submit" class="modal-btn" style="background: #c0392b; color: white;">
-                    CONFIRMAR ELIMINACIÓN
-                </button>
-            </form>
-        </div>
-    </div>
+				<form action="{% url 'delete_character' character.pk %}" method="POST" style="display: inline;">
+					{% csrf_token %}
+					<button type="button" onclick="closeModals()" class="modal-btn"
+						style="background: #95a5a6; color: white;">
+						Me arrepentí
+					</button>
+					<button type="submit" class="modal-btn" style="background: #c0392b; color: white;">
+						CONFIRMAR ELIMINACIÓN
+					</button>
+				</form>
+			</div>
+		</div>
     {% endif %}
 
 <script>
@@ -523,6 +685,13 @@
     function closeModals() { modal1.style.display = "none"; modal2.style.display = "none"; }
 
     window.onclick = function (e) { if (e.target == modal1 || e.target == modal2) closeModals(); }
+</script>
+
+<script>
+    function toggleActionEdit(actionId) {
+        const row = document.getElementById('action-edit-' + actionId);
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+    }
 </script>
 
 <script>

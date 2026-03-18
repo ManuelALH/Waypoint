@@ -56,6 +56,12 @@
                 ]
             },
             {
+                "section": "actions",
+                "label": "Actions",
+                "icon": "fa-khanda",
+                "type": "actions"
+            },
+            {
                 "section": "combat_stats",
                 "label": "Combat Stats",
                 "icon": "fa-shield-alt",
