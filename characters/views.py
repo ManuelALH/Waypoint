@@ -2,11 +2,17 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 from tables.models import CampaignLog
 from characters.models import Character
 from characters.forms import create_character_form
 from gamesystems.models import GameSystem 
+
+MAX_ITEMS_SHOW = 10
+MAX_ITEMS_PER_PAGE = 32
+MAX_LOGS_SHOW = 5
 
 @login_required
 def create_character(request):
@@ -110,6 +116,7 @@ def character_sheet(request, pk):
     char_data = character.data
     display_fields = {}
     hidden_fields = set()
+    raw_inventory = character.inventory or []
 
     for f_name, f_config in schema.items():
         if f_name in ["meta", "character_name"]: 
@@ -232,10 +239,23 @@ def character_sheet(request, pk):
             "fields": display_custom
         })
 
+    sorted_inventory = sorted(
+        raw_inventory,
+        key=lambda item: 0 if item.get('favorite') else 1
+    )
+
+    recent_logs = CampaignLog.objects.filter(
+        target_character=character
+    ).order_by('-created_at')[:MAX_LOGS_SHOW]
+
     return render(request, "characters/character_sheet.html", {
         "character": character,
         "character_color": character_color,
-        "display_sections": display_sections
+        "display_sections": display_sections,
+        "inventory": sorted_inventory[:MAX_ITEMS_SHOW],
+        "inventory_total": len(sorted_inventory),
+        "inventory_preview": True,
+        "recent_logs": recent_logs
     })
 
 @login_required
@@ -329,3 +349,129 @@ def character_full_log(request, char_id):
         'current_sort': sort_order, 
     }
     return render(request, 'characters/character_log.html', context)
+
+@login_required
+@require_POST
+def add_inventory(request, pk):
+    character = get_object_or_404(Character, pk=pk, owner=request.user)
+    name = request.POST.get('name', '').strip()
+    quantity = request.POST.get('quantity', '1').strip()
+    notes = request.POST.get('notes', '').strip()
+    favorite = 'favorite' in request.POST
+    
+    if not name:
+        return redirect('character_sheet', pk=pk)
+    
+    import time
+    new_item = {
+        "id": f"item_{int(time.time() * 1000)}",
+        "name": name,
+        "quantity": int(quantity) if quantity.isdigit() else 1,
+        "notes": notes,
+        "favorite": favorite
+    }
+    
+    current_inventory = character.inventory or []
+    current_inventory.append(new_item)
+    character.inventory = current_inventory
+    character.save()
+    
+    return redirect_to_inventory(request, pk)
+
+@login_required
+@require_POST
+def edit_inventory(request, pk, item_id):
+    character = get_object_or_404(Character, pk=pk, owner=request.user)    
+    name = request.POST.get('name', '').strip()
+    quantity = request.POST.get('quantity', '1').strip()
+    notes = request.POST.get('notes', '').strip()
+    favorite = 'favorite' in request.POST
+    
+    if not name:
+        return redirect('character_sheet', pk=pk)
+    
+    updated_inventory = []
+    for item in (character.inventory or []):
+        if item.get('id') == item_id:
+            updated_inventory.append({
+                "id": item_id,
+                "name": name,
+                "quantity": int(quantity) if quantity.isdigit() else 1,
+                "notes": notes,
+                "favorite": favorite
+            })
+        else:
+            updated_inventory.append(item)
+    
+    character.inventory = updated_inventory
+    character.save()
+    return redirect_to_inventory(request, pk)
+
+@login_required
+@require_POST
+def delete_inventory(request, pk, item_id):
+    character = get_object_or_404(Character, pk=pk, owner=request.user)
+    
+    character.inventory = [
+        item for item in (character.inventory or [])
+        if item.get('id') != item_id
+    ]
+    character.save()    
+    return redirect_to_inventory(request, pk)
+
+@login_required
+@require_POST
+def favorite_inventory(request, pk, item_id):
+    character = get_object_or_404(Character, pk=pk, owner=request.user)    
+    updated_inventory = []
+
+    for item in (character.inventory or []):
+        if item.get('id') == item_id:
+            updated_inventory.append({
+                **item,
+                "favorite": not item.get('favorite', False)
+            })
+        else:
+            updated_inventory.append(item)
+    
+    character.inventory = updated_inventory
+    character.save()
+    
+    return redirect_to_inventory(request, pk)
+
+@login_required
+def character_inventory(request, pk):
+    character = get_object_or_404(Character, pk=pk)
+    raw_inventory = character.inventory or []
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        raw_inventory = [
+            item for item in raw_inventory
+            if search_query.lower() in item.get('name', '').lower()
+        ]
+
+    sorted_inventory = sorted(
+        raw_inventory,
+        key=lambda item: 0 if item.get('favorite') else 1
+    )
+
+    paginator = Paginator(sorted_inventory, MAX_ITEMS_PER_PAGE)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "characters/character_inventory.html", {
+        "character": character,
+        "character_color": character.system.schema_definition.get("meta", {}).get("color", "#2c3e50"),
+        "inventory": page_obj,
+        "paginator": paginator,
+        "search_query": search_query,
+        "inventory_total": len(character.inventory or []),
+    })
+
+def redirect_to_inventory(request, pk):
+    next_url = request.POST.get('next', '')
+    if next_url:
+        return HttpResponseRedirect(next_url)
+    return HttpResponseRedirect(
+        reverse('character_sheet', kwargs={'pk': pk}) + '#inventory'
+    )

@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="background: white; max-width: 900px; margin: 20px auto; padding: 40px;
+            border-radius: 5px; box-shadow: 0 0 20px rgba(0,0,0,0.05); border: 1px solid #e0e0e0;">
+
+    <!-- Header con navegacion de vuelta -->
+    <div style="display: flex; justify-content: space-between; align-items: center; 
+                margin-bottom: 25px;">
+        <div>
+            <a href="{% url 'character_sheet' character.pk %}"
+                style="color: #7f8c8d; text-decoration: none; font-size: 0.9em;">
+                ← {{ character.name }}
+            </a>
+            <h2 style="margin: 5px 0 0 0; color: {{ character_color }};">
+                <i class="fas fa-backpack"></i> Inventory
+                <span style="font-size: 0.6em; color: #95a5a6; font-weight: normal;">
+                    {{ inventory_total }} item{{ inventory_total|pluralize }}
+                </span>
+            </h2>
+        </div>
+
+        <!-- Barra de busqueda -->
+        <form method="get" style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" name="q" value="{{ search_query }}"
+                placeholder="Search by name..."
+                style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;
+                       font-size: 0.9em; min-width: 200px;">
+            <button type="submit"
+                style="background: {{ character_color }}; color: white; border: none;
+                       padding: 8px 14px; border-radius: 4px; cursor: pointer;">
+                <i class="fas fa-search"></i>
+            </button>
+            {% if search_query %}
+            <!-- Boton para limpiar la busqueda -->
+            <a href="{% url 'character_inventory' character.pk %}"
+                style="color: #95a5a6; text-decoration: none; font-size: 0.85em; 
+                       padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <i class="fas fa-times"></i> Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Feedback de busqueda activa -->
+    {% if search_query %}
+    <div style="background: #f0f7ff; border: 1px solid #bce8f1; border-radius: 6px;
+                padding: 10px 15px; margin-bottom: 20px; font-size: 0.9em; color: #2980b9;">
+        <i class="fas fa-filter"></i>
+        Showing results for "<strong>{{ search_query }}</strong>"
+        — {{ inventory.paginator.count }} item{{ inventory.paginator.count|pluralize }} found
+    </div>
+    {% endif %}
+
+    <!-- Tabla principal del inventario -->
+    {% if inventory %}
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 20px;">
+        <thead>
+            <tr style="border-bottom: 2px solid #eee;">
+                <th style="width: 32px; padding: 8px;"></th>
+                <th style="text-align:left; padding: 8px; color: #7f8c8d;
+                           font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px;">
+                    Item
+                </th>
+                <th style="text-align:center; width: 80px; padding: 8px; color: #7f8c8d;
+                           font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px;">
+                    Qty
+                </th>
+                <th style="text-align:left; padding: 8px; color: #7f8c8d;
+                           font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px;">
+                    Notes
+                </th>
+                {% if request.user == character.owner %}
+                <th style="width: 80px;"></th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory %}
+            <tr style="border-bottom: 1px solid #f5f5f5;
+                       {% if item.favorite %}background: #fffdf0;{% endif %}"
+                id="row-{{ item.id }}">
+
+                <!-- Estrella de favorito -->
+                <td style="text-align:center; padding: 8px;">
+                    {% if request.user == character.owner %}
+                    <form method="post"
+                          action="{% url 'favorite_inventory' character.pk item.id %}"
+                          style="display:inline; margin:0;">
+                        {% csrf_token %}
+                        <!-- Preservamos la busqueda y pagina actual al hacer toggle -->
+                        {% if search_query %}
+                        <input type="hidden" name="next"
+                               value="{% url 'character_inventory' character.pk %}?q={{ search_query }}&page={{ inventory.number }}">
+                        {% else %}
+                        <input type="hidden" name="next"
+                               value="{% url 'character_inventory' character.pk %}?page={{ inventory.number }}">
+                        {% endif %}
+                        <button type="submit"
+                            style="background: none; border: none; cursor: pointer;
+                                   font-size: 1.1em; padding: 0; line-height: 1;"
+                            title="{% if item.favorite %}Remove from favorites{% else %}Mark as favorite{% endif %}">
+                            {% if item.favorite %}
+                                <i class="fas fa-star" style="color: #f39c12;"></i>
+                            {% else %}
+                                <i class="far fa-star" style="color: #ddd;"></i>
+                            {% endif %}
+                        </button>
+                    </form>
+                    {% else %}
+                        {% if item.favorite %}
+                            <i class="fas fa-star" style="color: #f39c12; font-size: 1.1em;"></i>
+                        {% endif %}
+                    {% endif %}
+                </td>
+
+                <td style="padding: 8px; color: #2c3e50; font-weight: 500;">
+                    {{ item.name }}
+                </td>
+                <td style="text-align:center; padding: 8px; color: #2c3e50;">
+                    {{ item.quantity }}
+                </td>
+                <td style="padding: 8px; color: #7f8c8d; font-size: 0.9em;">
+                    {{ item.notes|default:"—" }}
+                </td>
+
+                {% if request.user == character.owner %}
+                <td style="text-align:center; padding: 8px;">
+                    <button type="button"
+                        onclick="toggleEditRow('{{ item.id }}')"
+                        style="background: #3498db; color: white; border: none;
+                               padding: 4px 8px; border-radius: 4px; cursor: pointer;
+                               font-size: 0.8em; margin-right: 4px;">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <form method="post"
+                          action="{% url 'delete_inventory' character.pk item.id %}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Remove {{ item.name }} from inventory?')">
+                        {% csrf_token %}
+                        <!-- Volvemos a la misma pagina después de eliminar -->
+                        <input type="hidden" name="next"
+                               value="{% url 'character_inventory' character.pk %}?q={{ search_query }}&page={{ inventory.number }}">
+                        <button type="submit"
+                            style="background: #e74c3c; color: white; border: none;
+                                   padding: 4px 8px; border-radius: 4px; cursor: pointer;
+                                   font-size: 0.8em;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+
+            {% if request.user == character.owner %}
+            <!-- Fila de edicion inline -->
+            <tr id="edit-row-{{ item.id }}" style="display: none; background: #f0f7ff;">
+                <td colspan="5" style="padding: 12px;">
+                    <form method="post"
+                          action="{% url 'edit_inventory' character.pk item.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next"
+                               value="{% url 'character_inventory' character.pk %}?q={{ search_query }}&page={{ inventory.number }}">
+                        <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" name="favorite"
+                                    id="fav-edit-{{ item.id }}"
+                                    {% if item.favorite %}checked{% endif %}
+                                    style="width:16px; height:16px; cursor:pointer; accent-color:#f39c12;">
+                                <label for="fav-edit-{{ item.id }}"
+                                    style="font-size:0.85em; color:#7f8c8d; cursor:pointer;
+                                           display:flex; align-items:center; gap:4px;">
+                                    <i class="fas fa-star" style="color:#f39c12;"></i> Favorite
+                                </label>
+                            </div>
+                            <div>
+                                <label style="font-size:0.75em; color:#7f8c8d; display:block; margin-bottom:4px;">
+                                    ITEM NAME *
+                                </label>
+                                <input type="text" name="name" value="{{ item.name }}" required
+                                    style="padding:6px 10px; border:1px solid #ddd;
+                                           border-radius:4px; min-width:180px;">
+                            </div>
+                            <div>
+                                <label style="font-size:0.75em; color:#7f8c8d; display:block; margin-bottom:4px;">
+                                    QTY
+                                </label>
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="0"
+                                    style="padding:6px 10px; border:1px solid #ddd;
+                                           border-radius:4px; width:70px;">
+                            </div>
+                            <div style="flex-grow:1;">
+                                <label style="font-size:0.75em; color:#7f8c8d; display:block; margin-bottom:4px;">
+                                    NOTES
+                                </label>
+                                <input type="text" name="notes" value="{{ item.notes }}"
+                                    style="padding:6px 10px; border:1px solid #ddd;
+                                           border-radius:4px; width:100%;">
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                <button type="submit"
+                                    style="background:#27ae60; color:white; border:none;
+                                           padding:7px 14px; border-radius:4px; cursor:pointer;">
+                                    <i class="fas fa-check"></i> Save
+                                </button>
+                                <button type="button" onclick="toggleEditRow('{{ item.id }}')"
+                                    style="background:#95a5a6; color:white; border:none;
+                                           padding:7px 14px; border-radius:4px; cursor:pointer;">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Paginacion -->
+    {% if inventory.has_other_pages %}
+    <div style="display: flex; justify-content: center; align-items: center;
+                gap: 6px; margin-bottom: 25px; flex-wrap: wrap;">
+
+        {% if inventory.has_previous %}
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}page={{ inventory.previous_page_number }}"
+            style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px;
+                   text-decoration: none; color: #2c3e50; font-size: 0.9em;">
+            ← Prev
+        </a>
+        {% endif %}
+
+        {% for page_num in inventory.paginator.page_range %}
+            {% if page_num == inventory.number %}
+            <!-- Pagina actual resaltada con el color del sistema -->
+            <span style="padding: 6px 12px; background: {{ character_color }};
+                         color: white; border-radius: 4px; font-size: 0.9em;
+                         font-weight: bold;">
+                {{ page_num }}
+            </span>
+            {% elif page_num >= inventory.number|add:"-2" and page_num <= inventory.number|add:"2" %}
+            <!-- Solo mostramos 2 páginas a cada lado de la actual para no saturar -->
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}page={{ page_num }}"
+                style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px;
+                       text-decoration: none; color: #2c3e50; font-size: 0.9em;">
+                {{ page_num }}
+            </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if inventory.has_next %}
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}page={{ inventory.next_page_number }}"
+            style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 4px;
+                   text-decoration: none; color: #2c3e50; font-size: 0.9em;">
+            Next →
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div style="text-align: center; padding: 40px; color: #95a5a6;">
+        {% if search_query %}
+            <i class="fas fa-search" style="font-size: 2em; margin-bottom: 10px; display: block;"></i>
+            No items found matching "<strong>{{ search_query }}</strong>"
+        {% else %}
+            <i class="fas fa-backpack" style="font-size: 2em; margin-bottom: 10px; display: block;"></i>
+            No items in inventory yet.
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Formulario de agregar nuevo item -->
+    {% if request.user == character.owner %}
+    <div style="background: #f8f9fa; border: 1px dashed #ddd;
+                border-radius: 8px; padding: 16px; margin-top: 10px;">
+        <div style="font-size: 0.75em; color: #7f8c8d; text-transform: uppercase;
+                    letter-spacing: 1px; margin-bottom: 12px; font-weight: bold;">
+            <i class="fas fa-plus"></i> Add Item
+        </div>
+        <form method="post" action="{% url 'add_inventory' character.pk %}">
+            {% csrf_token %}
+            <!-- Volvemos a la primera pagina despues de agregar para ver el nuevo item -->
+            <input type="hidden" name="next"
+                   value="{% url 'character_inventory' character.pk %}#inventory-bottom">
+            <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 6px; padding-bottom: 2px;">
+                    <input type="checkbox" name="favorite" id="fav-new"
+                        style="width:16px; height:16px; cursor:pointer; accent-color:#f39c12;">
+                    <label for="fav-new"
+                        style="font-size:0.85em; color:#7f8c8d; cursor:pointer;
+                               display:flex; align-items:center; gap:4px;">
+                        <i class="fas fa-star" style="color:#f39c12;"></i> Favorite
+                    </label>
+                </div>
+                <div>
+                    <label style="font-size:0.75em; color:#7f8c8d; display:block; margin-bottom:4px;">
+                        ITEM NAME *
+                    </label>
+                    <input type="text" name="name" placeholder="Ex: Health Potion" required
+                        style="padding:6px 10px; border:1px solid #ddd;
+                               border-radius:4px; min-width:180px;">
+                </div>
+                <div>
+                    <label style="font-size:0.75em; color:#7f8c8d; display:block; margin-bottom:4px;">
+                        QTY
+                    </label>
+                    <input type="number" name="quantity" value="1" min="0"
+                        style="padding:6px 10px; border:1px solid #ddd;
+                               border-radius:4px; width:70px;">
+                </div>
+                <div style="flex-grow:1;">
+                    <label style="font-size:0.75em; color:#7f8c8d; display:block; margin-bottom:4px;">
+                        NOTES
+                    </label>
+                    <input type="text" name="notes" placeholder="Optional notes..."
+                        style="padding:6px 10px; border:1px solid #ddd;
+                               border-radius:4px; width:100%;">
+                </div>
+                <button type="submit"
+                    style="background:{{ character_color }}; color:white; border:none;
+                           padding:7px 16px; border-radius:4px; cursor:pointer; font-weight:bold;">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    function toggleEditRow(itemId) {
+        const editRow = document.getElementById('edit-row-' + itemId);
+        editRow.style.display = editRow.style.display === 'none' ? 'table-row' : 'none';
+    }
+</script>
+
+{% endblock %}

@@ -8,4 +8,9 @@ urlpatterns = [
     path('edit/<int:pk>/', views.edit_character, name='edit_character'),
     path('delete/<int:pk>/', views.delete_character, name='delete_character'),
     path('<int:char_id>/log/', views.character_full_log, name='character_full_log'),
+    path('<int:pk>/inventory/add/', views.add_inventory, name='add_inventory'),
+    path('<int:pk>/inventory/<str:item_id>/edit/', views.edit_inventory, name='edit_inventory'),
+    path('<int:pk>/inventory/<str:item_id>/delete/', views.delete_inventory, name='delete_inventory'),
+    path('<int:pk>/inventory/<str:item_id>/favorite/', views.favorite_inventory, name='favorite_inventory'),
+    path('<int:pk>/inventory/', views.character_inventory, name='character_inventory')
 ]

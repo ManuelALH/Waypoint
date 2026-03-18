@@ -147,9 +147,257 @@
 		
 	{% endfor %}
 	
+	<!-- ========== INVENTARIO ========== -->
+	<div id="inventory" style="margin-top: 35px;">
+		<div style="display: flex; justify-content: space-between; align-items: flex-end;
+					margin-bottom: 15px; border-bottom: 2px solid {{ character_color }}; 
+					padding-bottom: 8px;">
+			
+			<h3 class="section-title" style="color: {{ character_color }}; margin: 0; 
+											  border: none; padding: 0; opacity: 0.8;">
+				<i class="fas fa-backpack"></i> Inventory
+				<span style="font-size: 0.75em; color: #95a5a6; font-weight: normal; 
+							 text-transform: none; letter-spacing: 0;">
+					({{ inventory_total }} item{{ inventory_total|pluralize }})
+				</span>
+			</h3>
+
+			<a href="{% url 'character_inventory' character.pk %}"
+				style="background: {{ character_color }}; color: white; text-decoration: none;
+					   padding: 6px 14px; border-radius: 4px; font-size: 0.85em; 
+					   font-weight: bold; margin-bottom: 2px;">
+				<i class="fas fa-boxes-stacked"></i> View All Inventory
+			</a>
+		</div>
+
+		{% if inventory %}
+			<table style="width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 20px;">
+				<thead>
+					<tr style="border-bottom: 2px solid #eee;">
+						<th style="width: 32px; padding: 8px;"></th>
+						<th style="text-align:left; padding: 8px; color: #7f8c8d; 
+								   font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px;">
+							Item
+						</th>
+						<th style="text-align:center; width: 80px; padding: 8px; color: #7f8c8d; 
+								   font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px;">
+							Qty
+						</th>
+						<th style="text-align:left; padding: 8px; color: #7f8c8d; 
+								   font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px;">
+							Notes
+						</th>
+						{% if request.user == character.owner %}
+						<th style="width: 80px;"></th>
+						{% endif %}
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in inventory %}
+						<tr style="border-bottom: 1px solid #f5f5f5; 
+								   {% if item.favorite %}background: #fffdf0;{% endif %}" 
+							id="row-{{ item.id }}">
+
+							<td style="text-align:center; padding: 8px;">
+								{% if request.user == character.owner %}
+								<form method="post" 
+									  action="{% url 'favorite_inventory' character.pk item.id %}" 
+									  style="display:inline; margin:0;">
+									{% csrf_token %}
+									<button type="submit"
+										style="background: none; border: none; cursor: pointer; 
+											   font-size: 1.1em; padding: 0; line-height: 1;"
+										title="{% if item.favorite %}Remove from favorites{% else %}Mark as favorite{% endif %}">
+										{% if item.favorite %}
+											<i class="fas fa-star" style="color: #f39c12;"></i>
+										{% else %}
+											<i class="far fa-star" style="color: #ddd;"></i>
+										{% endif %}
+									</button>
+								</form>
+								{% else %}
+									{% if item.favorite %}
+										<i class="fas fa-star" style="color: #f39c12; font-size: 1.1em;"></i>
+									{% endif %}
+								{% endif %}
+							</td>
+							
+							<td style="padding: 8px; color: #2c3e50; font-weight: 500;">
+								{{ item.name }}
+							</td>
+							<td style="text-align:center; padding: 8px; color: #2c3e50;">
+								{{ item.quantity }}
+							</td>
+							<td style="padding: 8px; color: #7f8c8d; font-size: 0.9em;">
+								{{ item.notes|default:"—" }}
+							</td>
+						
+						{% if request.user == character.owner %}
+						<td style="text-align:center; padding: 8px;">
+							<button type="button"
+								onclick="toggleEditRow('{{ item.id }}')"
+								style="background: #3498db; color: white; border: none; 
+									   padding: 4px 8px; border-radius: 4px; cursor: pointer; 
+									   font-size: 0.8em; margin-right: 4px;"
+								title="Edit">
+								<i class="fas fa-pencil-alt"></i>
+							</button>
+							<form method="post" 
+								  action="{% url 'delete_inventory' character.pk item.id %}" 
+								  style="display:inline;"
+								  onsubmit="return confirm('Remove {{ item.name }} from inventory?')">
+								{% csrf_token %}
+								<button type="submit"
+									style="background: #e74c3c; color: white; border: none; 
+										   padding: 4px 8px; border-radius: 4px; cursor: pointer; 
+										   font-size: 0.8em;"
+									title="Delete">
+									<i class="fas fa-trash"></i>
+								</button>
+							</form>
+						</td>
+						{% endif %}
+					</tr>
+					
+					{% if request.user == character.owner %}
+					<tr id="edit-row-{{ item.id }}" style="display: none; background: #f0f7ff;">
+						<td colspan="4" style="padding: 12px;">
+							<form method="post" 
+								  action="{% url 'edit_inventory' character.pk item.id %}">
+								{% csrf_token %}
+								<div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+									<div>
+										<label style="font-size: 0.75em; color: #7f8c8d; 
+													  display:block; margin-bottom:4px;">
+											ITEM NAME *
+										</label>
+										<input type="text" name="name" value="{{ item.name }}"
+											required
+											style="padding: 6px 10px; border: 1px solid #ddd; 
+												   border-radius: 4px; min-width: 180px;">
+									</div>
+									<div>
+										<label style="font-size: 0.75em; color: #7f8c8d; 
+													  display:block; margin-bottom:4px;">
+											QUANTITY
+										</label>
+										<input type="number" name="quantity" value="{{ item.quantity }}"
+											min="0"
+											style="padding: 6px 10px; border: 1px solid #ddd; 
+												   border-radius: 4px; width: 70px;">
+									</div>
+									<div style="flex-grow: 1;">
+										<label style="font-size: 0.75em; color: #7f8c8d; 
+													  display:block; margin-bottom:4px;">
+											NOTES
+										</label>
+										<input type="text" name="notes" value="{{ item.notes }}"
+											style="padding: 6px 10px; border: 1px solid #ddd; 
+												   border-radius: 4px; width: 100%;">
+									</div>
+									<div style="display: flex; gap: 6px;">
+										<button type="submit"
+											style="background: #27ae60; color: white; border: none; 
+												   padding: 7px 14px; border-radius: 4px; cursor: pointer;">
+											<i class="fas fa-check"></i> Save
+										</button>
+										<button type="button" onclick="toggleEditRow('{{ item.id }}')"
+											style="background: #95a5a6; color: white; border: none; 
+												   padding: 7px 14px; border-radius: 4px; cursor: pointer;">
+											Cancel
+										</button>
+									</div>
+								</div>
+							</form>
+						</td>
+					</tr>
+					{% endif %}				
+					{% endfor %}
+				</tbody>
+			</table>
+			
+			{% if inventory_total > 10 %}
+				<div style="text-align: center; padding: 10px; color: #7f8c8d; font-size: 0.85em;
+							border-top: 1px solid #f0f0f0;">
+					Showing 10 of {{ inventory_total }} items —
+					<a href="{% url 'character_inventory' character.pk %}"
+						style="color: {{ character_color }}; font-weight: bold; text-decoration: none;">
+						View all {{ inventory_total }} items →
+					</a>
+				</div>
+			{% endif %}
+		{% else %}
+		<p style="color: #95a5a6; font-style: italic; font-size: 0.9em; margin-bottom: 20px;">
+			No items in inventory yet.
+		</p>
+		{% endif %}
+
+		{% if request.user == character.owner %}
+		<div style="background: #f8f9fa; border: 1px dashed #ddd; 
+					border-radius: 8px; padding: 16px;">
+			<div style="font-size: 0.75em; color: #7f8c8d; text-transform: uppercase; 
+						letter-spacing: 1px; margin-bottom: 12px; font-weight: bold;">
+				<i class="fas fa-plus"></i> Add Item
+			</div>
+			<form method="post" action="{% url 'add_inventory' character.pk %}">
+				{% csrf_token %}				
+				
+				<div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+				
+					<div style="display: flex; align-items: center; gap: 6px; padding-bottom: 2px;">
+						<input type="checkbox" name="favorite" id="fav-new"
+							style="width: 16px; height: 16px; cursor: pointer; accent-color: #f39c12;">
+						<label for="fav-new" 
+							style="font-size: 0.85em; color: #7f8c8d; cursor: pointer;
+								   display: flex; align-items: center; gap: 4px;">
+							<i class="fas fa-star" style="color: #f39c12;"></i> Favorite
+						</label>
+					</div>
+				
+					<div>
+						<label style="font-size: 0.75em; color: #7f8c8d; 
+									  display:block; margin-bottom:4px;">
+							ITEM NAME *
+						</label>
+						<input type="text" name="name" placeholder="Ex: Health Potion"
+							required
+							style="padding: 6px 10px; border: 1px solid #ddd; 
+								   border-radius: 4px; min-width: 180px;">
+					</div>
+					<div>
+						<label style="font-size: 0.75em; color: #7f8c8d; 
+									  display:block; margin-bottom:4px;">
+							QUANTITY
+						</label>
+						<input type="number" name="quantity" value="1" min="0"
+							style="padding: 6px 10px; border: 1px solid #ddd; 
+								   border-radius: 4px; width: 70px;">
+					</div>
+					<div style="flex-grow: 1;">
+						<label style="font-size: 0.75em; color: #7f8c8d; 
+									  display:block; margin-bottom:4px;">
+							NOTES
+						</label>
+						<input type="text" name="notes" placeholder="Optional notes..."
+							style="padding: 6px 10px; border: 1px solid #ddd; 
+								   border-radius: 4px; width: 100%;">
+					</div>
+					<button type="submit"
+						style="background: {{ character_color }}; color: white; border: none; 
+							   padding: 7px 16px; border-radius: 4px; cursor: pointer; 
+							   font-weight: bold;">
+						<i class="fas fa-plus"></i> Add
+					</button>
+				</div>
+			</form>
+		</div>
+		{% endif %}
+	</div>
+	
 	<div class="sheet-footer">
 		Registrado el: {{ character.created_at|date:"d F Y, H:i" }}
 	</div>	
+	
 </div>
 
 <div class="container" style="max-width: 900px; margin: 40px auto;">
@@ -227,6 +475,7 @@
             </a>
         </div>
         {% endif %}
+		
     </div>
 
     {% if request.user == character.owner %}
@@ -274,6 +523,17 @@
     function closeModals() { modal1.style.display = "none"; modal2.style.display = "none"; }
 
     window.onclick = function (e) { if (e.target == modal1 || e.target == modal2) closeModals(); }
+</script>
+
+<script>
+	function toggleEditRow(itemId) {
+		const editRow = document.getElementById('edit-row-' + itemId);
+		if (editRow.style.display === 'none') {
+			editRow.style.display = 'table-row';
+		} else {
+			editRow.style.display = 'none';
+		}
+	}
 </script>
 
 <style>
