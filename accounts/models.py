@@ -3,11 +3,26 @@ from django.db import models
 
 class User(AbstractUser):
     class Avatar(models.TextChoices):
+        BOOK_SKULL = 'book_skull.png', 'Libro con Calavera'
+        BOOK_SPELLS = 'book_spells.png', 'Libro de Hechizos'
+        COFFIN = 'coffin.png', 'Ataud'
+        CTHULHU = 'cthulhu.png', 'Cthulhu'        
         D20 = 'd20.png', 'D20'
         D20_BLUE = 'd20_blue.png', 'D20 Azul'
         D20_RED = 'd20_red.png', 'D20 Rojo'
+        DRAGON_BLACK = 'dragon_black.png', 'Dragon Negro'
+        DRAGON_BLUE = 'dragon_blue.png', 'Dragon Azul'
+        DRAGON_GREEN = 'dragon_green.png', 'Dragon Verde'
         DRAGON_RED = 'dragon_red.png', 'Dragon Rojo'
-        SHIELD = 'shield.png', 'Escudo'
+        INVESTIGATOR = 'investigator.png', 'Investigador'
+        SPELL_FIRE = 'spell_fire.png', 'Hechizo de Fuego'
+        SWORD_MAGIC = 'sword_magic.png', 'Espada Magica'
+        SWORD_PAIR = 'sword_pair.png', 'Par de Espadas'
+        SWORD_SHIELD = 'sword_shield.png', 'Espada con Escudo'
+        VAMPIRE_FANGS = 'vampire_fangs.png', 'Colmillos de Vampiro'
+        VAMPIRE_FEMALE = 'vampire_female.png', 'Vampira'
+        VAMPIRE_MALE = 'vampire_male.png', 'Vampiro'        
+        WEREWOLF = 'werewolf.png', 'Hombre Lobo'
     
     class Gender(models.TextChoices):
         MASCULINO = 'M', 'Masculino'
