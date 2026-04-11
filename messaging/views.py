@@ -164,7 +164,7 @@ def send_message(request):
                     ).order_by('created_at')
                     
                     return render(request, 'messaging/partials/message_list.html', {
-                        'messages': messages_in_chat,
+                        'chat_history': messages_in_chat,
                         'request': request
                     })
 
@@ -204,7 +204,7 @@ def get_chat_messages(request, username):
     ).update(read_at=timezone.now())
 
     return render(request, 'messaging/partials/message_list.html', {
-        'messages': messages,
+        'chat_history': messages,
         'request': request
     })
 
