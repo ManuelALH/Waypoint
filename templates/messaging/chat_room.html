@@ -70,33 +70,39 @@
             </div>
         </div>
 
-        <div id="messagesArea" class="messages-area" hx-get="{% url 'chat_room' other_user.username %}"
-            hx-trigger="every 5s" hx-select="#messagesArea" hx-swap="outerHTML">
+		<div id="messagesArea" class="messages-area" hx-get="{% url 'chat_room' other_user.username %}"
+			hx-trigger="every 5s" hx-select="#messagesArea" hx-swap="outerHTML">
 
-            {% include 'messaging/partials/message_list.html' %}
+			{% include 'messaging/partials/message_list.html' %}
 
-        </div>
+		</div>
 
-        <div class="chat-input-area">
-            <form action="{% url 'send_message' %}" method="POST" class="chat-input-form">
-                {% csrf_token %}
-                <input type="hidden" name="to_user" value="{{ other_user.username }}">
+		<div class="chat-input-area">
+			<form hx-post="{% url 'send_message' %}"
+				  hx-target="#messagesArea"
+				  hx-swap="innerHTML"
+				  hx-on::after-request="this.reset(); 
+										 document.getElementById('messagesArea').scrollTop = 
+										 document.getElementById('messagesArea').scrollHeight;"
+				  class="chat-input-form">
+				{% csrf_token %}
+				<input type="hidden" name="to_user" value="{{ other_user.username }}">
 
-                <input type="text" name="body" class="form-control chat-input"
-                    placeholder="{% if is_blocked %}No puedes enviar mensajes a un usuario bloqueado{% else %}Escribe un mensaje...{% endif %}"
-                    {% if is_blocked %}disabled style="background-color: #e9ecef; cursor: not-allowed;" {% endif %}
-                    autocomplete="off" required maxlength="255">
+				<input type="text" name="body" class="form-control chat-input"
+					placeholder="{% if is_blocked %}No puedes enviar mensajes a un usuario bloqueado{% else %}Escribe un mensaje...{% endif %}"
+					{% if is_blocked %}disabled style="background-color: #e9ecef; cursor: not-allowed;" {% endif %}
+					autocomplete="off" required maxlength="255">
 
-                <button type="submit" class="btn-send-circle" {% if is_blocked %} disabled
-                    style="background-color: #e74c3c; cursor: not-allowed;" {% endif %}>
-                    {% if is_blocked %}
-                    <i class="fas fa-ban"></i>
-                    {% else %}
-                    <i class="fas fa-paper-plane"></i>
-                    {% endif %}
-                </button>
-            </form>
-        </div>
+				<button type="submit" class="btn-send-circle" {% if is_blocked %} disabled
+					style="background-color: #e74c3c; cursor: not-allowed;" {% endif %}>
+					{% if is_blocked %}
+						<i class="fas fa-ban"></i>
+					{% else %}
+						<i class="fas fa-paper-plane"></i>
+					{% endif %}
+				</button>
+			</form>
+		</div>
 
         <div class="modal fade" id="reportUserModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
@@ -194,11 +200,11 @@
     <div class="custom-modal-box">
         <div class="modal-icon">
             {% for message in messages %}
-            {% if 'error' in message.tags %}
-            <i class="fas fa-exclamation-circle" style="color: #e74c3c;"></i>
-            {% else %}
-            <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
-            {% endif %}
+				{% if 'error' in message.tags %}
+					<i class="fas fa-exclamation-circle" style="color: #e74c3c;"></i>
+				{% else %}
+					<i class="fas fa-check-circle" style="color: #2ecc71;"></i>
+				{% endif %}
             {% endfor %}
         </div>
 
@@ -206,7 +212,7 @@
 
         <div class="modal-body">
             {% for message in messages %}
-            <p>{{ message }}</p>
+				<p>{{ message }}</p>
             {% endfor %}
         </div>
 
