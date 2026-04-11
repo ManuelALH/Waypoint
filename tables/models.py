@@ -133,3 +133,19 @@ class CampaignLog(models.Model):
 
     def __str__(self):
         return f"{self.get_entry_type_display()} - {self.table.name}"
+
+class TableNote(models.Model):
+    table = models.ForeignKey(Table, on_delete=models.CASCADE, related_name='notes')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def was_edited(self):
+        return (self.updated_at - self.created_at).total_seconds() > 60
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Nota de {self.author.username} en {self.table.name}"

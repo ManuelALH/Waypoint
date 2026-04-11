@@ -3,57 +3,57 @@
 
 {% block content %}
 
-{% if access_denied %}
-<div class="container d-flex flex-column align-items-center justify-content-center"
-    style="min-height: 60vh; text-align: center;">
+	{% if access_denied %}
+		<div class="container d-flex flex-column align-items-center justify-content-center"
+			style="min-height: 60vh; text-align: center;">
 
-    <div style="position: relative; margin-bottom: 20px;">
-        <img src="{% static 'img/beholder_guardian.png' %}" alt="Beholder Guardián"
-            style="max-width: 300px; filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));">
-    </div>
+			<div style="position: relative; margin-bottom: 20px;">
+				<img src="{% static 'img/beholder_guardian.png' %}" alt="Beholder Guardián"
+					style="max-width: 300px; filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));">
+			</div>
 
-    <h1 style="font-family: 'Cinzel', serif; color: #c0392b; font-size: 3rem;">
-        ALTO AHÍ, VIAJERO
-    </h1>
+			<h1 style="font-family: 'Cinzel', serif; color: #c0392b; font-size: 3rem;">
+				ALTO AHÍ, VIAJERO
+			</h1>
 
-    <div class="alert alert-dark mt-3" style="max-width: 500px;">
-        <p class="lead mb-0">
-            Has tropezado con la entrada de <strong> UNA MAZMORRA</strong>,
-            pero un hechizo de protección bloquea tu paso.
-        </p>
-        <hr>
-        <p class="small text-muted">Esta es una mesa privada.</p>
-    </div>
+			<div class="alert alert-dark mt-3" style="max-width: 500px;">
+				<p class="lead mb-0">
+					Has tropezado con la entrada de <strong> UNA MAZMORRA</strong>,
+					pero un hechizo de protección bloquea tu paso.
+				</p>
+				<hr>
+				<p class="small text-muted">Esta es una mesa privada.</p>
+			</div>
 
-    <a href="{% url 'find_table' %}" class="btn btn-dungeon-back mt-4">
-        <i class="fas fa-arrow-left"></i> Volver a la Taberna (Buscar Mesas)
-    </a>
+			<a href="{% url 'find_table' %}" class="btn btn-dungeon-back mt-4">
+				<i class="fas fa-arrow-left"></i> Volver a la Taberna (Buscar Mesas)
+			</a>
 
-</div>
+		</div>
 
-<style>
-    .btn-dungeon-back {
-        background-color: #c0392b;
-        /* Tu rojo original */
-        border-color: #c0392b;
-        color: white;
-        transition: all 0.3s ease;
-        /* Hace que el cambio de color sea suave */
-    }
+		<style>
+			.btn-dungeon-back {
+				background-color: #c0392b;
+				/* Tu rojo original */
+				border-color: #c0392b;
+				color: white;
+				transition: all 0.3s ease;
+				/* Hace que el cambio de color sea suave */
+			}
 
-    .btn-dungeon-back:hover {
-        background-color: #922b21;
-        /* Un rojo sangre más oscuro */
-        border-color: #80261d;
-        color: #fff;
-        transform: translateY(-2px);
-        /* Pequeño efecto de elevación (opcional) */
-        box-shadow: 0 4px 8px rgba(192, 57, 43, 0.4);
-        /* Resplandor rojo suave */
-    }
-</style>
+			.btn-dungeon-back:hover {
+				background-color: #922b21;
+				/* Un rojo sangre más oscuro */
+				border-color: #80261d;
+				color: #fff;
+				transform: translateY(-2px);
+				/* Pequeño efecto de elevación (opcional) */
+				box-shadow: 0 4px 8px rgba(192, 57, 43, 0.4);
+				/* Resplandor rojo suave */
+			}
+		</style>
 
-{% else %}
+	{% else %}
 
 <div class="detail-container">
 
@@ -346,90 +346,112 @@
                 </h3>
 
                 {% if table.characters.count > 0 %}
-                <div class="members-grid">
-                    {% for char in table.characters.all %}
-                    <a href="{% url 'character_sheet' char.id %}" class="member-card">
-                        <div class="member-avatar" style="background: {{ table_color }};">
-                            <span>{{ char.name|slice:":1" }}</span>
-                        </div>
-                        <div class="member-info">
-                            <span class="member-name">{{ char.name }}</span>
-                            <span class="player-name">Jugador: {{ char.owner.username }}</span>
-                        </div>
-                    </a>
-                    {% endfor %}
-                </div>
+					<div class="members-grid">
+						{% for char in table.characters.all %}
+							<a href="{% url 'character_sheet' char.id %}" class="member-card">
+								<div class="member-avatar" style="background: {{ table_color }};">
+									<span>{{ char.name|slice:":1" }}</span>
+								</div>
+								<div class="member-info">
+									<span class="member-name">{{ char.name }}</span>
+									<span class="player-name">Jugador: {{ char.owner.username }}</span>
+								</div>
+							</a>
+						{% endfor %}
+					</div>
                 {% else %}
-                <p class="empty-state">Aún no hay {{ table_playerstitle }} en esta mesa.</p>
+					<p class="empty-state">Aún no hay {{ table_playerstitle }} en esta mesa.</p>
                 {% endif %}
             </div>
 
 
-            {% if request.user == table.dm or is_player %}
+			{% if request.user == table.dm or is_player %}
 
-            {% if request.user == table.dm %}
-            <div style="margin-top: 20px; text-align: center;">
-                <button onclick="openLogModal()" class="btn btn-primary btn-dynamic-hover"
-                    style="background: {{ table_color }}; border: none; padding: 10px 20px; border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
-                    <i class="fas fa-feather-alt"></i> &nbsp;Añadir Entrada a Bitácora
-                </button>
-            </div>
-            {% endif %}
+				<div style="margin-top: 20px; text-align: center; display: flex; 
+							justify-content: center; gap: 10px; flex-wrap: wrap;">
+					
+					{% if request.user == table.dm %}
+						<!-- Boton de bitacora solo para el DM -->
+						<button onclick="openLogModal()" class="btn btn-primary btn-dynamic-hover"
+							style="background: {{ table_color }}; border: none; padding: 10px 20px; 
+								   border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
+							<i class="fas fa-feather-alt"></i> &nbsp;Añadir Entrada a Bitácora
+						</button>
+					{% endif %}
 
-            <div class="campaign-timeline" style="margin-top: 40px; position: relative; padding-left: 20px;">
+					{% if is_player %}
+					<!-- Boton de notas solo para jugadores -->
+					<button onclick="openNoteModal()" class="btn btn-primary btn-dynamic-hover"
+						style="background: {{ table_color }}; border: none; padding: 10px 20px; 
+							   border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
+						<i class="fas fa-book"></i> &nbsp;Añadir Nota
+					</button>
+					{% endif %}
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 class="section-title" style="margin: 0;">Bitácora de Campaña</h3>
+				</div>
 
-                    <a href="{% url 'campaign_log' table.id %}" class="btn btn-primary btn-dynamic-hover"
-                        style="background: {{ table_color }}; border: none; padding: 10px 20px; border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
-                        Ver Bitácora Completa &nbsp;<i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
+            <div id="campaign-log" class="campaign-timeline" style="margin-top: 40px; position: relative; padding-left: 20px;">
+
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+					<h3 class="section-title" style="margin: 0;">Bitácora de Campaña</h3>
+					<div style="display: flex; gap: 10px;">
+						<a href="{% url 'campaign_log' table.id %}" class="btn btn-primary btn-dynamic-hover"
+							style="background: {{ table_color }}; border: none; padding: 10px 20px; 
+								   border-radius: 5px; color: white; text-decoration: none; font-size: 1rem;">
+							Ver Bitácora Completa &nbsp;<i class="fas fa-arrow-right"></i>
+						</a>
+						<a href="{% url 'table_notes' table.id %}" class="btn btn-primary btn-dynamic-hover"
+							style="background: {{ table_color }}; border: none; padding: 10px 20px; 
+								   border-radius: 5px; color: white; text-decoration: none; font-size: 1rem;">
+							<i class="fas fa-book"></i> &nbsp;Ver Notas
+						</a>
+					</div>
+				</div>
 
                 <div class="timeline-container" style="border-left: 2px solid #e0e0e0; padding-left: 20px;">
                     {% for log in logs %}
-                    <div class="timeline-item" style="margin-bottom: 25px; position: relative;">
-                        <div style="position: absolute; left: -29px; top: 5px; width: 16px; height: 16px; border-radius: 50%; background: 
-                                {% if log.entry_type == 'DEATH' %}#e74c3c
-                                {% elif log.entry_type == 'ACHIEVEMENT' %}#f1c40f
-                                {% elif log.entry_type == 'ITEM' %}#3498db
-                                {% elif log.entry_type == 'PROGRESSION' %}#2ecc71
-                                {% else %}#95a5a6{% endif %}; 
-                                border: 3px solid white;"></div>
+						<div class="timeline-item" style="margin-bottom: 25px; position: relative;">
+							<div style="position: absolute; left: -29px; top: 5px; width: 16px; height: 16px; border-radius: 50%; background: 
+									{% if log.entry_type == 'DEATH' %}#e74c3c
+									{% elif log.entry_type == 'ACHIEVEMENT' %}#f1c40f
+									{% elif log.entry_type == 'ITEM' %}#3498db
+									{% elif log.entry_type == 'PROGRESSION' %}#2ecc71
+									{% else %}#95a5a6{% endif %}; 
+									border: 3px solid white;">
+							</div>
 
-                        <div class="timeline-content"
-                            style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-                            <div class="timeline-header"
-                                style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span style="font-weight: bold; font-size: 0.9em; color: #7f8c8d;">
-                                    {{ log.get_entry_type_display }}
-                                </span>
-                                <span style="font-size: 0.8em; color: #bdc3c7;">
-                                    {{ log.created_at|date:"d M Y, H:i" }}
-                                </span>
-                            </div>
+							<div class="timeline-content"
+								style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+								<div class="timeline-header"
+									style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+									<span style="font-weight: bold; font-size: 0.9em; color: #7f8c8d;">
+										{{ log.get_entry_type_display }}
+									</span>
+									<span style="font-size: 0.8em; color: #bdc3c7;">
+										{{ log.created_at|date:"d M Y, H:i" }}
+									</span>
+								</div>
 
-                            <div class="timeline-body">
-                                {% if log.entry_type == 'FREE' %}
-                                <p style="margin: 0;">{{ log.content }}</p>
-                                {% else %}
-                                <p style="margin: 0;">
-                                    {% if log.target_character %}
-                                    <strong style="color: #2c3e50;">
-                                        {{ log.target_character.name }}
-                                    </strong>
-                                    {% endif %}
-                                    {{ log.content }}
-                                </p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p style="color: #95a5a6; font-style: italic;">
-                        La historia aún no ha comenzado a escribirse...
-                    </p>
+								<div class="timeline-body">
+									{% if log.entry_type == 'FREE' %}
+										<p style="margin: 0;">{{ log.content }}</p>
+									{% else %}
+										<p style="margin: 0;">
+											{% if log.target_character %}
+												<strong style="color: #2c3e50;">
+													{{ log.target_character.name }}
+												</strong>
+											{% endif %}
+											{{ log.content }}
+										</p>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+						{% empty %}
+						<p style="color: #95a5a6; font-style: italic;">
+							La historia aún no ha comenzado a escribirse...
+						</p>
                     {% endfor %}
                 </div>
             </div>
@@ -440,10 +462,13 @@
             style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
             <div class="modal-content"
                 style="background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                <h3 style="margin-top: 0;">Nueva Entrada de Bitácora</h3>
+				<h3 style="margin-top: 0; color: {{ table_color }};">
+					<i class="fas fa-feather-alt"></i> Nueva Entrada de Bitácora
+				</h3>
 
                 <form action="{% url 'add_log_entry' table.id %}" method="POST">
                     {% csrf_token %}
+					<input type="hidden" name="next" value="{% url 'table_detail' table.id %}#campaign-log">
 
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo de
@@ -465,7 +490,7 @@
                             style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
                             <option value="">-- Selecciona un personaje --</option>
                             {% for char in table.characters.all %}
-                            <option value="{{ char.id }}">{{ char.name }} ({{ char.owner.username }})</option>
+								<option value="{{ char.id }}">{{ char.name }} ({{ char.owner.username }})</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -490,7 +515,9 @@
                         <button type="button" onclick="closeLogModal()"
                             style="padding: 8px 15px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer;">Cancelar</button>
                         <button type="submit"
-                            style="padding: 8px 15px; border: none; background: #2ecc71; color: white; border-radius: 4px; cursor: pointer;">Publicar</button>
+                            style="padding: 8px 15px; border: none; background: {{ table_color }}; color: white; border-radius: 4px; cursor: pointer;">
+							<i class="fas fa-save"></i> Publicar
+						</button>
                     </div>
                 </form>
             </div>
@@ -1256,6 +1283,50 @@
             publicCheck.style.display = 'none';
         }
     }
+</script>
+
+<!-- Modal de Notas solo accesible para jugadores -->
+<div id="noteModal" class="modal-overlay"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+           background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="modal-content"
+        style="background: white; padding: 25px; border-radius: 10px; width: 90%; 
+               max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+        
+        <h3 style="margin-top: 0; color: {{ table_color }};">
+            <i class="fas fa-book"></i> Nueva Nota
+        </h3>
+        <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 15px;">
+            Las notas son visibles para todos los jugadores y el DM de la mesa.
+        </p>
+
+        <form action="{% url 'add_note' table.id %}" method="POST">
+            {% csrf_token %}
+			<input type="hidden" name="next" value="{% url 'table_detail' table.id %}#campaign-log">
+            <div style="margin-bottom: 20px;">
+                <textarea name="content" rows="5" required
+                    placeholder="Escribe tu nota aquí... Puedes anotar estrategias, recordatorios, teorías sobre la trama..."
+                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; 
+                           resize: vertical; font-size: 0.95em; font-family: inherit;"></textarea>
+            </div>
+			<div style="display: flex; justify-content: flex-end; gap: 10px;">
+				<button type="button" onclick="closeNoteModal()"
+					style="padding: 8px 15px; border: 1px solid #ccc; background: white; border-radius: 4px; cursor: pointer;">Cancelar</button>
+				<button type="submit"
+					style="padding: 8px 15px; border: none; background: {{ table_color }}; color: white; border-radius: 4px; cursor: pointer;">
+					<i class="fas fa-save"></i> Guardar Nota
+				</button>
+			</div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openNoteModal()  { document.getElementById('noteModal').style.display = 'flex'; }
+    function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
+    window.addEventListener('click', e => {
+        if (e.target === document.getElementById('noteModal')) closeNoteModal();
+    });
 </script>
 
 {% endblock %}

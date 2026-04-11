@@ -3,17 +3,18 @@
 {% block content %}
 <div class="container" style="max-width: 900px; margin: 30px auto;">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <div>
-            <h2 style="margin: 0;">Bitácora Completa: {{ table.name }}</h2>
-            <a href="{% url 'table_detail' table.id %}" style="color: #7f8c8d; text-decoration: none;">&larr; Volver a
-                la Mesa</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">	
+		<div>
+            <h2 style="margin: 0; color: {{ table_color }};">
+                <i class="fas fa-book"></i> Bitácora: {{ table.name }}
+            </h2>
+			<a href="{% url 'table_detail' table.id %}" style="color: #7f8c8d; text-decoration: none;">&larr; Volver a la Mesa</a>
         </div>
         {% if is_dm %}
-        <button onclick="openLogModal()" class="btn btn-primary btn-dynamic-hover"
-            style="background: {{ table_color }}; border: none; padding: 10px 20px; border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
-            <i class="fas fa-feather-alt"></i> &nbsp;Añadir Entrada a Bitácora
-        </button>
+			<button id="add-log-btn" onclick="openLogModal()" class="btn btn-primary btn-dynamic-hover"
+				style="background: {{ table_color }}; border: none; padding: 10px 20px; border-radius: 5px; color: white; cursor: pointer; font-size: 1rem;">
+				<i class="fas fa-feather-alt"></i> &nbsp;Añadir Entrada a Bitácora
+			</button>
         {% endif %}
     </div>
 
@@ -52,7 +53,7 @@
         </select>
 
         <button type="submit"
-            style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+            style="background: {{ table_color }}; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
             <i class="fas fa-filter"></i> Filtrar
         </button>
 
@@ -62,78 +63,78 @@
 
     <div class="timeline-container" style="border-left: 2px solid #e0e0e0; padding-left: 20px;">
         {% for log in logs %}
-        <div class="timeline-item" style="margin-bottom: 25px; position: relative;">
+			<div class="timeline-item" style="margin-bottom: 25px; position: relative;">
 
-            <div style="position: absolute; left: -29px; top: 15px; width: 16px; height: 16px; border-radius: 50%; background: 
-                {% if log.entry_type == 'DEATH' %}#e74c3c
-                {% elif log.entry_type == 'ACHIEVEMENT' %}#f1c40f
-                {% elif log.entry_type == 'ITEM' %}#3498db
-                {% elif log.entry_type == 'PROGRESSION' %}#2ecc71
-                {% else %}#95a5a6{% endif %}; border: 3px solid white; box-shadow: 0 0 3px rgba(0,0,0,0.2);"></div>
+				<div style="position: absolute; left: -29px; top: 15px; width: 16px; height: 16px; border-radius: 50%; background: 
+					{% if log.entry_type == 'DEATH' %}#e74c3c
+					{% elif log.entry_type == 'ACHIEVEMENT' %}#f1c40f
+					{% elif log.entry_type == 'ITEM' %}#3498db
+					{% elif log.entry_type == 'PROGRESSION' %}#2ecc71
+					{% else %}#95a5a6{% endif %}; border: 3px solid white; box-shadow: 0 0 3px rgba(0,0,0,0.2);"></div>
 
-            <div class="timeline-content"
-                style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+				<div class="timeline-content"
+					style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
 
-                <div
-                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid #f1f1f1; padding-bottom: 10px;">
-                    <div>
-                        <strong style="color: #2c3e50; font-size: 1.1em;">{{ log.get_entry_type_display }}</strong>
+					<div
+						style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid #f1f1f1; padding-bottom: 10px;">
+						<div>
+							<strong style="color: #2c3e50; font-size: 1.1em;">{{ log.get_entry_type_display }}</strong>
 
-                        <div style="font-size: 0.85em; color: #7f8c8d; margin-top: 3px;">
-                            <i class="fas fa-user-edit"></i> {{ log.author.username }} &nbsp;|&nbsp;
-                            <i class="far fa-clock"></i> {{ log.created_at|date:"d M Y, H:i" }}
+							<div style="font-size: 0.85em; color: #7f8c8d; margin-top: 3px;">
+								<i class="fas fa-user-edit"></i> {{ log.author.username }} &nbsp;|&nbsp;
+								<i class="far fa-clock"></i> {{ log.created_at|date:"d M Y, H:i" }}
 
-                            {% if log.was_edited %}
-                            <span
-                                style="background: #ecf0f1; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; margin-left: 5px; color: #95a5a6;">
-                                <i class="fas fa-pen"></i> editada
-                            </span>
-                            {% endif %}
-                        </div>
-                    </div>
+								{% if log.was_edited %}
+									<span
+										style="background: #ecf0f1; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; margin-left: 5px; color: #95a5a6;">
+										<i class="fas fa-pen"></i> editada
+									</span>
+								{% endif %}
+							</div>
+						</div>
 
-                        {% if is_dm %}
-                        <div style="display: flex; gap: 5px;">
-                        <button type="button" onclick="openEditMode(
-                            '{{ log.id }}', 
-                            '{{ log.entry_type }}', 
-                            '{{ log.content|escapejs }}', 
-                            '{{ log.target_character.id|default_if_none:"" }}', 
-                            '{{ log.is_public|yesno:"true,false" }}')"
-                             title="Editar" 
-                             style="background: none; border: none; color: #f39c12; cursor: pointer; padding: 5px;">
-                             <i class="fas fa-edit"></i>
-                        </button>
+						{% if is_dm %}
+							<div style="display: flex; gap: 5px;">
+								<button type="button" onclick="openEditMode(
+									'{{ log.id }}', 
+									'{{ log.entry_type }}', 
+									'{{ log.content|escapejs }}', 
+									'{{ log.target_character.id|default_if_none:"" }}', 
+									'{{ log.is_public|yesno:"true,false" }}')"
+									 title="Editar" 
+									 style="background: none; border: none; color: #f39c12; cursor: pointer; padding: 5px;">
+									 <i class="fas fa-edit"></i>
+								</button>
 
-                        <form action="{% url 'delete_log_entry' log.id %}" method="POST"
-                            onsubmit="return confirm('¿Eliminar esta entrada permanentemente?');"
-                            style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" title="Eliminar"
-                                style="background: none; border: none; color: #e74c3c; cursor: pointer; padding: 5px;"><i
-                                    class="fas fa-trash"></i></button>
-                        </form>
-                    </div>
-                    {% endif %}
-                </div>
+								<form action="{% url 'delete_log_entry' log.id %}" method="POST"
+									onsubmit="return confirm('¿Eliminar esta entrada permanentemente?');"
+									style="display:inline;">
+									{% csrf_token %}
+									<button type="submit" title="Eliminar"
+										style="background: none; border: none; color: #e74c3c; cursor: pointer; padding: 5px;"><i
+											class="fas fa-trash"></i></button>
+								</form>
+							</div>
+						{% endif %}
+					</div>
 
-                <div class="timeline-body">
-                    {% if log.entry_type != 'FREE' and log.target_character %}
-                    <p style="margin: 0; color: #34495e;">
-                        <strong style="color: #2980b9;">{{ log.target_character.name }}</strong> {{ log.content }}
-                    </p>
-                    {% else %}
-                    <p style="margin: 0; color: #34495e;">{{ log.content|linebreaksbr }}</p>
-                    {% endif %}
+					<div class="timeline-body">
+						{% if log.entry_type != 'FREE' and log.target_character %}
+						<p style="margin: 0; color: #34495e;">
+							<strong style="color: #2980b9;">{{ log.target_character.name }}</strong> {{ log.content }}
+						</p>
+						{% else %}
+						<p style="margin: 0; color: #34495e;">{{ log.content|linebreaksbr }}</p>
+						{% endif %}
 
-                    {% if not log.is_public %}
-                    <div style="margin-top: 10px; font-size: 0.8em; color: #e74c3c; font-style: italic;">
-                        <i class="fas fa-eye-slash"></i> Visible solo para DM
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+						{% if not log.is_public %}
+						<div style="margin-top: 10px; font-size: 0.8em; color: #e74c3c; font-style: italic;">
+							<i class="fas fa-eye-slash"></i> Visible solo para DM
+						</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
         {% empty %}
         <div style="text-align: center; padding: 40px; color: #95a5a6;">
             <i class="fas fa-book-open" style="font-size: 3em; margin-bottom: 15px;"></i>
@@ -143,42 +144,44 @@
     </div>
 
     {% if logs.has_other_pages %}
-    <div class="pagination-container" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-    
-        {% if logs.has_previous %}
-            <a href="?page={{ logs.previous_page_number }}&type={{ current_type|default_if_none:'' }}&character={{ current_char|default_if_none:'' }}&sort={{ current_sort|default_if_none:'desc' }}" 
-                class="page-link">
-                &larr; Anterior
-            </a>
-        {% else %}
-            <span class="page-link disabled">&larr; Anterior</span>
-        {% endif %}
+		<div class="pagination-container" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+		
+			{% if logs.has_previous %}
+				<a href="?page={{ logs.previous_page_number }}&type={{ current_type|default_if_none:'' }}&character={{ current_char|default_if_none:'' }}&sort={{ current_sort|default_if_none:'desc' }}" 
+					class="page-link">
+					&larr; Anterior
+				</a>
+			{% else %}
+				<span class="page-link disabled">&larr; Anterior</span>
+			{% endif %}
 
-        <span class="current-page">
-            Página <strong>{{ logs.number }}</strong> de {{ logs.paginator.num_pages }}
-        </span>
+			<span class="current-page">
+				Página <strong>{{ logs.number }}</strong> de {{ logs.paginator.num_pages }}
+			</span>
 
-        {% if logs.has_next %}
-        <a href="?page={{ logs.next_page_number }}&type={{ current_type|default_if_none:'' }}&character={{ current_char|default_if_none:'' }}&sort={{ current_sort|default_if_none:'desc' }}" 
-           class="page-link">
-           Siguiente &rarr;
-        </a>
-        {% else %}
-            <span class="page-link disabled">Siguiente &rarr;</span>
-        {% endif %}
+			{% if logs.has_next %}
+				<a href="?page={{ logs.next_page_number }}&type={{ current_type|default_if_none:'' }}&character={{ current_char|default_if_none:'' }}&sort={{ current_sort|default_if_none:'desc' }}" 
+				   class="page-link">
+				   Siguiente &rarr;
+				</a>
+			{% else %}
+				<span class="page-link disabled">Siguiente &rarr;</span>
+			{% endif %}
 
-     </div>
+		 </div>
     {% endif %}
 </div>
 
 <div id="logModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
     <div class="modal-content" style="background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
         
-        <h3 id="modalTitle" style="margin-top: 0;">Nueva Entrada</h3>
+        <h3 id="modalTitle" style="margin-top: 0; color: {{ table_color }};">
+			<i class="fas fa-book"></i> Nueva Entrada de Bitácora
+		</h3>
         
         <form id="logForm" action="" method="POST">
             {% csrf_token %}
-            <input type="hidden" name="next" value="campaign_log">
+            <input type="hidden" name="next" value="{% url 'campaign_log' table.id %}#add-log-btn">
 
             <div style="margin-bottom: 15px;">
                 <label style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo de Entrada</label>
@@ -391,7 +394,7 @@
         // Configurar para AÑADIR (Acción apunta a ADD_URL)
         document.getElementById('modalTitle').innerText = "Nueva Entrada de Bitácora";
         document.getElementById('submitBtn').innerText = "Publicar";
-        document.getElementById('submitBtn').style.background = "#2ecc71"; // Verde
+        document.getElementById('submitBtn').style.background = "{{ table_color }}";
         form.action = ADD_URL;
         
         modal.style.display = 'flex';

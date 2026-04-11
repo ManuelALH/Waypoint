@@ -20,4 +20,8 @@ urlpatterns = [
     path('log/<int:log_id>/edit/', views.edit_log_entry, name='edit_log_entry'),
     path('log/<int:log_id>/delete/', views.delete_log_entry, name='delete_log_entry'),
     path('find/', views.find_table, name='find_table'),
+    path('table/<int:pk>/add-note/', views.add_note, name='add_note'),
+    path('table/<int:pk>/notes/', views.table_notes_view, name='table_notes'),
+    path('note/<int:note_id>/edit/', views.edit_note, name='edit_note'),
+path('note/<int:note_id>/delete/', views.delete_note, name='delete_note'),
 ]

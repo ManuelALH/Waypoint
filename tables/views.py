@@ -6,9 +6,11 @@ from django.views.decorators.http import require_POST
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.utils import timezone
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 from .forms import TableForm
-from .models import Table, TableInvitation, CampaignLog
+from .models import Table, TableInvitation, CampaignLog, TableNote
 from characters.models import Character
 from gamesystems.models import GameSystem
 
@@ -303,12 +305,7 @@ def add_log_entry(request, pk):
     content = request.POST.get('content')
     character_id = request.POST.get('character_id')    
     is_public_check = request.POST.get('is_public') == 'on'
-
-    if entry_type == 'FREE':
-        final_is_public = is_public_check
-    else:
-        final_is_public = True
-
+    final_is_public = is_public_check if entry_type == 'FREE' else True
     target_char = None
     if character_id:
         target_char = table.characters.filter(id=character_id).first()
@@ -322,10 +319,7 @@ def add_log_entry(request, pk):
         author=request.user
     )
 
-    next_url = request.POST.get('next', 'table_detail')
-    if next_url == 'campaign_log':
-        return redirect('campaign_log', pk=pk)
-    return redirect('table_detail', pk=pk)
+    return redirect_after_log(request, pk)
 
 @login_required
 def campaign_log_view(request, pk):
@@ -370,6 +364,7 @@ def campaign_log_view(request, pk):
     
     return render(request, 'tables/campaign_log.html', {
         'table': table,
+        'table_color': table.system.primary_color if table.system else '#3498db',
         'logs': page_obj,
         'characters': characters,
         'is_dm': request.user == table.dm,
@@ -388,21 +383,14 @@ def edit_log_entry(request, log_id):
 
     log.entry_type = request.POST.get('entry_type')
     log.content = request.POST.get('content')
-    
     char_id = request.POST.get('character_id')
-    if char_id:
-        log.target_character_id = char_id
-    else:
-        log.target_character = None
+    log.target_character_id = char_id if char_id else None
+    log.is_public = request.POST.get('is_public') == 'on' if log.entry_type == 'FREE' else True
+    log.save()
 
-    if log.entry_type == 'FREE':
-        log.is_public = request.POST.get('is_public') == 'on'
-    else:
-        log.is_public = True
-
-    log.save() 
-    
-    return redirect('campaign_log', pk=log.table.id)
+    return HttpResponseRedirect(
+        reverse('campaign_log', kwargs={'pk': log.table.id}) + '#add-log-btn'
+    )
 
 @login_required
 @require_POST
@@ -413,7 +401,9 @@ def delete_log_entry(request, log_id):
     if request.user == log.table.dm:
         log.delete()
         
-    return redirect('campaign_log', pk=table_id)
+    return HttpResponseRedirect(
+        reverse('campaign_log', kwargs={'pk': table_id}) + '#add-log-btn'
+    )
 
 @login_required
 def find_table(request):
@@ -461,3 +451,101 @@ def find_table(request):
         'days_choices': ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     }
     return render(request, 'tables/find_table.html', context)
+
+@login_required
+@require_POST
+def add_note(request, pk):
+    table = get_object_or_404(Table, pk=pk)
+    if not table.players.filter(id=request.user.id).exists():
+        return redirect('table_detail', pk=pk)
+
+    content = request.POST.get('content', '').strip()
+    if content:
+        TableNote.objects.create(
+            table=table,
+            author=request.user,
+            content=content
+        )
+
+    return redirect_after_note(request, pk)
+
+@login_required
+def table_notes_view(request, pk):
+    table = get_object_or_404(Table, pk=pk)
+    is_dm = request.user == table.dm
+    is_player = table.players.filter(id=request.user.id).exists()
+
+    if not is_dm and not is_player:
+        return redirect('home')
+
+    notes = table.notes.select_related('author').order_by('-created_at')
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        notes = notes.filter(content__icontains=search_query)
+
+    sort_order = request.GET.get('sort', 'desc')
+    if sort_order == 'asc':
+        notes = notes.order_by('created_at')
+
+    paginator = Paginator(notes, LOG_MAX_ENTRIES_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'tables/table_notes.html', {
+        'table': table,
+        'table_color': table.system.primary_color if table.system else '#3498db',
+        'notes': page_obj,
+        'is_dm': is_dm,
+        'is_player': is_player,
+        'search_query': search_query,
+        'current_sort': sort_order,
+        'notes_total': table.notes.count(),
+    })
+
+@login_required
+@require_POST
+def edit_note(request, note_id):
+    from .models import TableNote
+    note = get_object_or_404(TableNote, pk=note_id)
+
+    if request.user != note.author:
+        return redirect('table_notes', pk=note.table.id)
+
+    content = request.POST.get('content', '').strip()
+    if content:
+        note.content = content
+        note.save()
+
+    return HttpResponseRedirect(
+        reverse('table_notes', kwargs={'pk': note.table.id}) + '#add-note-btn'
+    )
+
+@login_required
+@require_POST
+def delete_note(request, note_id):
+    from .models import TableNote
+    note = get_object_or_404(TableNote, pk=note_id)
+
+    if request.user == note.author:
+        table_id = note.table.id
+        note.delete()
+        return redirect('table_notes', pk=table_id)
+
+    return HttpResponseRedirect(
+        reverse('table_notes', kwargs={'pk': note.table.id}) + '#add-note-btn'
+    )
+
+def redirect_after_log(request, pk):
+    next_url = request.POST.get('next', '')
+    if next_url:
+        return HttpResponseRedirect(next_url)
+    return HttpResponseRedirect(
+        reverse('table_detail', kwargs={'pk': pk}) + '#campaign-log'
+    )
+
+def redirect_after_note(request, pk):
+    next_url = request.POST.get('next', '')
+    if next_url:
+        return HttpResponseRedirect(next_url)
+    return HttpResponseRedirect(
+        reverse('table_notes', kwargs={'pk': pk}) + '#add-note-btn'
+    )
