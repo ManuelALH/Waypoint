@@ -479,13 +479,23 @@ def table_notes_view(request, pk):
         return redirect('home')
 
     notes = table.notes.select_related('author').order_by('-created_at')
+
     search_query = request.GET.get('q', '').strip()
     if search_query:
         notes = notes.filter(content__icontains=search_query)
 
+    author_filter = request.GET.get('author', '').strip()
+    if author_filter:
+        notes = notes.filter(author__username=author_filter)
+
     sort_order = request.GET.get('sort', 'desc')
     if sort_order == 'asc':
         notes = notes.order_by('created_at')
+
+    note_authors = table.notes.select_related('author')\
+        .values_list('author__username', flat=True)\
+        .distinct()\
+        .order_by('author__username')        
 
     paginator = Paginator(notes, LOG_MAX_ENTRIES_PER_PAGE)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -498,6 +508,8 @@ def table_notes_view(request, pk):
         'is_player': is_player,
         'search_query': search_query,
         'current_sort': sort_order,
+        'author_filter': author_filter,
+        'note_authors':  note_authors,
         'notes_total': table.notes.count(),
     })
 

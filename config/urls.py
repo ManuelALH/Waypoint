@@ -33,6 +33,7 @@ urlpatterns = [
         template_name='sw.js', 
         content_type='application/javascript'
     ), name='sw'),
+    path('offline/', TemplateView.as_view(template_name='offline.html'), name='offline'),
 ]
 
 handler404 = 'config.views.custom_404'

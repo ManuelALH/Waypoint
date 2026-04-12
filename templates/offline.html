@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="min-height: 60vh; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; text-align: center; padding: 40px;">
+
+    <i class="fas fa-wifi" style="font-size: 4em; color: #bdc3c7; margin-bottom: 20px;"></i>
+
+    <h2 style="color: #2c3e50; margin-bottom: 10px;">Sin conexión</h2>
+    <p style="color: #7f8c8d; max-width: 400px; line-height: 1.6;">
+        No tienes conexión a internet en este momento. Puedes seguir viendo 
+        las páginas que visitaste anteriormente.
+    </p>
+
+    <div style="margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+        <a href="/characters/" 
+           style="background: #3498db; color: white; padding: 10px 20px; 
+                  border-radius: 5px; text-decoration: none;">
+            <i class="fas fa-users"></i> Mis Personajes
+        </a>
+        <a href="/tables/my_tables/"
+           style="background: #2c3e50; color: white; padding: 10px 20px; 
+                  border-radius: 5px; text-decoration: none;">
+            <i class="fas fa-dungeon"></i> Mis Mesas
+        </a>
+        <button onclick="window.location.reload()"
+           style="background: #27ae60; color: white; padding: 10px 20px; 
+                  border-radius: 5px; border: none; cursor: pointer;">
+            <i class="fas fa-sync"></i> Reintentar
+        </button>
+    </div>
+</div>
+{% endblock %}
