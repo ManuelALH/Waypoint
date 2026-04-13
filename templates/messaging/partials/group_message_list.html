@@ -1,0 +1,36 @@
+{% load static %}
+
+{% for msg in chat_history %}
+	<div class="message-row {% if msg.sender == request.user %}message-out{% else %}message-in{% endif %}">
+		{% if msg.sender != request.user %}
+			<img src="{% static 'img/avatars/' %}{{ msg.sender.avatar }}"
+				alt="{{ msg.sender.username }}" class="message-avatar">
+		{% endif %}
+
+		<div class="message-bubble">
+			{% if msg.sender != request.user %}
+				<!-- En grupos mostramos quien escribio cada mensaje -->
+				<div style="font-size: 0.75em; font-weight: bold; 
+							color: #2c3e50; margin-bottom: 3px;">
+					{{ msg.sender.username }}
+				</div>
+			{% endif %}
+
+			<div class="message-text">
+				{{ msg.body|linebreaksbr }}
+			</div>
+			<div class="message-time">
+				{{ msg.created_at|date:"H:i" }}
+			</div>
+		</div>
+	</div>
+{% empty %}
+<div class="text-center mt-5">
+    <p class="text-muted">No hay mensajes aún. ¡Sé el primero!</p>
+</div>
+{% endfor %}
+
+<script>
+    var objDiv = document.getElementById("messagesArea");
+    if (objDiv) objDiv.scrollTop = objDiv.scrollHeight;
+</script>

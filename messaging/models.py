@@ -58,3 +58,24 @@ class Message(models.Model):
         if self.read_at is None:
             self.read_at = timezone.now()
             self.save()
+
+class GroupMessage(models.Model):
+    table = models.ForeignKey(
+        'tables.Table',
+        on_delete=models.CASCADE,
+        related_name='group_messages'
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_group_messages'
+    )
+
+    body = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"[{self.table.name}] {self.sender.username}: {self.body[:40]}"

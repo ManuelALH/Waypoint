@@ -35,6 +35,7 @@
 </head>
 
 <body>
+	{% block sidebar %}
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="close-btn" onclick="toggleNav()">&times;</a>
         <div style="padding: 20px; color: white; text-align: center; border-bottom: 1px solid #34495e;">
@@ -82,6 +83,7 @@
         <a href="#">Registrarse</a>
         {% endif %}
     </div>
+	{% endblock %}
 
     <div class="header">
         <button class="menu-btn" onclick="toggleNav()">&#9776; Menú</button>

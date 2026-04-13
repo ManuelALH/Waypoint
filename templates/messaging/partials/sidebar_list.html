@@ -1,29 +1,86 @@
 {% load static %}
 
+<!-- Chats directos -->
+{% if chat_list %}
+	<div style="border-top: 1px solid #eee; margin: 8px 0; padding: 0 12px 4px;">
+		<small style="color: #95a5a6; font-size: 0.75em;">DIRECTOS</small>
+	</div>
+{% endif %}
 {% for chat in chat_list %}
-<a href="{% url 'chat_room' chat.user.username %}"
-    class="chat-item {% if chat.user.username == other_user_name %}active{% endif %}">
-
-    <img src="{% static 'img/avatars/' %}{{ chat.user.avatar }}" alt="{{ chat.user.username }}" class="avatar-circle">
-
-    <div class="chat-info">
-        <div class="d-flex justify-content-between">
-            <span class="chat-name">{{ chat.user.username }}</span>
-            <span class="chat-date">{{ chat.last_message.created_at|date:"d M" }}</span>
-        </div>
-        <div class="d-flex justify-content-between">
-            <span class="chat-preview text-truncate">
-                {% if chat.last_message.sender == request.user %}
-                <i class="fas fa-reply small"></i>
-                {% endif %}
-                {{ chat.last_message.body|truncatechars:25 }}
-            </span>
-            {% if chat.unread_count > 0 %}
-            <span class="badge bg-danger rounded-pill">{{ chat.unread_count }}</span>
-            {% endif %}
-        </div>
-    </div>
-</a>
-{% empty %}
-<p class="text-center p-3 text-muted">Sin chats.</p>
+	<a href="{% url 'chat_room' chat.user.username %}"
+		class="chat-item {% if chat.user.username == other_user_name %}active{% endif %}">
+		<img src="{% static 'img/avatars/' %}{{ chat.user.avatar }}"
+			 alt="{{ chat.user.username }}" class="avatar-circle">
+		<div class="chat-info">
+			<div class="d-flex justify-content-between">
+				<span class="chat-name">{{ chat.user.username }}</span>
+				<span class="chat-date">{{ chat.last_message.created_at|date:"d M" }}</span>
+			</div>
+			<div class="d-flex justify-content-between">
+				<span class="chat-preview text-truncate">
+					{% if chat.last_message.sender == request.user %}
+					<i class="fas fa-reply small"></i>
+					{% endif %}
+					{{ chat.last_message.body|truncatechars:25 }}
+				</span>
+				{% if chat.unread_count > 0 %}
+				<span class="badge bg-danger rounded-pill">{{ chat.unread_count }}</span>
+				{% endif %}
+			</div>
+		</div>
+	</a>
+	{% empty %}
+	{% if not user_tables %}
+		<p class="text-center p-3 text-muted">Sin chats.</p>
+	{% endif %}
 {% endfor %}
+
+<!-- Grupos de mesa -->
+{% if groups_data %}
+	<div style="border-top: 1px solid #eee; margin: 8px 0; padding: 0 12px 4px;">
+		<small style="color: #95a5a6; font-size: 0.75em;">GRUPOS</small>
+	</div>
+    {% for group in groups_data %}
+		<a href="{% url 'group_chat' group.table.pk %}"
+		   class="chat-item {% if group.table.pk|stringformat:'s' == active_group|stringformat:'s' %}active{% endif %}">
+
+			<img src="{% static 'img/table_avatars/group_chat.png' %}" class="avatar-circle"
+				 alt="{{ group.table.name }}">
+
+			<div class="chat-info" style="flex: 1; min-width: 0;">
+				<div class="d-flex justify-content-between align-items-center">
+					<span class="chat-name" style="font-weight: 600;">{{ group.table.name }}</span>					
+				</div>
+
+				<div class="d-flex justify-content-between align-items-center mt-1">
+					<span style="color: #7f8c8d; font-size: 0.78em; margin-left: 4px;">
+						<i class="fas fa-crown" style="color: #2c3e50;"></i>
+						{{ group.table.dm.username }}
+					</span>
+					<!-- Conteo de no leídos basado en sesión -->
+					{% with session_key="group_last_read_"|add:group.table.pk|stringformat:'s' %}
+						{% if last_read_times %}
+							{% comment %}
+								Django templates no permiten comparación de fechas directamente.
+								Manejamos el badge desde Python pasando unread_count por grupo.
+							{% endcomment %}
+						{% endif %}
+					{% endwith %}
+
+					{% if group.unread_count and group.unread_count > 0 %}
+						<span class="badge bg-danger rounded-pill ms-1">{{ group.unread_count }}</span>
+					{% endif %}
+				</div>
+
+				<!-- Pill del sistema debajo del preview -->
+				<div class="mt-1">
+					<span style="background: {{ group.table.system.primary_color|default:'#95a5a6' }};
+								 color: white; font-size: 0.7em; padding: 1px 7px;
+								 border-radius: 20px; white-space: nowrap; display: inline-block;">
+						{{ group.table.system.name|truncatechars:32 }}
+					</span>					
+				</div>
+			</div>
+		</a>
+		{% endfor %}
+{% endif %}

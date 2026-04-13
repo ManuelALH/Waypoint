@@ -7,14 +7,17 @@ from django.utils import timezone
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
 
-from .models import Message
+from .models import Message, GroupMessage
 from tables.models import Table 
 
 User = get_user_model()
 MAX_MESSAGES_PER_PAGE = 12
 MAX_CHARS_PER_MESSAGE = 255
 SUPERUSER_USERNAME = "ElAmoDeLaMazmorra" # Nombre de usuario del superadministrador para recibir reportes
+MAX_MESSAGES = 50
+MAX_GROUP_MESSAGES = 150
 
 @login_required
 def inbox(request):
@@ -59,47 +62,33 @@ def inbox(request):
 
 @login_required
 def chat_room(request, username):
-    all_messages = Message.objects.filter(
-        Q(sender=request.user) | Q(recipient=request.user)
-    ).select_related('sender', 'recipient').order_by('-created_at')
-
-    chats_data = {}
-    for msg in all_messages:
-        partner = msg.recipient if msg.sender == request.user else msg.sender
-        
-        if partner.id not in chats_data:
-            chats_data[partner.id] = {
-                'user': partner,
-                'last_message': msg,
-                'unread_count': 0
-            }
-        
-        if msg.recipient == request.user and not msg.is_read:
-            chats_data[partner.id]['unread_count'] += 1
-
-    chat_list = list(chats_data.values())
-    chat_list.sort(key=lambda x: x['last_message'].created_at, reverse=True)
-
     other_user = get_object_or_404(User, username=username)
-    
+
     messages_in_chat = Message.objects.filter(
-        Q(sender=request.user, recipient=other_user) | 
+        Q(sender=request.user, recipient=other_user) |
         Q(sender=other_user, recipient=request.user)
     ).order_by('created_at')
 
     Message.objects.filter(
-        sender=other_user, 
-        recipient=request.user, 
+        sender=other_user,
+        recipient=request.user,
         read_at__isnull=True
     ).update(read_at=timezone.now())
 
     is_blocked = request.user.blocked_users.filter(pk=other_user.pk).exists()
+    chat_list, groups_data = build_sidebar_data(request.user)
 
     return render(request, 'messaging/chat_room.html', {
         'other_user': other_user,
         'chat_history': messages_in_chat,
         'chat_list': chat_list,
         'is_blocked': is_blocked,
+        'groups_data': groups_data,
+        'last_read_times': {
+            k.replace('group_last_read_', ''): v
+            for k, v in request.session.items()
+            if k.startswith('group_last_read_')
+        },
     })
 
 @login_required
@@ -146,7 +135,6 @@ def send_message(request):
             i_blocked = request.user.blocked_users.filter(pk=recipient.pk).exists()
 
             if not im_blocked and not i_blocked:
-                MAX_MESSAGES = 50
                 conversation = Message.objects.filter(
                     Q(sender=request.user, recipient=recipient) | 
                     Q(sender=recipient, recipient=request.user)
@@ -211,31 +199,18 @@ def get_chat_messages(request, username):
 @login_required
 def get_sidebar_chats(request):
     # Esta vista es llamada cada 10 segundos para actualizar la lista de la izquierda
-    all_messages = Message.objects.filter(
-        Q(sender=request.user) | Q(recipient=request.user)
-    ).select_related('sender', 'recipient').order_by('-created_at')
-
-    chats_data = {}
-    
-    for msg in all_messages:
-        partner = msg.recipient if msg.sender == request.user else msg.sender
-        
-        if partner.id not in chats_data:
-            chats_data[partner.id] = {
-                'user': partner,
-                'last_message': msg,
-                'unread_count': 0
-            }
-        
-        if msg.recipient == request.user and not msg.is_read:
-            chats_data[partner.id]['unread_count'] += 1
-
-    chat_list = list(chats_data.values())
-    chat_list.sort(key=lambda x: x['last_message'].created_at, reverse=True)
+    chat_list, groups_data = build_sidebar_data(request.user)
 
     return render(request, 'messaging/partials/sidebar_list.html', {
         'chat_list': chat_list,
-        'other_user_name': request.GET.get('active_chat') 
+        'other_user_name': request.GET.get('active_chat'),
+        'active_group': request.GET.get('active_group'),
+        'groups_data': groups_data,
+        'last_read_times': {
+            k.replace('group_last_read_', ''): v
+            for k, v in request.session.items()
+            if k.startswith('group_last_read_')
+        },
     })
 
 @login_required
@@ -352,3 +327,137 @@ def support_ticket(request):
             return redirect('home')
 
     return render(request, 'messaging/support.html')
+
+@login_required
+def group_chat(request, table_pk):
+    table = get_object_or_404(Table, pk=table_pk)
+
+    is_dm = request.user == table.dm
+    is_player = table.players.filter(id=request.user.id).exists()
+    is_member = is_dm or is_player
+
+    # Solo miembros activos pueden entrar
+    if not is_member:
+        return redirect('table_detail', pk=table_pk)
+
+    """
+    # Mensaje de bienvenida automatico si el grupo esta vacio
+    if not GroupMessage.objects.filter(table=table).exists():
+        GroupMessage.objects.create(
+            table=table,
+            sender=table.dm,
+            body=f"¡Bienvenidos al chat grupal de {table.name}!"
+        )
+    """
+
+    # Todos los mensajes del grupo incluyendo los de ex-miembros
+    session_key = f'group_last_read_{table_pk}'
+    request.session[session_key] = timezone.now().isoformat()
+
+    chat_history = GroupMessage.objects.filter(table=table).order_by('created_at')
+    chat_list, groups_data = build_sidebar_data(request.user)
+
+    return render(request, 'messaging/group_chat.html', {
+        'table': table,
+        'chat_history': chat_history,
+        'chat_list': chat_list,
+        'groups_data': groups_data,
+        'is_member': is_member,
+        'active_group': table_pk,
+        'last_read_times': {
+            k.replace('group_last_read_', ''): v
+            for k, v in request.session.items()
+            if k.startswith('group_last_read_')
+        },
+    })
+
+@login_required
+@require_POST
+def send_group_message(request, table_pk):
+    table = get_object_or_404(Table, pk=table_pk)
+
+    is_dm = request.user == table.dm
+    is_player = table.players.filter(id=request.user.id).exists()
+    is_member = is_dm or is_player
+
+    if not is_member:
+        return HttpResponse('No autorizado', status=403)
+
+    body = request.POST.get('body', '').strip()
+    is_htmx = request.headers.get('HX-Request')
+
+    if body and len(body) <= MAX_CHARS_PER_MESSAGE:
+        GroupMessage.objects.create(
+            table=table,
+            sender=request.user,
+            body=body,
+        )
+
+    # Siempre devolvemos el partial si es HTMX, aunque body esté vacío
+    if is_htmx:
+        chat_history = GroupMessage.objects.filter(
+            table=table
+        ).order_by('created_at')
+        return render(request, 'messaging/partials/group_message_list.html', {
+            'chat_history': chat_history,
+            'request': request,
+            'table': table,
+        })
+
+    return redirect('group_chat', table_pk=table_pk)
+
+@login_required
+def hx_get_group_messages(request, table_pk):
+    table = get_object_or_404(Table, pk=table_pk)
+
+    is_member = (request.user == table.dm or
+                 table.players.filter(id=request.user.id).exists())
+    if not is_member:
+        return HttpResponse('')
+
+    chat_history = GroupMessage.objects.filter(table=table).order_by('created_at')
+    return render(request, 'messaging/partials/group_message_list.html', {
+        'chat_history': chat_history,
+        'request': request,
+        'table': table,
+    })
+
+def build_sidebar_data(user):
+    #Construye los datos del sidebar de forma consistente para cualquier vista
+
+    all_messages = Message.objects.filter(
+        Q(sender=user) | Q(recipient=user)
+    ).select_related('sender', 'recipient').order_by('-created_at')
+
+    chats_data = {}
+    for msg in all_messages:
+        partner = msg.recipient if msg.sender == user else msg.sender
+        if partner.id not in chats_data:
+            chats_data[partner.id] = {
+                'user': partner,
+                'last_message': msg,
+                'unread_count': 0
+            }
+        if msg.recipient == user and not msg.is_read:
+            chats_data[partner.id]['unread_count'] += 1
+
+    chat_list = list(chats_data.values())
+    chat_list.sort(key=lambda x: x['last_message'].created_at, reverse=True)
+
+    user_tables = Table.objects.filter(
+        Q(dm=user) | Q(players=user)
+    ).select_related('dm', 'system').distinct().order_by('name')
+
+    groups_data = []
+    for table in user_tables:
+        """
+        last_msg = GroupMessage.objects.filter(
+            table=table
+        ).order_by('-created_at').first()
+        """
+        groups_data.append({
+            'table': table,
+            #'last_msg': last_msg,
+        })
+
+    return chat_list, groups_data
