@@ -14,6 +14,7 @@ from .models import Table, TableInvitation, CampaignLog, TableNote
 from characters.models import Character
 from gamesystems.models import GameSystem
 
+MAX_TABLES_PER_PAGE = 15
 TABLE_MAX_PLAYERS = 8
 LOG_MAX_ENTRIES_PER_PAGE = 20
 SEARCH_PAGE_SIZE = 9
@@ -42,17 +43,36 @@ def create_table(request):
 
 @login_required
 def my_tables(request):
-    tables = Table.objects.filter(
-        Q(dm=request.user) | Q(players=request.user)
-    ).select_related('system').distinct().order_by('-created_at')
+    sort_by = request.GET.get('sort', 'default')
     
-    for table in tables:
+    tables_query = Table.objects.filter(
+        Q(dm=request.user) | Q(players=request.user)
+    ).select_related('system', 'dm').distinct()
+
+    sorting_options = {
+        'system': 'system__name',
+        'oldest': 'created_at',
+        'newest': '-created_at',
+    }
+
+    criteria = sorting_options.get(sort_by, '-created_at')
+    tables_query = tables_query.order_by(criteria)
+
+    paginator = Paginator(tables_query, MAX_TABLES_PER_PAGE)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Procesar atributos visuales SOLO para las mesas de la pagina actual
+    for table in page_obj:
         if table.system:
              table.color = table.system.primary_color
         else:
-             table.color = '#95a5a6'
+             table.color = '#95a5a6'             
 
-    return render(request, 'tables/my_tables.html', {'tables': tables})
+    return render(request, 'tables/my_tables.html', {
+        'tables': page_obj,
+        'current_sort': sort_by
+    })
 
 @login_required
 def table_detail(request, pk):

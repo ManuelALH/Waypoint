@@ -4,111 +4,190 @@
 <div style="padding: 20px;">
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
-            Mis Personajes
-        </h2>
-        <a href="{% url 'create_character' %}" class="btn-create">
-            <i class="fas fa-plus"></i> Nuevo Personaje
-        </a>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <h2 style="color: #2c3e50; border-bottom: 2px solid #34495e; padding-bottom: 5px; margin: 0;">
+                Personajes
+            </h2>
+			<button onclick="history.back()" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+        </div>
+
+        <form method="GET" style="margin: 0;">
+            <select name="sort" onchange="this.form.submit()" class="sort-select">
+                <option value="default" {% if current_sort == 'default' %}selected{% endif %}>Predeterminado</option>
+                <option value="system" {% if current_sort == 'system' %}selected{% endif %}>Sistema</option>
+                <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Más recientes</option>
+                <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Más antiguos</option>
+            </select>
+        </form>
     </div>
 
     <div class="grid-container">
+        
+        <a href="{% url 'create_character' %}" class="char-card create-card">
+            <div class="create-card-content">
+                <i class="fas fa-plus-circle"></i>
+                <h3>Crear Personaje</h3>
+                <p>Comienza una nueva aventura</p>
+            </div>
+        </a>
+
         {% for char in characters %}
-        <div class="char-card">
+			<a href="{% url 'character_sheet' char.pk %}" class="char-card card-link" style="--sys-color: {{ char.system.primary_color|default:'#3498db' }};">
+				
+				<div class="card-header" style="background-color: var(--sys-color);">
+					<span class="system-badge">{{ char.system.name }}</span>
+				</div>
 
-            <div class="card-header" style="background-color: {{ char.system.primary_color|default:'#3498db' }};">
-                <span class="system-badge">{{ char.system.name }}</span>
-            </div>
+				<div class="card-body">
+					<h3 class="char-name">{{ char.name }}</h3>
 
-            <div class="card-body">
-                <h3 class="char-name">{{ char.name }}</h3>
+					<div class="char-info">
+						{% if char.display_stats %}
+							{% for stat in char.display_stats %}
+								<div class="info-item">
+									<i class="fas {{ stat.icon }}"></i>
+									<span style="text-transform: capitalize;">
+										{{ stat.label }}: {{ stat.value }}
+									</span>
+								</div>
+							{% endfor %}
+						{% else %}
+							<div class="info-item">
+								<i class="fas fa-user-tag"></i>
+								<span style="text-transform: capitalize;">
+									{{ char.data.class|default:"No Class" }}
+								</span>
+							</div>
+							<div class="info-item">
+								<i class="fas fa-star"></i>
+								<span>Level: {{ char.data.level|default:"-" }}</span>
+							</div>
+						{% endif %}
+					</div>
 
-                <div class="char-info">
-                    
-                    {% if char.display_stats %}
-                        {% for stat in char.display_stats %}
-                        <div class="info-item">
-                            <i class="fas {{ stat.icon }}"></i>
-                            <span style="text-transform: capitalize;">
-                                {{ stat.label }}: {{ stat.value }}
-                            </span>
-                        </div>
-                        {% endfor %}
-                        
-                    {% else %}
-                        <div class="info-item">
-                            <i class="fas fa-user-tag"></i>
-                            <span style="text-transform: capitalize;">
-                                {{ char.data.class|default:"No Class" }}
-                            </span>
-                        </div>
-
-                        <div class="info-item">
-                            <i class="fas fa-star"></i>
-                            <span>Level: {{ char.data.level|default:"-" }}</span>
-                        </div>
-                    {% endif %}
-
-                </div>
-
-                <a href="{% url 'character_sheet' char.pk %}" class="btn-view" style="color: {{ char.system.primary_color|default:'#3498db' }}; 
-                          border-color: {{ char.system.primary_color|default:'#3498db' }};">
-                    Ver Ficha
-                </a>
-            </div>
-        </div>
-        {% empty %}
-        <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #7f8c8d;">
-            <h3>No tienes personajes creados</h3>
-            <p>¡Prepara tu hoja de personaje para la aventura!</p>
-            <a href="{% url 'create_character' %}" class="btn-create" style="display: inline-block; margin-top: 10px;">
-                Crear mi primer personaje
-            </a>
-        </div>
-        {% endfor %}
+					<div class="btn-view">
+						Ver Ficha
+					</div>
+				</div>
+			</a>
+		{% endfor %}
     </div>
+
+    {% if characters.has_other_pages %}
+		<div class="pagination-container">
+			{% if characters.has_previous %}
+				<a href="?page={{ characters.previous_page_number }}&sort={{ current_sort }}" class="btn-page">
+					&laquo; Anterior
+				</a>
+			{% endif %}
+
+			<span class="page-indicator">
+				Página {{ characters.number }} de {{ characters.paginator.num_pages }}
+			</span>
+
+			{% if characters.has_next %}
+				<a href="?page={{ characters.next_page_number }}&sort={{ current_sort }}" class="btn-page">
+					Siguiente &raquo;
+				</a>
+			{% endif %}
+		</div>
+		{% endif %}
 
 </div>
 
 <style>
-    /* Estilos Generales */
-    .btn-create {
-        background-color: #27ae60;
-        color: white;
-        padding: 10px 20px;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        transition: 0.2s;
+    /* Cabecera y Filtros */
+    .btn-back {
+        background: none; 
+        border: none; 
+        color: #7f8c8d; 
+        font-size: 1rem; 
+        cursor: pointer; 
+        padding: 0;
+        transition: color 0.2s;
+    }
+    .btn-back:hover {
+        color: #34495e;
+    }
+    
+    .sort-select {
+        padding: 8px 12px; 
+        border-radius: 5px; 
+        border: 1px solid #ccc; 
+        background-color: white; 
+        color: #2c3e50; 
+        font-weight: bold; 
+        cursor: pointer;
+        outline: none;
+    }
+    .sort-select:focus {
+        border-color: #34495e;
     }
 
-    .btn-create:hover {
-        background-color: #219150;
-    }
-
-    /* Grid Layout (Idéntico a Tables) */
+    /* Grid Layout */
     .grid-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 25px;
     }
 
-    /* Diseño de la Tarjeta */
+    /* Diseño de la Tarjeta Base */
     .char-card {
         background: white;
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
         display: flex;
         flex-direction: column;
+        min-height: 280px; /* Asegura un tamaño consistente */
     }
-
     .char-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
 
-    /* Cabecera de Color */
+    /* Tarjeta Especial de Creación */
+    .create-card {
+        text-decoration: none;
+        justify-content: center;
+        align-items: center;
+        border: 2px dashed #bdc3c7;
+        background-color: #f8f9fa;
+        box-shadow: none;
+    }
+    .create-card:hover {
+        border-color: #34495e;
+        background-color: #eaf2f8;
+    }
+    .create-card-content {
+        text-align: center;
+        color: #7f8c8d;
+        transition: color 0.2s;
+    }
+    .create-card i {
+        font-size: 3.5rem;
+        margin-bottom: 15px;
+        color: #bdc3c7;
+        transition: transform 0.2s, color 0.2s;
+    }
+    .create-card:hover i {
+        color: #34495e;
+        transform: scale(1.1);
+    }
+    .create-card h3 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.4rem;
+    }
+    .create-card p {
+        font-size: 0.9rem;
+        margin-top: 10px;
+    }
+
+    /* Elementos Internos de la Tarjeta Estándar */
     .card-header {
         height: 60px;
         display: flex;
@@ -116,7 +195,6 @@
         justify-content: flex-end;
         padding: 0 15px;
     }
-
     .system-badge {
         background: rgba(0, 0, 0, 0.3);
         color: white;
@@ -125,8 +203,6 @@
         font-size: 0.8rem;
         font-weight: bold;
     }
-
-    /* Cuerpo de la Tarjeta */
     .card-body {
         padding: 20px;
         text-align: center;
@@ -134,14 +210,11 @@
         display: flex;
         flex-direction: column;
     }
-
     .char-name {
         margin: 0 0 15px 0;
         color: #2c3e50;
         font-size: 1.4rem;
     }
-
-    /* Sección de info (Gris con iconos) */
     .char-info {
         background: #f8f9fa;
         padding: 10px;
@@ -151,35 +224,70 @@
         font-size: 0.9rem;
         color: #555;
     }
-
     .info-item {
         display: flex;
         align-items: center;
         gap: 10px;
         margin-bottom: 5px;
     }
-
     .info-item i {
         width: 20px;
         text-align: center;
         color: #7f8c8d;
     }
 
-    /* Botón Ver */
-    .btn-view {
-        margin-top: auto;
-        display: block;
-        padding: 10px;
-        border: 2px solid;
-        /* El color se define inline en el HTML */
-        border-radius: 5px;
+    /* Estilos de Paginación */
+    .pagination-container {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+    }
+    .btn-page {
+        background-color: #34495e;
+        color: white;
+        padding: 8px 20px;
         text-decoration: none;
+        border-radius: 5px;
         font-weight: bold;
-        transition: 0.2s;
+        transition: background-color 0.2s;
     }
+    .btn-page:hover {
+        background-color: #2c3e50;
+    }
+    .page-indicator {
+        padding: 8px 15px;
+        background: #ecf0f1;
+        border-radius: 5px;
+        color: #34495e;
+        font-weight: bold;
+    }
+	/* Nuevo estilo para evitar que las tarjetas parezcan hipervinculos de texto plano */
+	.card-link {
+		text-decoration: none;
+		color: inherit;
+		cursor: pointer;
+	}
 
-    .btn-view:hover {
-        background-color: #f4f4f4;
-    }
+	/* Botón Ver */
+	.btn-view {
+		margin-top: auto;
+		display: block;
+		padding: 10px;
+		border: 2px solid var(--sys-color); /* Usamos el color del sistema para el borde */
+		color: var(--sys-color);            /* Usamos el color del sistema para el texto */
+		border-radius: 5px;
+		text-decoration: none;
+		font-weight: bold;
+		background-color: transparent;
+		transition: all 0.2s ease-in-out;   /* Transición suave para todos los cambios */
+	}
+
+	/* El efecto visual cuando el mouse pasa por cualquier parte de la tarjeta */
+	.char-card:hover .btn-view {
+		background-color: var(--sys-color); /* Rellenamos el botón con el color del sistema */
+		color: white;                       /* Cambiamos el texto a blanco para que resalte */
+	}
 </style>
 {% endblock %}

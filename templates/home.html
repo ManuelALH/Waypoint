@@ -69,12 +69,11 @@
             <div class="card h-100 text-center action-card border-0 shadow-sm">
                 <div class="card-body d-flex flex-column justify-content-center p-4">
                     <div class="mb-3 text-primary">
-                        <i class="fas fa-hat-wizard fa-3x"></i>
+                        <i class="fas fa-users fa-3x"></i>
                     </div>
-                    <h5 class="card-title">Crear Personaje</h5>
-                    <p class="card-text text-muted small">Diseña un nuevo héroe desde cero.</p>
-                    <a href="{% url 'create_character' %}"
-                        class="btn btn-outline-primary mt-auto stretched-link">Empezar</a>
+                    <h5 class="card-title">Personajes</h5>
+                    <p class="card-text text-muted small">Crea y gestiona tus Personajes</p>
+                    <a href="{% url 'my_characters' %}" class="btn btn-outline-primary mt-auto stretched-link">Ver Todos</a>
                 </div>
             </div>
         </div>
@@ -83,38 +82,11 @@
             <div class="card h-100 text-center action-card border-0 shadow-sm">
                 <div class="card-body d-flex flex-column justify-content-center p-4">
                     <div class="mb-3 text-success">
-                        <i class="fas fa-users fa-3x"></i>
-                    </div>
-                    <h5 class="card-title">Mis Personajes</h5>
-                    <p class="card-text text-muted small">Gestiona tu lista de héroes.</p>
-                    <a href="{% url 'my_characters' %}" class="btn btn-outline-success mt-auto stretched-link">Ver
-                        Todos</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="card h-100 text-center action-card border-0 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-center p-4">
-                    <div class="mb-3 text-danger">
-                        <i class="fas fa-dice-d20 fa-3x"></i>
-                    </div>
-                    <h5 class="card-title">Crear Mesa</h5>
-                    <p class="card-text text-muted small">Organiza una nueva partida.</p>
-                    <a href="{% url 'create_table' %}" class="btn btn-outline-danger mt-auto stretched-link">Crear</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="card h-100 text-center action-card border-0 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-center p-4">
-                    <div class="mb-3 text-warning">
                         <i class="fas fa-dungeon fa-3x"></i>
                     </div>
-                    <h5 class="card-title">Mis Mesas</h5>
-                    <p class="card-text text-muted small">Gestiona tus campañas activas.</p>
-                    <a href="{% url 'my_tables' %}" class="btn btn-outline-warning mt-auto stretched-link">Explorar</a>
+                    <h5 class="card-title">Mesas</h5>
+                    <p class="card-text text-muted small">Crea Mesas y gestiona tus campañas</p>
+                    <a href="{% url 'my_tables' %}" class="btn btn-outline-success mt-auto stretched-link">Explorar</a>
                 </div>
             </div>
         </div>
@@ -122,11 +94,11 @@
         <div class="col-md-6 col-lg-3">
             <div class="card h-100 text-center action-card border-0 shadow-sm">
                 <div class="card-body d-flex flex-column justify-content-center p-4">
-                    <div class="mb-3 text-info"> <i class="fas fa-search fa-3x"></i>
+                    <div class="mb-3 text-warning"> <i class="fas fa-search fa-3x"></i>
                     </div>
                     <h5 class="card-title">Buscar Mesas</h5>
-                    <p class="card-text text-muted small">Encuentra partidas públicas y únete.</p>
-                    <a href="{% url 'find_table' %}" class="btn btn-outline-info mt-auto stretched-link">Buscar</a>
+                    <p class="card-text text-muted small">Encuentra partidas públicas y únete</p>
+                    <a href="{% url 'find_table' %}" class="btn btn-outline-warning mt-auto stretched-link">Buscar</a>
                 </div>
             </div>
         </div>
@@ -145,7 +117,7 @@
                             -
                         </span>
                     </h5>
-                    <p class="card-text text-muted small">Revisa tus conversaciones privadas.</p>
+                    <p class="card-text text-muted small">Revisa tus conversaciones privadas y de mesas</p>
                     <a href="{% url 'inbox' %}" class="btn btn-outline-dark mt-auto stretched-link"
                         style="border-color: #6f42c1; color: #6f42c1;"
                         onmouseover="this.style.backgroundColor='#6f42c1'; this.style.color='white';"

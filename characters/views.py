@@ -10,6 +10,7 @@ from characters.models import Character
 from characters.forms import create_character_form
 from gamesystems.models import GameSystem 
 
+MAX_CHARACTERS_PER_PAGE = 15
 MAX_ITEMS_SHOW = 10
 MAX_ITEMS_PER_PAGE = 32
 MAX_LOGS_SHOW = 5
@@ -81,8 +82,25 @@ def create_character(request):
 
 @login_required
 def my_characters(request):
-    characters = Character.objects.filter(owner=request.user).order_by('-created_at')
-    for char in characters:
+    sort_by = request.GET.get('sort', 'default')
+    characters_query = Character.objects.filter(owner=request.user)
+    
+    match sort_by:
+        case 'system':
+            characters_query = characters_query.order_by('system__name', 'name')
+        case 'oldest':
+            characters_query = characters_query.order_by('created_at')
+        case 'newest':
+            characters_query = characters_query.order_by('-created_at')
+        case _:
+            characters_query = characters_query.order_by('-created_at')
+
+    paginator = Paginator(characters_query, MAX_CHARACTERS_PER_PAGE)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    #Procesar stats SOLO para los personajes de la pagina actual
+    for char in page_obj:
         schema_meta = char.system.schema_definition.get("meta", {})
         card_fields = schema_meta.get("card_fields", [])
 
@@ -104,7 +122,8 @@ def my_characters(request):
             })
 
     return render(request, "characters/my_characters.html", {
-        "characters": characters
+        "characters": page_obj, 
+        "current_sort": sort_by
     })
 
 @login_required

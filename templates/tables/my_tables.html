@@ -4,19 +4,39 @@
 <div style="padding: 20px;">
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
-            Mis Mesas
-        </h2>
-        <a href="{% url 'create_table' %}" class="btn-create">
-            <i class="fas fa-plus"></i> Nueva Mesa
-        </a>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <h2 style="color: #2c3e50; border-bottom: 2px solid #34495e; padding-bottom: 5px; margin: 0;">
+                Mesas
+            </h2>
+			<button onclick="history.back()" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+        </div>
+
+        <form method="GET" style="margin: 0;">
+            <select name="sort" onchange="this.form.submit()" class="sort-select">
+                <option value="default" {% if current_sort == 'default' %}selected{% endif %}>Predeterminado</option>
+                <option value="system" {% if current_sort == 'system' %}selected{% endif %}>Sistema</option>
+                <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Más recientes</option>
+                <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Más antiguos</option>
+            </select>
+        </form>
     </div>
 
     <div class="tables-grid">
-        {% for table in tables %}
-        <div class="table-card">
+        
+        <a href="{% url 'create_table' %}" class="table-card create-card">
+            <div class="create-card-content">
+                <i class="fas fa-plus-circle"></i>
+                <h3>Crear Mesa</h3>
+                <p>Inicia una nueva campaña</p>
+            </div>
+        </a>
 
-            <div class="card-header" style="background-color: {{ table.color }};">
+        {% for table in tables %}
+        <a href="{% url 'table_detail' table.pk %}" class="table-card card-link" style="--sys-color: {{ table.color|default:'#3498db' }};">
+
+            <div class="card-header" style="background-color: var(--sys-color);">
                 <span class="system-badge">{{ table.system.name }}</span>
             </div>
 
@@ -24,6 +44,10 @@
                 <h3 class="table-name">{{ table.name }}</h3>
 
                 <div class="table-info">
+					<div class="info-item">
+						<i class="fas fa-crown"></i>
+						<span>{{ table.dm.username }}</span>
+					</div>				
                     <div class="info-item">
                         <i class="fas fa-calendar-alt"></i>
                         <span>{{ table.play_days }}</span>
@@ -47,26 +71,70 @@
                     {% endif %}
                 </div>
 
-                <a href="{% url 'table_detail' table.pk %}" class="btn-view"
-                    style="color: {{ table.color }}; border-color: {{ table.color }};">
+                <div class="btn-view">
                     Ver Mesa
-                </a>
+                </div>
             </div>
-        </div>
+        </a>
         {% empty %}
         <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #7f8c8d;">
             <h3>No tienes mesas activas</h3>
-            <p>¡Crea una campaña y comienza la aventura!</p>
-            <a href="{% url 'create_table' %}" class="btn-create" style="display: inline-block; margin-top: 10px;">
-                Crear mi primera mesa
-            </a>
+            <p>¡Usa la tarjeta de Crear Mesa para comenzar tu primera aventura!</p>
         </div>
         {% endfor %}
     </div>
 
+	{% if tables.has_other_pages %}
+		<div class="pagination-container">
+			{% if tables.has_previous %}
+				<a href="?page={{ tables.previous_page_number }}&sort={{ current_sort }}" class="btn-page">
+					&laquo; Anterior
+				</a>
+			{% endif %}
+
+			<span class="page-indicator">
+				Página {{ tables.number }} de {{ tables.paginator.num_pages }}
+			</span>
+
+			{% if tables.has_next %}
+				<a href="?page={{ tables.next_page_number }}&sort={{ current_sort }}" class="btn-page">
+					Siguiente &raquo;
+				</a>
+			{% endif %}
+		</div>
+    {% endif %}
+
 </div>
 
 <style>
+    /* Cabecera y Filtros */
+    .btn-back {
+        background: none; 
+        border: none; 
+        color: #7f8c8d; 
+        font-size: 1rem; 
+        cursor: pointer; 
+        padding: 0;
+        transition: color 0.2s;
+    }
+    .btn-back:hover {
+        color: #34495e;
+    }
+    
+    .sort-select {
+        padding: 8px 12px; 
+        border-radius: 5px; 
+        border: 1px solid #ccc; 
+        background-color: white; 
+        color: #2c3e50; 
+        font-weight: bold; 
+        cursor: pointer;
+        outline: none;
+    }
+    .sort-select:focus {
+        border-color: #34495e;
+    }
+	
     /* Estilos Generales */
     .btn-create {
         background-color: #27ae60;
@@ -75,7 +143,7 @@
         text-decoration: none;
         border-radius: 5px;
         font-weight: bold;
-        transition: 0.2s;
+        transition: background-color 0.2s;
     }
 
     .btn-create:hover {
@@ -89,25 +157,71 @@
         gap: 25px;
     }
 
-    /* Diseño de la Tarjeta */
+    /* Diseño de la Tarjeta Base */
     .table-card {
         background: white;
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
         display: flex;
         flex-direction: column;
+        min-height: 280px; /* Igualamos la altura mínima con la de personajes */
     }
 
     .table-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Sombra mejorada en hover */
+    }
+
+    /* Enlace que recubre toda la tarjeta */
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    /* Tarjeta Especial de Creación */
+    .create-card {
+        text-decoration: none;
+        justify-content: center;
+        align-items: center;
+        border: 2px dashed #bdc3c7;
+        background-color: #f8f9fa;
+        box-shadow: none;
+    }
+    .create-card:hover {
+        border-color: #34495e;
+        background-color: #eaf2f8;
+    }
+    .create-card-content {
+        text-align: center;
+        color: #7f8c8d;
+        transition: color 0.2s;
+    }
+    .create-card i {
+        font-size: 3.5rem;
+        margin-bottom: 15px;
+        color: #bdc3c7;
+        transition: transform 0.2s, color 0.2s;
+    }
+    .create-card:hover i {
+        color: #34495e;
+        transform: scale(1.1);
+    }
+    .create-card h3 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.4rem;
+    }
+    .create-card p {
+        font-size: 0.9rem;
+        margin-top: 10px;
     }
 
     /* Cabecera de Color */
     .card-header {
         height: 60px;
-        /* Un poco más delgado que el de personajes si no hay foto */
         display: flex;
         align-items: center;
         justify-content: flex-end;
@@ -162,22 +276,51 @@
         color: #7f8c8d;
     }
 
-    /* Botón Ver */
+    /* Estilos de Paginación */
+    .pagination-container {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+    }
+    .btn-page {
+        background-color: #34495e;
+        color: white;
+        padding: 8px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: background-color 0.2s;
+    }
+    .btn-page:hover {
+        background-color: #2c3e50;
+    }
+    .page-indicator {
+        padding: 8px 15px;
+        background: #ecf0f1;
+        border-radius: 5px;
+        color: #34495e;
+        font-weight: bold;
+    }
+    /* Botón Ver (Modificado para usar Variables CSS) */
     .btn-view {
         margin-top: auto;
-        /* Empuja el botón al final */
         display: block;
         padding: 10px;
-        border: 2px solid;
-        /* El color se define inline */
+        border: 2px solid var(--sys-color);
+        color: var(--sys-color);
         border-radius: 5px;
         text-decoration: none;
         font-weight: bold;
-        transition: 0.2s;
+        background-color: transparent;
+        transition: all 0.2s ease-in-out;
     }
 
-    .btn-view:hover {
-        background-color: #f4f4f4;
+    /* Efecto visual unificado al pasar el cursor sobre la tarjeta */
+    .table-card:hover .btn-view {
+        background-color: var(--sys-color);
+        color: white;
     }
 </style>
 {% endblock %}
