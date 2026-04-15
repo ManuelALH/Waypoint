@@ -378,13 +378,12 @@ def send_group_message(request, table_pk):
 
     is_dm = request.user == table.dm
     is_player = table.players.filter(id=request.user.id).exists()
-    is_member = is_dm or is_player
 
-    if not is_member:
+    if not is_dm and not is_player:
         return HttpResponse('No autorizado', status=403)
 
     body = request.POST.get('body', '').strip()
-    is_htmx = request.headers.get('HX-Request')
+    is_htmx = bool(request.headers.get('HX-Request'))
 
     if body and len(body) <= MAX_CHARS_PER_MESSAGE:
         GroupMessage.objects.create(
@@ -393,7 +392,17 @@ def send_group_message(request, table_pk):
             body=body,
         )
 
-    # Siempre devolvemos el partial si es HTMX, aunque body esté vacío
+        # Limitar historial
+        total = GroupMessage.objects.filter(table=table).count()
+        if total > MAX_GROUP_MESSAGES:
+            ids_to_delete = list(
+                GroupMessage.objects.filter(table=table)
+                .order_by('created_at')
+                .values_list('id', flat=True)[:total - MAX_GROUP_MESSAGES]
+            )
+            GroupMessage.objects.filter(id__in=ids_to_delete).delete()
+
+    # Siempre devolvemos el partial si es HTMX
     if is_htmx:
         chat_history = GroupMessage.objects.filter(
             table=table

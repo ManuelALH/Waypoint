@@ -271,6 +271,18 @@ def create_character_form(schema_data):
                 initial=default_value
             )
 
+        elif field_type == "str_list":
+            widget_attrs['data-is-str-list'] = 'true'
+            widget_attrs['data-columns'] = json.dumps(
+                field_config.get("columns_fields", [])
+            )
+            form_fields[field_name] = forms.CharField(
+                label=label,
+                required=False,
+                widget=forms.HiddenInput(attrs=widget_attrs),
+                help_text=help_text,
+            )
+
         else:
             form_fields[field_name] = forms.CharField(
                 label=label, required=is_required, 
@@ -357,6 +369,22 @@ def create_character_form(schema_data):
                     
                     if str(val) not in valid_keys:
                         self.add_error(f_name, f"La opción '{val}' no es válida. Activa el Modo Homebrew para valores personalizados.")
+            
+            if f_config.get("type") == "str_list":
+                raw_val = cleaned_data.get(f_name, '')
+                if raw_val:
+                    try:
+                        parsed = json.loads(raw_val)
+                        # Filtramos filas completamente vacias para no guardar basura
+                        cleaned_data[f_name] = [
+                            row for row in parsed
+                            if isinstance(row, dict) and any(v.strip() for v in row.values() if isinstance(v, str))
+                        ]
+                    except (json.JSONDecodeError, AttributeError):
+                        cleaned_data[f_name] = []
+                else:
+                    cleaned_data[f_name] = []
+                continue
                                                 
         for f_name, f_config in schema_data.items():
             if f_name == "meta": continue
@@ -498,6 +526,11 @@ def create_character_form(schema_data):
             if f_config.get("type") == "skill_list":
                 current_val = self.initial.get(f_name)
                 if isinstance(current_val, dict):
+                    self.initial[f_name] = json.dumps(current_val)
+            
+            if f_config.get("type") == "str_list":
+                current_val = self.initial.get(f_name)
+                if isinstance(current_val, list):
                     self.initial[f_name] = json.dumps(current_val)
 
     form_fields['__init__'] = custom_init

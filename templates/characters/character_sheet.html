@@ -36,133 +36,131 @@
 			
 			    {% if section.type == "actions" %}
 					{% if section.actions %}
-					<div style="overflow-x: auto;">
-						<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;
-									  margin-bottom: 20px; min-width: 400px;">
-							<thead>
-								<tr style="border-bottom: 2px solid #eee;">
-									{% for col in section.action_columns %}
-									<th style="text-align: {% if forloop.first %}left{% else %}center{% endif %};
-											   padding: 8px; color: #7f8c8d; font-size: 0.75em;
-											   text-transform: uppercase; letter-spacing: 1px;">
-										{{ col.label }}
-									</th>
-									{% endfor %}
-									{% if request.user == character.owner %}
-										<th style="width: 80px;"></th>
-									{% endif %}
-								</tr>
-							</thead>
-							<tbody>
-								{% for action in section.actions %}
-								<tr style="border-bottom: 1px solid #f5f5f5;" id="action-row-{{ action.id }}">
+						<div style="overflow-x: auto;">
+							<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;
+										  margin-bottom: 20px; min-width: 400px;">
+								<thead>
+									<tr style="border-bottom: 2px solid #eee;">
+										{% for col in section.action_columns %}
+											<th style="text-align: {% if forloop.first %}left{% else %}center{% endif %};
+													   padding: 8px; color: #7f8c8d; font-size: 0.75em;
+													   text-transform: uppercase; letter-spacing: 1px;">
+												{{ col.label }}
+											</th>
+										{% endfor %}
+										{% if request.user == character.owner %}
+											<th style="width: 80px;"></th>
+										{% endif %}
+									</tr>
+								</thead>
+								<tbody>
+									{% for action in section.actions %}
+										<tr style="border-bottom: 1px solid #f5f5f5;" id="action-row-{{ action.id }}">
 
-									{% for cell in action.cells %}
-										<td style="padding: 8px; color: #2c3e50;
-												   {% if forloop.first %}font-weight: 500;
-												   {% else %}text-align: center;{% endif %}">
-											{{ cell.value|default:"—" }}
-										</td>
-									{% endfor %}
+											{% for cell in action.cells %}
+												<td style="padding: 8px; color: #2c3e50;
+														   {% if forloop.first %}font-weight: 500;
+														   {% else %}text-align: center;{% endif %}">
+													{{ cell.value|default:"—" }}
+												</td>
+											{% endfor %}
 
-									{% if request.user == character.owner %}
-										<td style="text-align: center; padding: 8px; white-space: nowrap;">
-											<button type="button" onclick="toggleActionEdit('{{ action.id }}')"
-												style="background: #3498db; color: white; border: none;
-													   padding: 4px 8px; border-radius: 4px; cursor: pointer;
-													   font-size: 0.8em; margin-right: 4px;">
-												<i class="fas fa-pencil-alt"></i>
-											</button>
-											<form method="post"
-												  action="{% url 'delete_action' character.pk action.id %}"
-												  style="display: inline;"
-												  onsubmit="return confirm('Delete this action?')">
-												{% csrf_token %}
-												<button type="submit"
-													style="background: #e74c3c; color: white; border: none;
-														   padding: 4px 8px; border-radius: 4px; cursor: pointer;
-														   font-size: 0.8em;">
-													<i class="fas fa-trash"></i>
-												</button>
-											</form>
-										</td>
-									{% endif %}
-								</tr>
-
-								{% if request.user == character.owner %}
-								<tr id="action-edit-{{ action.id }}"
-									style="display: none; background: #f0f7ff;">
-									<td colspan="{{ section.action_columns|length|add:1 }}" style="padding: 12px;">
-										<form method="post"
-											  action="{% url 'edit_action' character.pk action.id %}">
-											{% csrf_token %}
-											<div style="display: flex; gap: 10px; 
-														align-items: flex-end; flex-wrap: wrap;">
-												
-												{% for field in action.edit_fields %}
-												<div {% if field.action == 'notes' %}style="flex-grow: 1;"{% endif %}>
-													<label style="font-size: 0.75em; color: #7f8c8d;
-																  display: block; margin-bottom: 4px;
-																  text-transform: uppercase;">
-														{{ field.label }}
-														{% if field.required %} *{% endif %}
-													</label>
-													<input
-														type="{% if field.type == 'int' %}number{% else %}text{% endif %}"
-														name="{{ field.action }}"
-														value="{{ field.value }}"
-														{% if field.required %}required{% endif %}
-														style="padding: 6px 10px; border: 1px solid #ddd;
-															   border-radius: 4px;
-															   width: {% if field.type == 'int' %}70px
-																	  {% elif field.action == 'notes' %}100%
-																	  {% else %}120px{% endif %};">
-												</div>
-												{% endfor %}
-
-												<div style="display: flex; gap: 6px;">
-													<button type="submit"
-														style="background: #27ae60; color: white; border: none;
-															   padding: 7px 14px; border-radius: 4px;
-															   cursor: pointer;">
-														<i class="fas fa-check"></i> Save
+											{% if request.user == character.owner %}
+												<td style="text-align: center; padding: 8px; white-space: nowrap;">
+													<button type="button" onclick="toggleActionEdit('{{ action.id }}')"
+														style="background: #3498db; color: white; border: none;
+															   padding: 4px 8px; border-radius: 4px; cursor: pointer;
+															   font-size: 0.8em; margin-right: 4px;">
+														<i class="fas fa-pencil-alt"></i>
 													</button>
-													<button type="button"
-														onclick="toggleActionEdit('{{ action.id }}')"
-														style="background: #95a5a6; color: white; border: none;
-															   padding: 7px 14px; border-radius: 4px;
-															   cursor: pointer;">
-														Cancel
-													</button>
-												</div>
-											</div>
-										</form>
-									</td>
-								</tr>
-							{% endif %}
+													<form method="post"
+														  action="{% url 'delete_action' character.pk action.id %}"
+														  style="display: inline;"
+														  onsubmit="return confirm('Delete this action?')">
+														{% csrf_token %}
+														<button type="submit"
+															style="background: #e74c3c; color: white; border: none;
+																   padding: 4px 8px; border-radius: 4px; cursor: pointer;
+																   font-size: 0.8em;">
+															<i class="fas fa-trash"></i>
+														</button>
+													</form>
+												</td>
+											{% endif %}
+										</tr>
 
-						{% endfor %}
-						</tbody>
-						</table>
-					</div>
-				{% else %}
-				<p style="color: #95a5a6; font-style: italic; font-size: 0.9em;">
-					No actions defined yet.
-				</p>
+										{% if request.user == character.owner %}
+											<tr id="action-edit-{{ action.id }}"
+												style="display: none; background: #f0f7ff;">
+												<td colspan="{{ section.action_columns|length|add:1 }}" style="padding: 12px;">
+													<form method="post"
+														  action="{% url 'edit_action' character.pk action.id %}">
+														{% csrf_token %}
+														<div style="display: flex; gap: 10px; 
+																	align-items: flex-end; flex-wrap: wrap;">
+															
+															{% for field in action.edit_fields %}
+																<div {% if field.action == 'notes' %}style="flex-grow: 1;"{% endif %}>
+																	<label style="font-size: 0.75em; color: #7f8c8d;
+																				  display: block; margin-bottom: 4px;
+																				  text-transform: uppercase;">
+																		{{ field.label }}
+																		{% if field.required %} *{% endif %}
+																	</label>
+																	<input
+																		type="{% if field.type == 'int' %}number{% else %}text{% endif %}"
+																		name="{{ field.action }}"
+																		value="{{ field.value }}"
+																		{% if field.required %}required{% endif %}
+																		style="padding: 6px 10px; border: 1px solid #ddd;
+																			   border-radius: 4px;
+																			   width: {% if field.type == 'int' %}70px
+																					  {% elif field.action == 'notes' %}100%
+																					  {% else %}120px{% endif %};">
+																</div>
+															{% endfor %}
+
+															<div style="display: flex; gap: 6px;">
+																<button type="submit"
+																	style="background: #27ae60; color: white; border: none;
+																		   padding: 7px 14px; border-radius: 4px;
+																		   cursor: pointer;">
+																	<i class="fas fa-check"></i> Save
+																</button>
+																<button type="button"
+																	onclick="toggleActionEdit('{{ action.id }}')"
+																	style="background: #95a5a6; color: white; border: none;
+																		   padding: 7px 14px; border-radius: 4px;
+																		   cursor: pointer;">
+																	Cancel
+																</button>
+															</div>
+														</div>
+													</form>
+												</td>
+											</tr>
+										{% endif %}
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					{% else %}
+					<p style="color: #95a5a6; font-style: italic; font-size: 0.9em;">
+						No actions defined yet.
+					</p>
 				{% endif %}
 					
-					{% if request.user == character.owner %}
-						<div style="background: #f8f9fa; border: 1px dashed #ddd;
-									border-radius: 8px; padding: 16px;">
-							<div style="font-size: 0.75em; color: #7f8c8d; text-transform: uppercase;
-										letter-spacing: 1px; margin-bottom: 12px; font-weight: bold;">
-								<i class="fas fa-plus"></i> Add Action
-							</div>
-							<form method="post" action="{% url 'add_action' character.pk %}">
-								{% csrf_token %}
-								<div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
-
-									{% for col in section.action_columns %}
+				{% if request.user == character.owner %}
+					<div style="background: #f8f9fa; border: 1px dashed #ddd;
+								border-radius: 8px; padding: 16px;">
+						<div style="font-size: 0.75em; color: #7f8c8d; text-transform: uppercase;
+									letter-spacing: 1px; margin-bottom: 12px; font-weight: bold;">
+							<i class="fas fa-plus"></i> Add Action
+						</div>
+						<form method="post" action="{% url 'add_action' character.pk %}">
+							{% csrf_token %}
+							<div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+								{% for col in section.action_columns %}
 									<div {% if col.action == 'notes' %}style="flex-grow: 1;"{% endif %}>
 										<label style="font-size: 0.75em; color: #7f8c8d;
 													  display: block; margin-bottom: 4px;
@@ -181,125 +179,163 @@
 														  {% elif col.action == 'notes' %}100%
 														  {% else %}120px{% endif %};">
 									</div>
-									{% endfor %}
+								{% endfor %}
 
-									<button type="submit"
-										style="background: {{ character_color }}; color: white; border: none;
-											   padding: 7px 16px; border-radius: 4px; cursor: pointer;
-											   font-weight: bold;">
-										<i class="fas fa-plus"></i> Add
-									</button>
-								</div>
-							</form>
-						</div>
-					{% endif %}
-			{% else %}
-		
-			<div class="attributes-grid">
-				{% for field in section.fields %}				
-					{% if field.type == "skill_list" %}
-						<div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">							
-							<div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-								{{ field.label }}
-							</div>							
-							{% if field.has_thresholds %}
-								<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-									<thead>
-										<tr style="border-bottom: 2px solid #eee;">
-											<th style="width: 20px; padding: 4px 8px;"></th>
-											<th style="text-align: left; padding: 4px 8px; color: #7f8c8d; font-size: 0.75em; letter-spacing: 1px; text-transform: uppercase;">
-												Skill
-											</th>
-											<th style="text-align: center; width: 55px; padding: 4px 8px; color: #7f8c8d; font-size: 0.75em; letter-spacing: 1px; text-transform: uppercase;">
-												Total
-											</th>
-											<th style="text-align: center; width: 50px; padding: 4px 8px; color: #95a5a6; font-size: 0.75em; letter-spacing: 1px;">
-												½
-											</th>
-											<th style="text-align: center; width: 50px; padding: 4px 8px; color: #95a5a6; font-size: 0.75em; letter-spacing: 1px;">
-												⅕
-											</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for skill in field.skills %}
-											<tr style="border-bottom: 1px solid #f5f5f5;">
-												<td style="text-align: center; padding: 5px 8px;">
-													{% if skill.prof > 0 %}
-														<span style="color: {{ character_color }}; font-size: 1.2em;">&bull;</span>
-													{% else %}
-														<span style="color: #ddd; font-size: 1.2em;">&bull;</span>
-													{% endif %}
-												</td>											
-												<td style="padding: 5px 8px; color: #2c3e50;">
-													{{ skill.label }}
-												</td>										
-												<td style="text-align: center; padding: 5px 8px; 
-														   font-weight: bold; color: #2c3e50;">
-													{{ skill.total }}
-												</td>											
-												<td style="text-align: center; padding: 5px 8px; 
-														   color: #7f8c8d; font-size: 0.9em;">
-													{{ skill.half }}
-												</td>											
-												<td style="text-align: center; padding: 5px 8px; 
-														   color: #95a5a6; font-size: 0.9em;">
-													{{ skill.fifth }}
-												</td>
-												
+								<button type="submit"
+									style="background: {{ character_color }}; color: white; border: none;
+										   padding: 7px 16px; border-radius: 4px; cursor: pointer;
+										   font-weight: bold;">
+									<i class="fas fa-plus"></i> Add
+								</button>
+							</div>
+						</form>
+					</div>
+				{% endif %}
+			{% else %}		
+				<div class="attributes-grid">
+					{% for field in section.fields %}									
+						{% if field.type == "skill_list" %}
+							<div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">							
+								<div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+									{{ field.label }}
+								</div>							
+								{% if field.has_thresholds %}
+									<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+										<thead>
+											<tr style="border-bottom: 2px solid #eee;">
+												<th style="width: 20px; padding: 4px 8px;"></th>
+												<th style="text-align: left; padding: 4px 8px; color: #7f8c8d; font-size: 0.75em; letter-spacing: 1px; text-transform: uppercase;">
+													Skill
+												</th>
+												<th style="text-align: center; width: 55px; padding: 4px 8px; color: #7f8c8d; font-size: 0.75em; letter-spacing: 1px; text-transform: uppercase;">
+													Total
+												</th>
+												<th style="text-align: center; width: 50px; padding: 4px 8px; color: #95a5a6; font-size: 0.75em; letter-spacing: 1px;">
+													½
+												</th>
+												<th style="text-align: center; width: 50px; padding: 4px 8px; color: #95a5a6; font-size: 0.75em; letter-spacing: 1px;">
+													⅕
+												</th>
 											</tr>
+										</thead>
+										<tbody>
+											{% for skill in field.skills %}
+												<tr style="border-bottom: 1px solid #f5f5f5;">
+													<td style="text-align: center; padding: 5px 8px;">
+														{% if skill.prof > 0 %}
+															<span style="color: {{ character_color }}; font-size: 1.2em;">&bull;</span>
+														{% else %}
+															<span style="color: #ddd; font-size: 1.2em;">&bull;</span>
+														{% endif %}
+													</td>											
+													<td style="padding: 5px 8px; color: #2c3e50;">
+														{{ skill.label }}
+													</td>										
+													<td style="text-align: center; padding: 5px 8px; 
+															   font-weight: bold; color: #2c3e50;">
+														{{ skill.total }}
+													</td>											
+													<td style="text-align: center; padding: 5px 8px; 
+															   color: #7f8c8d; font-size: 0.9em;">
+														{{ skill.half }}
+													</td>											
+													<td style="text-align: center; padding: 5px 8px; 
+															   color: #95a5a6; font-size: 0.9em;">
+														{{ skill.fifth }}
+													</td>
+													
+												</tr>
+											{% endfor %}
+										</tbody>
+									</table>
+									
+								{% else %}
+									<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px 30px;">
+										{% for skill in field.skills %}
+											<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding-bottom: 5px;">
+												<span style="color: #2c3e50; font-size: 0.95em;">
+													{% if skill.prof > 0 %}
+														<span style="color: {{ character_color }}; margin-right: 6px; font-size: 1.3em; vertical-align: middle;">&bull;</span>
+													{% else %}
+														<span style="color: #ddd; margin-right: 6px; font-size: 1.3em; vertical-align: middle;">&bull;</span>
+													{% endif %}
+													{{ skill.label }}
+												</span>
+												<strong style="font-size: 1.1em; color: #2c3e50;">
+													{% if skill.total >= 0 %}+{{ skill.total }}{% else %}{{ skill.total }}{% endif %}
+												</strong>
+											</div>
 										{% endfor %}
-									</tbody>
-								</table>
-								
-							{% else %}
+									</div>
+								{% endif %}							
+							</div>
+							
+						{% elif field.type == 'str_list' %}
+							<div class="str-list-section" style="grid-column: 1 / -1;">								
+								{% if field.rows %}
+									<div class="table-responsive" style="overflow-x: auto;">
+										<table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+											<thead style="background-color: #f8f9fa;">
+												<tr>
+													{% for col_label in field.columns %}
+														<th style="padding: 12px 15px; text-align: left; font-weight: bold; color: #2c3e50;">
+															{{ col_label }}
+														</th>
+													{% endfor %}
+												</tr>
+											</thead>
+											<tbody>
+												{% for row in field.rows %}
+													<tr style="border-bottom: 1px solid #eee; transition: background-color 0.2s;" 
+														onmouseover="this.style.backgroundColor='#f1f2f6'" 
+														onmouseout="this.style.backgroundColor='transparent'">
+														
+														{% for cell_value in row %}
+															<td style="padding: 12px 15px; color: #555; vertical-align: top;">
+																{{ cell_value }}
+															</td>
+														{% endfor %}
+														
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
+								{% else %}
+									<div style="background-color: #f8f9fa; border: 1px dashed #ccc; border-radius: 8px; padding: 20px; text-align: center;">
+										<p style="color: #95a5a6; font-style: italic; margin: 0;">
+											No {{ field.label }}. Add them on Edit Character
+										</p>
+									</div>
+								{% endif %}
+							</div>
+							
+						{% elif field.type == "homebrew_list" %}
+							<div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">
+								<div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+									{{ field.label }}
+								</div>
 								<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px 30px;">
-									{% for skill in field.skills %}
+									{% for item in field.items %}
 										<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding-bottom: 5px;">
-											<span style="color: #2c3e50; font-size: 0.95em;">
-												{% if skill.prof > 0 %}
-													<span style="color: {{ character_color }}; margin-right: 6px; font-size: 1.3em; vertical-align: middle;">&bull;</span>
-												{% else %}
-													<span style="color: #ddd; margin-right: 6px; font-size: 1.3em; vertical-align: middle;">&bull;</span>
-												{% endif %}
-												{{ skill.label }}
-											</span>
+											<span style="color: #2c3e50; font-size: 0.95em;">{{ item.name }}</span>
 											<strong style="font-size: 1.1em; color: #2c3e50;">
-												{% if skill.total >= 0 %}+{{ skill.total }}{% else %}{{ skill.total }}{% endif %}
+												{{ item.value }}
 											</strong>
 										</div>
+									{% empty %}
+									<span style="color: #95a5a6; font-style: italic; font-size: 0.85em;">Lista vacía</span>
 									{% endfor %}
 								</div>
-							{% endif %}							
-						</div>
-						
-					{% elif field.type == "homebrew_list" %}
-						<div class="attr-card" style="grid-column: 1 / -1; text-align: left; padding: 25px;">
-							<div class="attr-label" style="text-align: center; font-size: 1.1em; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-								{{ field.label }}
 							</div>
-							<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px 30px;">
-								{% for item in field.items %}
-									<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f5f5f5; padding-bottom: 5px;">
-										<span style="color: #2c3e50; font-size: 0.95em;">{{ item.name }}</span>
-										<strong style="font-size: 1.1em; color: #2c3e50;">
-											{{ item.value }}
-										</strong>
-									</div>
-								{% empty %}
-								<span style="color: #95a5a6; font-style: italic; font-size: 0.85em;">Lista vacía</span>
-								{% endfor %}
+						{% else %}
+							<div class="attr-card">
+								<div class="attr-label">{{ field.label }}</div>
+								<div class="attr-value">{{ field.value }}</div>
 							</div>
-						</div>				
-
-					{% else %}
-						<div class="attr-card">
-							<div class="attr-label">{{ field.label }}</div>
-							<div class="attr-value">{{ field.value }}</div>
-						</div>
-					{% endif %}
-				{% endfor %}
-			</div>
+						{% endif %}
+					{% endfor %}
+				</div>
 			{% endif %}
 		</div>
 		
@@ -317,7 +353,7 @@
 			
 			<h3 class="section-title" style="color: {{ character_color }}; margin: 0; 
 											  border: none; padding: 0; opacity: 0.8;">
-				<i class="fas fa-sack-xmark"></i> Inventory
+				<i class="fas fa-toolbox"></i> Inventory
 				<span style="font-size: 0.75em; color: #95a5a6; font-weight: normal; 
 							 text-transform: none; letter-spacing: 0;">
 					({{ inventory_total }} item{{ inventory_total|pluralize }})

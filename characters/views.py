@@ -47,10 +47,12 @@ def create_character(request):
                     "fields": section_form_fields
                 })
 
-        # Campos sin sección asignada
+        # Campos sin seccion asignada
         leftover = [
             form[name] for name in form.fields
-            if name not in fields_placed and name not in ('is_homebrew', 'custom_fields', 'character_name') and not schema_data.get(name, {}).get("hidden", False)
+            if name not in fields_placed
+            and name not in ('is_homebrew', 'custom_fields', 'character_name')
+            and not schema_data.get(name, {}).get("hidden", False)
         ]
         if leftover:
             form_sections.append({"label": "Others", "icon": "fa-ellipsis-h", "fields": leftover})
@@ -192,6 +194,21 @@ def character_sheet(request, pk):
                 "type": "normal",
                 "label": label,
                 "value": display_value or "-"
+            }
+
+        elif field_type == "str_list":
+            columns = f_config.get("columns_fields", [])
+            items_data = raw_value if isinstance(raw_value, list) else []            
+            rows = []
+            for item in items_data:
+                row = [item.get(col["id"], "-") for col in columns]
+                rows.append(row)
+                
+            display_fields[f_name] = {
+                "type": "str_list",
+                "label": label,
+                "columns": [col["label"] for col in columns],
+                "rows": rows
             }
             
         else:
@@ -354,7 +371,9 @@ def edit_character(request, pk):
 
     leftover = [
         form[name] for name in form.fields
-        if name not in fields_placed and name not in ('is_homebrew', 'custom_fields', 'character_name') and not schema_data.get(name, {}).get("hidden", False)
+        if name not in fields_placed
+        and name not in ('is_homebrew', 'custom_fields', 'character_name')
+        and not schema_data.get(name, {}).get("hidden", False)
     ]
     if leftover:
         form_sections.append({"label": "Others", "icon": "fa-ellipsis-h", "fields": leftover})
@@ -535,7 +554,6 @@ def redirect_to_actions(request, pk):
     return HttpResponseRedirect(
         reverse('character_sheet', kwargs={'pk': pk}) + '#actions'
     )
-
 
 @login_required
 @require_POST

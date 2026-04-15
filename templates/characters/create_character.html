@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
-{% block content %} <div
+{% block content %} 
+<div
     style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto;">
 
     <h2 style="color: #2c3e50; margin-top: 0;">
@@ -12,21 +13,21 @@
     </h2>
 
     {% if not is_edit %}
-    <div style="margin-bottom: 20px;">
-        <label for="system_select" style="font-weight: bold; color: #2c3e50;">Sistema de Juego:</label>
-        <select id="system_select" onchange="location = '?system=' + this.value;"
-            style="padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-left: 10px;">
+		<div style="margin-bottom: 20px;">
+			<label for="system_select" style="font-weight: bold; color: #2c3e50;">Sistema de Juego:</label>
+			<select id="system_select" onchange="location = '?system=' + this.value;"
+				style="padding: 10px; border-radius: 5px; border: 1px solid #ddd; margin-left: 10px;">
 
-            <option value="">Selecciona un sistema...</option>
+				<option value="">Selecciona un sistema...</option>
 
-            {% for system in systems %}
-				<option value="{{ system.slug }}" {% if selected_system and system.slug == selected_system.slug %}selected{% endif %}>
-					{{ system.name }}
-				</option>
-            {% endfor %}
+				{% for system in systems %}
+					<option value="{{ system.slug }}" {% if selected_system and system.slug == selected_system.slug %}selected{% endif %}>
+						{{ system.name }}
+					</option>
+				{% endfor %}
 
-        </select>
-    </div>
+			</select>
+		</div>
 	
     {% else %}
 		<div style="margin-bottom: 20px; color: #7f8c8d;">
@@ -61,84 +62,83 @@
 					{{ form.character_name.label_tag }}
 					{{ form.character_name }}
 					{% if form.character_name.errors %}
-					<div style="color: #e74c3c; font-size: 0.8em;">{{ form.character_name.errors }}</div>
+						<div style="color: #e74c3c; font-size: 0.8em;">{{ form.character_name.errors }}</div>
 					{% endif %}
 				</div>
 			<hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
 			{% endif %}
 
+			{% if selected_system.slug == 'homebrew' %}      
+				{{ form.custom_fields }}
 
-				{% if selected_system.slug == 'homebrew' %}      
-					{{ form.custom_fields }}
+					<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+						<button type="button" onclick="openCustomFieldModal()" 
+							style="background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+							<i class="fas fa-plus-circle"></i> Agregar Campo Personalizado
+						</button>
+					</div>
 
-						<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-							<button type="button" onclick="openCustomFieldModal()" 
-								style="background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-								<i class="fas fa-plus-circle"></i> Agregar Campo Personalizado
+					<dialog id="customFieldModal" style="border: none; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); padding: 25px; width: 350px; background: white;">
+						<h3 style="margin-top: 0; color: #2c3e50;"><i class="fas fa-hammer"></i> Forjar Atributo</h3>
+						
+						<div class="form-group" style="margin-bottom: 15px;">
+							<label style="font-weight: bold; color: #34495e;">Nombre del Campo:</label>
+							<input type="text" id="new_custom_name" class="form-control" placeholder="Ej. Cordura, Habilidades Especiales...">
+						</div>
+						
+						<div class="form-group" style="margin-bottom: 25px;">
+							<label style="font-weight: bold; color: #34495e;">Tipo de Valor:</label>
+							<select id="new_custom_type" class="form-control">
+								<option value="number">Número (Puntos, Stats)</option>
+								<option value="text">Texto (Notas, Títulos)</option>
+								<option value="homebrew_list">Lista (Habilidades, Inventario)</option>
+							</select>
+						</div>
+						
+						<div style="display: flex; justify-content: flex-end; gap: 10px;">
+							<button type="button" onclick="document.getElementById('customFieldModal').close()" style="background: #95a5a6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Cancelar</button>
+							<button type="button" onclick="saveCustomField()" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Crear</button>
+						</div>
+					</dialog>
+
+					<dialog id="editCustomFieldModal" style="border: none; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); padding: 25px; width: 350px; background: white;">
+						<h3 style="margin-top: 0; color: #2c3e50;"><i class="fas fa-pencil-alt"></i> Editar Atributo</h3>
+						
+						<!-- Campo oculto para saber que indice del array estamos editando -->
+						<input type="hidden" id="edit_field_index" value="">
+
+						<div class="form-group" style="margin-bottom: 15px;">
+							<label style="font-weight: bold; color: #34495e;">Nombre del Campo:</label>
+							<input type="text" id="edit_custom_name" class="form-control">
+						</div>
+						
+						<div class="form-group" style="margin-bottom: 25px;">
+							<label style="font-weight: bold; color: #34495e;">Tipo de Valor:</label>
+							<select id="edit_custom_type" class="form-control">
+								<option value="number">Número (Puntos, Stats)</option>
+								<option value="text">Texto (Notas, Títulos)</option>
+								<option value="homebrew_list">Lista (Habilidades, Inventario)</option>
+							</select>
+							<!-- Advertencia que aparece solo cuando el tipo va a cambiar -->
+							<small id="edit_type_warning" style="color: #e67e22; display: none; margin-top: 5px; display: block;">
+								⚠️ Cambiar el tipo reseteará el valor guardado del campo.
+							</small>
+						</div>
+						
+						<div style="display: flex; justify-content: flex-end; gap: 10px;">
+							<button type="button" onclick="document.getElementById('editCustomFieldModal').close()" 
+								style="background: #95a5a6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+								Cancelar
+							</button>
+							<button type="button" onclick="saveEditCustomField()" 
+								style="background: #2980b9; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+								Guardar Cambios
 							</button>
 						</div>
+					</dialog>						
+			{% endif %}
 
-						<dialog id="customFieldModal" style="border: none; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); padding: 25px; width: 350px; background: white;">
-							<h3 style="margin-top: 0; color: #2c3e50;"><i class="fas fa-hammer"></i> Forjar Atributo</h3>
-							
-							<div class="form-group" style="margin-bottom: 15px;">
-								<label style="font-weight: bold; color: #34495e;">Nombre del Campo:</label>
-								<input type="text" id="new_custom_name" class="form-control" placeholder="Ej. Cordura, Habilidades Especiales...">
-							</div>
-							
-							<div class="form-group" style="margin-bottom: 25px;">
-								<label style="font-weight: bold; color: #34495e;">Tipo de Valor:</label>
-								<select id="new_custom_type" class="form-control">
-									<option value="number">Número (Puntos, Stats)</option>
-									<option value="text">Texto (Notas, Títulos)</option>
-									<option value="homebrew_list">Lista (Habilidades, Inventario)</option>
-								</select>
-							</div>
-							
-							<div style="display: flex; justify-content: flex-end; gap: 10px;">
-								<button type="button" onclick="document.getElementById('customFieldModal').close()" style="background: #95a5a6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Cancelar</button>
-								<button type="button" onclick="saveCustomField()" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Crear</button>
-							</div>
-						</dialog>
-
-						<dialog id="editCustomFieldModal" style="border: none; border-radius: 10px; box-shadow: 0 4px 25px rgba(0,0,0,0.3); padding: 25px; width: 350px; background: white;">
-							<h3 style="margin-top: 0; color: #2c3e50;"><i class="fas fa-pencil-alt"></i> Editar Atributo</h3>
-							
-							<!-- Campo oculto para saber que indice del array estamos editando -->
-							<input type="hidden" id="edit_field_index" value="">
-
-							<div class="form-group" style="margin-bottom: 15px;">
-								<label style="font-weight: bold; color: #34495e;">Nombre del Campo:</label>
-								<input type="text" id="edit_custom_name" class="form-control">
-							</div>
-							
-							<div class="form-group" style="margin-bottom: 25px;">
-								<label style="font-weight: bold; color: #34495e;">Tipo de Valor:</label>
-								<select id="edit_custom_type" class="form-control">
-									<option value="number">Número (Puntos, Stats)</option>
-									<option value="text">Texto (Notas, Títulos)</option>
-									<option value="homebrew_list">Lista (Habilidades, Inventario)</option>
-								</select>
-								<!-- Advertencia que aparece solo cuando el tipo va a cambiar -->
-								<small id="edit_type_warning" style="color: #e67e22; display: none; margin-top: 5px; display: block;">
-									⚠️ Cambiar el tipo reseteará el valor guardado del campo.
-								</small>
-							</div>
-							
-							<div style="display: flex; justify-content: flex-end; gap: 10px;">
-								<button type="button" onclick="document.getElementById('editCustomFieldModal').close()" 
-									style="background: #95a5a6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-									Cancelar
-								</button>
-								<button type="button" onclick="saveEditCustomField()" 
-									style="background: #2980b9; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-									Guardar Cambios
-								</button>
-							</div>
-						</dialog>						
-				{% endif %}
-
-				{% for section in form_sections %}
+			{% for section in form_sections %}
 				<div style="margin-bottom: 30px;">
 					<h4 style="color: #2c3e50; text-transform: uppercase; letter-spacing: 2px; 
 								font-size: 0.85em; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 15px;">
@@ -146,134 +146,46 @@
 					</h4>
 					<div class="character-form-grid">
 						{% for field in section.fields %}
-						<div class="form-group">
-							{{ field.label_tag }}
-							{{ field }}
-							{% if field.errors %}<div style="color: #e74c3c; font-size: 0.8em;">{{ field.errors }}</div>{% endif %}
-							{% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
-						</div>
+							<div class="form-group">
+								{{ field.label_tag }}
+								{{ field }}
+								{% if field.errors %}<div style="color: #e74c3c; font-size: 0.8em;">{{ field.errors }}</div>{% endif %}
+								{% if field.help_text %}<small class="help-text">{{ field.help_text }}</small>{% endif %}
+							</div>
 						{% endfor %}
 					</div>
 				</div>
-				{% endfor %}
+			{% endfor %}
 
-				{% if selected_system.slug == 'homebrew' %}
-					<div id="custom-fields-container" style="grid-column: span 1; margin-top: 15px;"></div>
-				{% endif %}
+			{% if selected_system.slug == 'homebrew' %}
+				<div id="custom-fields-container" style="grid-column: span 1; margin-top: 15px;"></div>
+			{% endif %}
 				
-				{% for hidden_field in form.hidden_fields %}
-					{% if hidden_field.html_name not in section_field_names %}
-						{{ hidden_field }}
-					{% endif %}
-				{% endfor %}
+			{% for hidden_field in form.hidden_fields %}
+				{% if hidden_field.html_name not in section_field_names %}
+					{{ hidden_field }}
+				{% endif %}
+			{% endfor %}
 
-				<div class="form-actions">
-					<button type="submit" class="btn-login" style="width: auto; padding: 12px 50px;">
-						<i class="fas fa-save"></i>
-						{% if is_edit %}Actualizar{% else %}Guardar Personaje{% endif %}
-					</button>
-					<a href="{% if is_edit %}{% url 'character_sheet' character.pk %}{% else %}{% url 'create_character' %}{% endif %}"
-						class="btn-login" style="background-color: #c0392b; 
-						width: auto; 
-						padding: 12px 50px; 
-						text-decoration: none;
-						margin-left: 15px;" <i class=" fas fa-times"></i>
-						Cancelar
-					</a>
-				</div>
+			<div class="form-actions">
+				<button type="submit" class="btn-login" style="width: auto; padding: 12px 50px;">
+					<i class="fas fa-save"></i>
+					{% if is_edit %}Actualizar{% else %}Guardar Personaje{% endif %}
+				</button>
+				<a href="{% if is_edit %}{% url 'character_sheet' character.pk %}{% else %}{% url 'create_character' %}{% endif %}"
+					class="btn-login" style="background-color: #c0392b; 
+					width: auto; 
+					padding: 12px 50px; 
+					text-decoration: none;
+					margin-left: 15px;" <i class=" fas fa-times"></i>
+					Cancelar
+				</a>
 			</div>
+		</div>
 		</form>
 	{% else %}
 	{% endif %}
 </div>
-
-<style>
-    /* El fondo oscuro detras del modal */
-    .modal-overlay {
-        display: none;
-        /* Oculto por defecto */
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-        /* Negro con transparencia */
-        justify-content: center;
-        align-items: center;
-    }
-
-    /* La caja blanca del modal */
-    .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 30px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 500px;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        font-family: sans-serif;
-    }
-
-    .modal-title {
-        font-size: 24px;
-        margin-bottom: 15px;
-        font-weight: bold;
-    }
-
-    .modal-body {
-        font-size: 16px;
-        margin-bottom: 25px;
-        color: #555;
-    }
-
-    /* Botones */
-    .modal-btn {
-        padding: 10px 20px;
-        margin: 5px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        text-decoration: none;
-        /* Para cuando sea <a> */
-        display: inline-block;
-    }
-
-    .btn-success {
-        background-color: #27ae60;
-        color: white;
-    }
-
-    .btn-primary {
-        background-color: #2980b9;
-        color: white;
-    }
-
-    .btn-warning {
-        background-color: #f39c12;
-        color: white;
-    }
-
-    .btn-danger {
-        background-color: #c0392b;
-        color: white;
-    }
-
-    .btn-secondary {
-        background-color: #7f8c8d;
-        color: white;
-    }
-
-    .modal-btn:hover {
-        opacity: 0.9;
-    }
-</style>
 
 <div id="statusModal" class="modal-overlay">
     <div class="modal-content">
@@ -1052,6 +964,214 @@
 			});
 		});
 	}
+	
+	// --- MOTOR DE LISTAS DINAMICAS DE STRINGS (str_list) ---
+	// Genera tablas editables donde el usuario puede agregar/eliminar filas.
+	// Los datos se guardan como JSON en el hidden input.
+
+	document.querySelectorAll('input[data-is-str-list="true"]').forEach(hiddenInput => {
+		const columns  = JSON.parse(hiddenInput.getAttribute('data-columns') || '[]');
+		const fieldId  = hiddenInput.id;
+
+		// Intentamos cargar datos existentes (modo edicion)
+		let rows = [];
+		try {
+			const parsed = JSON.parse(hiddenInput.value || '[]');
+			if (Array.isArray(parsed)) rows = parsed;
+		} catch(e) {}
+
+		// El wrapper para nuestra tabla
+		const wrapper = document.createElement('div');
+		wrapper.id = `str-list-wrapper-${fieldId}`;
+		wrapper.style.cssText = 'margin-top: 10px; width: 100%;';
+		// Buscamos el contenedor principal de la tarjeta (.form-group)
+		const parentGroup = hiddenInput.closest('.form-group') || hiddenInput.parentElement;		
+		// Forzamos a la tarjeta a romper su columna y abarcar todo el ancho
+		parentGroup.style.gridColumn = '1 / -1';
+		parentGroup.style.width = '100%';
+		// Evita comportamientos raros de flexbox si los tiene
+		parentGroup.style.display = 'block';
+
+		hiddenInput.parentElement.appendChild(wrapper);
+
+		// Función que serializa el estado actual al hidden input
+		const syncToHidden = () => {
+			hiddenInput.value = JSON.stringify(rows);
+		}
+
+		// Función que re-renderiza la tabla completa desde el array 'rows'
+		const render = () => {
+			wrapper.innerHTML = '';
+
+			// Tabla de filas guardadas ---
+			if (rows.length > 0) {
+				// Wrapper con scroll horizontal para móvil
+				const scrollWrap = document.createElement('div');
+				scrollWrap.style.cssText = 'overflow-x: auto; margin-bottom: 8px; border: 1px solid #e0e0e0; border-radius: 6px;';
+
+				const tbl = document.createElement('table');
+				tbl.style.cssText = 'width: 100%; border-collapse: collapse; font-size: 0.88em; min-width: 400px;';
+
+				// Encabezados alineados con las celdas
+				const thead = document.createElement('thead');
+				let thHtml = '<tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">';
+				columns.forEach(col => {
+					thHtml += `<th style="text-align:left; padding: 8px 10px; font-size:0.78em;
+										  text-transform:uppercase; letter-spacing:1px;
+										  color:#7f8c8d; font-weight:600; white-space:nowrap;">
+								   ${col.label}
+							   </th>`;
+				});
+				// Columna vacía para el botón de borrar
+				thHtml += '<th style="width: 38px;"></th></tr>';
+				thead.innerHTML = thHtml;
+				tbl.appendChild(thead);
+
+				const tbody = document.createElement('tbody');
+				rows.forEach((row, rowIdx) => {
+					const tr = document.createElement('tr');
+					tr.style.cssText = 'border-bottom: 1px solid #f0f0f0; transition: background 0.15s;';
+					tr.addEventListener('mouseenter', () => tr.style.background = '#fafafa');
+					tr.addEventListener('mouseleave', () => tr.style.background = '');
+
+					columns.forEach(col => {
+						const td = document.createElement('td');
+						td.style.cssText = 'padding: 5px 6px;';
+
+						const inp = document.createElement('input');
+						inp.type = 'text';
+						inp.value = row[col.id] || '';
+						inp.placeholder = col.label;
+						// Reutiliza los estilos .form-control del formulario
+						inp.className = 'form-control';
+						inp.style.cssText = 'font-size: 0.88em; padding: 5px 8px; border: 1px solid transparent; background: transparent; border-radius: 4px;';
+
+						// Hover: mostrar borde para indicar que es editable
+						inp.addEventListener('focus', () => {
+							inp.style.border = '1px solid #3498db';
+							inp.style.background = '#fff';
+						});
+						inp.addEventListener('blur', () => {
+							inp.style.border = '1px solid transparent';
+							inp.style.background = 'transparent';
+						});
+						inp.addEventListener('input', () => {
+							rows[rowIdx][col.id] = inp.value;
+							syncToHidden();
+						});
+
+						td.appendChild(inp);
+						tr.appendChild(td);
+					});
+
+					// Botón eliminar fila
+					const tdDel = document.createElement('td');
+					tdDel.style.cssText = 'text-align: center; padding: 5px 4px;';
+					const btnDel = document.createElement('button');
+					btnDel.type = 'button';
+					btnDel.title = 'Eliminar';
+					btnDel.innerHTML = '<i class="fas fa-times"></i>';
+					btnDel.style.cssText = 'background: none; border: none; color: #bdc3c7; cursor: pointer; font-size: 0.9em; padding: 4px 6px; border-radius: 3px; transition: color 0.15s;';
+					btnDel.addEventListener('mouseenter', () => btnDel.style.color = '#e74c3c');
+					btnDel.addEventListener('mouseleave', () => btnDel.style.color = '#bdc3c7');
+					btnDel.addEventListener('click', () => {
+						rows.splice(rowIdx, 1);
+						syncToHidden();
+						render();
+					});
+					tdDel.appendChild(btnDel);
+					tr.appendChild(tdDel);
+
+					tbody.appendChild(tr);
+				});
+
+				tbl.appendChild(tbody);
+				scrollWrap.appendChild(tbl);
+				wrapper.appendChild(scrollWrap);
+			}
+
+			// Fila de nueva entrada 
+			// Diseño: inputs en linea con encabezados pequeños arriba, boton al lado
+			const addSection = document.createElement('div');
+			addSection.style.cssText = 'background: #f8f9fa; border: 1px dashed #d0d0d0; border-radius: 6px; padding: 12px 14px;';
+
+			// Label de "Añadir nueva fila"
+			const addLabel = document.createElement('div');
+			addLabel.style.cssText = 'font-size: 0.72em; text-transform: uppercase; letter-spacing: 1px; color: #7f8c8d; font-weight: 600; margin-bottom: 8px;';
+			addLabel.innerHTML = '<i class="fas fa-plus-circle" style="color:#27ae60; margin-right:4px;"></i> New entry';
+			addSection.appendChild(addLabel);
+
+			const inputRow = document.createElement('div');
+			inputRow.style.cssText = 'display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;';
+
+			columns.forEach(col => {
+				const colWrapper = document.createElement('div');
+				// Flex: columnas se distribuyen uniformemente, mínimo 140px
+				colWrapper.style.cssText = 'flex: 1; min-width: 140px;';
+
+				const lbl = document.createElement('label');
+				lbl.textContent = col.label;
+				lbl.style.cssText = 'font-size: 0.72em; color: #7f8c8d; display: block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px;';
+
+				const inp = document.createElement('input');
+				inp.type = 'text';
+				inp.className = `form-control new-row-input-${fieldId}`;
+				inp.dataset.colId = col.id;
+				inp.placeholder = col.label;
+				inp.style.cssText = 'font-size: 0.9em;';
+
+				inp.addEventListener('keydown', e => {
+					if (e.key === 'Enter') { e.preventDefault(); addNewRow(); }
+				});
+
+				colWrapper.appendChild(lbl);
+				colWrapper.appendChild(inp);
+				inputRow.appendChild(colWrapper);
+			});
+
+			// Boton "+ Añadir" alineado al fondo de los inputs
+			const btnAdd = document.createElement('button');
+			btnAdd.type = 'button';
+			btnAdd.innerHTML = '<i class="fas fa-plus"></i> Add';
+			btnAdd.style.cssText = 'background: #27ae60; color: white; border: none; padding: 7px 16px; border-radius: 4px; cursor: pointer; font-size: 0.88em; font-weight: 600; white-space: nowrap; flex-shrink: 0; align-self: flex-end;';
+			btnAdd.addEventListener('mouseenter', () => btnAdd.style.background = '#219a52');
+			btnAdd.addEventListener('mouseleave', () => btnAdd.style.background = '#27ae60');
+
+			const addNewRow = () => {
+				const newEntry = {};
+				let hasValue = false;
+				wrapper.querySelectorAll(`.new-row-input-${fieldId}`).forEach(inp => {
+					newEntry[inp.dataset.colId] = inp.value.trim();
+					if (inp.value.trim()) hasValue = true;
+				});
+				if (!hasValue) return;
+				rows.push(newEntry);
+				syncToHidden();
+				render();
+			};
+
+			btnAdd.addEventListener('click', addNewRow);
+			inputRow.appendChild(btnAdd);
+			addSection.appendChild(inputRow);
+
+			// En movil: apilamos los inputs verticalmente (ya lo hace flex-wrap)
+			// Añadimos media query via JS para quitar el scroll-wrap en pantallas pequeñas
+			if (window.innerWidth < 640) {
+				addSection.style.padding = '10px';
+			}
+
+			wrapper.appendChild(addSection);
+		};
+		
+		render();
+		syncToHidden();
+
+		// Re-render en resize para ajustar padding del addSection
+		window.addEventListener('resize', () => {
+			const addSec = wrapper.querySelector('div[style*="dashed"]');
+			if (addSec) addSec.style.padding = window.innerWidth < 640 ? '10px' : '12px 14px';
+		});
+	});
 });
 </script>
 
@@ -1342,5 +1462,93 @@
 		window.saveEditCustomField = saveEditCustomField;
     });
 </script>
+
+<style>
+    /* El fondo oscuro detras del modal */
+    .modal-overlay {
+        display: none;
+        /* Oculto por defecto */
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Negro con transparencia */
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* La caja blanca del modal */
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        font-family: sans-serif;
+    }
+
+    .modal-title {
+        font-size: 24px;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
+    .modal-body {
+        font-size: 16px;
+        margin-bottom: 25px;
+        color: #555;
+    }
+
+    /* Botones */
+    .modal-btn {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        text-decoration: none;
+        /* Para cuando sea <a> */
+        display: inline-block;
+    }
+
+    .btn-success {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .btn-primary {
+        background-color: #2980b9;
+        color: white;
+    }
+
+    .btn-warning {
+        background-color: #f39c12;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #c0392b;
+        color: white;
+    }
+
+    .btn-secondary {
+        background-color: #7f8c8d;
+        color: white;
+    }
+
+    .modal-btn:hover {
+        opacity: 0.9;
+    }
+</style>
 
 {% endblock %}
