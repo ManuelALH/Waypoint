@@ -32,23 +32,28 @@
                     "subclass",
                     "heritage",
                     "community",
-                    "level",
-                    "proficiency"
+                    "level"
                 ]
             },
             {
-                "section": "traits",
-                "label": "Traits & Combat",
+                "section": "class_features",
+                "label": "Class Features & Abilities",
+                "icon": "fa-cubes",
+                "fields": [
+                    "class_features"
+                ]
+            },
+            {
+                "section": "ability_scores",
+                "label": "Ability Scores",
                 "icon": "fa-fist-raised",
                 "fields": [
-                    "brawn",
                     "agility",
+                    "strength",
                     "finesse",
                     "instinct",
                     "presence",
-                    "knowledge",
-                    "evasion_base",
-                    "evasion"
+                    "knowledge"
                 ]
             },
             {
@@ -72,23 +77,26 @@
                     "threshold_minor",
                     "threshold_major",
                     "threshold_severe",
+                    "evasion_base",
+                    "evasion",
                     "armor_score",
                     "armor_slots_max",
-                    "armor_slots"
+                    "armor_slots",
+                    "proficiency"
                 ]
             },
             {
-                "section": "weapons",
-                "label": "Weapons",
+                "section": "actions",
+                "label": "Actions",
                 "icon": "fa-khanda",
+                "type": "actions"
+            },
+            {
+                "section": "domain_cards",
+                "label": "Domain Cards",
+                "icon": "fa-boxes-stacked",
                 "fields": [
-                    "primary_weapon_name",
-                    "primary_weapon_trait",
-                    "primary_weapon_damage",
-                    "primary_weapon_range",
-                    "secondary_weapon_name",
-                    "secondary_weapon_trait",
-                    "secondary_weapon_damage"
+                    "active_loadout"
                 ]
             },
             {
@@ -96,10 +104,7 @@
                 "label": "Experiences",
                 "icon": "fa-star",
                 "fields": [
-                    "experience_1_name",
-                    "experience_1_value",
-                    "experience_2_name",
-                    "experience_2_value"
+                    "experiences"
                 ]
             },
             {
@@ -108,30 +113,40 @@
                 "icon": "fa-coins",
                 "fields": [
                     "wealth_handfuls",
-                    "wealth_bags"
+                    "wealth_bags",
+                    "wealth_chest"
                 ]
             },
             {
-                "section": "connections",
-                "label": "Connections & Features",
-                "icon": "fa-link",
+                "section": "equipment",
+                "label": "Equipment",
+                "icon": "fa-person-hiking",
                 "fields": [
-                    "connection_1_name",
-                    "connection_1_bond",
-                    "connection_2_name",
-                    "connection_2_bond",
-                    "class_features"
+                    "equipment"
                 ]
+            }
+        ],
+        "actions": [
+            {
+                "action": "active_weapons",
+                "label": "Name",
+                "type": "str",
+                "required": true
             },
             {
-                "section": "inventory_backstory",
-                "label": "Inventory & Backstory",
-                "icon": "fa-book-open",
-                "fields": [
-                    "active_loadout",
-                    "inventory",
-                    "backstory"
-                ]
+                "action": "trait",
+                "label": "Trait & Range",
+                "type": "str"
+            },
+            {
+                "action": "damage",
+                "label": "Damage Die & Kind",
+                "type": "str"
+            },
+            {
+                "action": "feature",
+                "label": "Feature",
+                "type": "str"
             }
         ]
     },
@@ -191,16 +206,6 @@
         "type": "str",
         "label": "Subclass (Foundation)",
         "help_text": "Your chosen subclass path within your class"
-    },
-    "class_features": {
-        "type": "str",
-        "label": "Class Features & Abilities",
-        "help_text": "Active class features, domain cards, and special abilities"
-    },
-    "backstory": {
-        "type": "str",
-        "label": "Backstory & Notes",
-        "help_text": "Character history, personality, and campaign notes"
     },
     "heritage": {
         "type": "choice",
@@ -289,17 +294,32 @@
         "default": 1,
         "help_text": "Value between 1 and 10"
     },
-    "brawn": {
+    "class_features": {
+        "type": "str_list",
+        "label": "Class Features",
+        "help_text": "Your class features and abilities",
+        "columns_fields": [
+            {
+                "id": "feature_name",
+                "label": "Feature Name"
+            },
+            {
+                "id": "feature_description",
+                "label": "Feature Description"
+            }
+        ]
+    },
+    "agility": {
         "type": "int",
-        "label": "Brawn",
+        "label": "Agility",
         "min_value": -1,
         "max_value": 5,
         "default": 0,
         "help_text": "Value between -1 and 5"
     },
-    "agility": {
+    "strength": {
         "type": "int",
-        "label": "Agility",
+        "label": "Strength",
         "min_value": -1,
         "max_value": 5,
         "default": 0,
@@ -336,14 +356,6 @@
         "max_value": 5,
         "default": 0,
         "help_text": "Value between -1 and 5"
-    },
-    "proficiency": {
-        "type": "int",
-        "label": "Proficiency",
-        "read_only": true,
-        "formula": "dh_proficiency",
-        "source_field": "level",
-        "help_text": "Added to action rolls with trained skills — scales with level"
     },
     "hit_points_max": {
         "type": "int",
@@ -444,27 +456,43 @@
         "max_field": "armor_slots_max",
         "default": 3
     },
-    "experience_1_name": {
-        "type": "str",
-        "label": "Primary Experience"
-    },
-    "experience_1_value": {
+    "proficiency": {
         "type": "int",
-        "label": "Primary Exp. Value",
-        "min_value": -1,
-        "max_value": 5,
-        "default": 2
+        "label": "Proficiency",
+        "read_only": true,
+        "formula": "dh_proficiency",
+        "source_field": "level",
+        "help_text": "Added to action rolls with trained skills — scales with level"
     },
-    "experience_2_name": {
-        "type": "str",
-        "label": "Secondary Experience"
+    "active_loadout": {
+        "type": "str_list",
+        "label": "Active Loadout",
+        "help_text": "Your currently equipped Domain Cards",
+        "columns_fields": [
+            {
+                "id": "card_name",
+                "label": "Card Name"
+            },
+            {
+                "id": "card_description",
+                "label": "Card Description"
+            }
+        ]
     },
-    "experience_2_value": {
-        "type": "int",
-        "label": "Secondary Exp. Value",
-        "min_value": -1,
-        "max_value": 5,
-        "default": 1
+    "experiences": {
+        "type": "str_list",
+        "label": "Experiences",
+        "help_text": "Your character Experiences",
+        "columns_fields": [
+            {
+                "id": "experience_name",
+                "label": "Experience Name"
+            },
+            {
+                "id": "experience_description",
+                "label": "Experience Description"
+            }
+        ]
     },
     "wealth_handfuls": {
         "type": "int",
@@ -478,14 +506,29 @@
         "min_value": 0,
         "default": 0
     },
-    "active_loadout": {
-        "type": "str",
-        "label": "Active Loadout (Domain Cards)",
-        "help_text": "Anota aquí las cartas de dominio que tienes activas en tu Loadout."
+    "wealth_chest": {
+        "type": "int",
+        "label": "Chest of Gold",
+        "min_value": 0,
+        "default": 0
     },
-    "inventory": {
-        "type": "str",
-        "label": "Inventory & Vault",
-        "help_text": "Armas, equipo y cartas guardadas en tu Vault."
+    "equipment": {
+        "type": "str_list",
+        "label": "Equipment",
+        "help_text": "Your character's actual equipment",
+        "columns_fields": [
+            {
+                "id": "item_name",
+                "label": "Item Name"
+            },
+            {
+                "id": "item_description",
+                "label": "Item Description"
+            },
+            {
+                "id": "item_slot",
+                "label": "Item Slot"
+            }
+        ]
     }
 }

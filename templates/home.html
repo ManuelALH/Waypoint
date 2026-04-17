@@ -12,55 +12,55 @@
     </div>
 
     {% if pending_invitations %}
-    <div class="card border-warning mb-5 shadow-sm">
-        <div class="card-header bg-warning text-dark bg-opacity-25 border-warning">
-            <h4 class="mb-0"><i class="fas fa-envelope-open-text"></i> Tienes Invitaciones Pendientes</h4>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                {% for invite in pending_invitations %}
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 border-secondary">
-                        <div class="card-body">
-                            <p class="card-text mb-2"><strong>{{ invite.table.dm.username }}</strong> te invita a:</p>
-                            <h5 class="card-title text-primary">{{ invite.table.name }}</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">{{ invite.table.system.name }}</h6>
+		<div class="card border-warning mb-5 shadow-sm">
+			<div class="card-header bg-warning text-dark bg-opacity-25 border-warning">
+				<h4 class="mb-0"><i class="fas fa-envelope-open-text"></i> Tienes Invitaciones Pendientes</h4>
+			</div>
+			<div class="card-body">
+				<div class="row g-3">
+					{% for invite in pending_invitations %}
+						<div class="col-md-6 col-lg-4">
+							<div class="card h-100 border-secondary">
+								<div class="card-body">
+									<p class="card-text mb-2"><strong>{{ invite.table.dm.username }}</strong> te invita a:</p>
+									<h5 class="card-title text-primary">{{ invite.table.name }}</h5>
+									<h6 class="card-subtitle mb-2 text-muted">{{ invite.table.system.name }}</h6>
 
-                            <p class="small text-muted mb-3">
-                                <i class="far fa-calendar-alt"></i> {{ invite.table.play_days }} <br>
-                                <i class="far fa-clock"></i> {{ invite.table.start_time|time:"H:i" }} - {{ invite.table.end_time|time:"H:i" }} <br>
-                                <i class="fas fa-map-marker-alt"></i> {{ invite.table.location|default:"No especificada" }} <br>
-                                {% if invite.table.address %}
-                                <i class="fas fa-directions"></i> {{ invite.table.address }}
-                                {% endif %}
-                            </p>
+									<p class="small text-muted mb-3">
+										<i class="far fa-calendar-alt"></i> {{ invite.table.play_days }} <br>
+										<i class="far fa-clock"></i> {{ invite.table.start_time|time:"H:i" }} - {{ invite.table.end_time|time:"H:i" }} <br>
+										<i class="fas fa-map-marker-alt"></i> {{ invite.table.location|default:"No especificada" }} <br>
+										{% if invite.table.address %}
+											<i class="fas fa-directions"></i> {{ invite.table.address }}
+										{% endif %}
+									</p>
 
-                            <div class="d-flex gap-2">
-                                <form action="{% url 'respond_invitation' invite.pk 'accept' %}" method="POST"
-                                    class="flex-fill">
-                                    {% csrf_token %}
-                                    <button type="submit" onclick="return confirm('¿Unirte a esta mesa?')"
-                                        class="btn btn-success btn-sm w-100">
-                                        <i class="fas fa-check"></i> Aceptar
-                                    </button>
-                                </form>
+									<div class="d-flex gap-2">
+										<form action="{% url 'respond_invitation' invite.pk 'accept' %}" method="POST"
+											class="flex-fill">
+											{% csrf_token %}
+											<button type="submit" onclick="return confirm('¿Unirte a esta mesa?')"
+												class="btn btn-success btn-sm w-100">
+												<i class="fas fa-check"></i> Aceptar
+											</button>
+										</form>
 
-                                <form action="{% url 'respond_invitation' invite.pk 'reject' %}" method="POST"
-                                    class="flex-fill">
-                                    {% csrf_token %}
-                                    <button type="submit" onclick="return confirm('¿Rechazar invitación?')"
-                                        class="btn btn-danger btn-sm w-100">
-                                        <i class="fas fa-times"></i> Rechazar
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
+										<form action="{% url 'respond_invitation' invite.pk 'reject' %}" method="POST"
+											class="flex-fill">
+											{% csrf_token %}
+											<button type="submit" onclick="return confirm('¿Rechazar invitación?')"
+												class="btn btn-danger btn-sm w-100">
+												<i class="fas fa-times"></i> Rechazar
+											</button>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
     {% endif %}
 
     <div class="row g-4 mb-5 justify-content-center">
@@ -69,7 +69,7 @@
             <div class="card h-100 text-center action-card border-0 shadow-sm">
                 <div class="card-body d-flex flex-column justify-content-center p-4">
                     <div class="mb-3 text-primary">
-                        <i class="fas fa-users fa-3x"></i>
+                        <i class="fas fa-user fa-3x"></i>
                     </div>
                     <h5 class="card-title">Personajes</h5>
                     <p class="card-text text-muted small">Crea y gestiona tus Personajes</p>
@@ -86,7 +86,7 @@
                     </div>
                     <h5 class="card-title">Mesas</h5>
                     <p class="card-text text-muted small">Crea Mesas y gestiona tus campañas</p>
-                    <a href="{% url 'my_tables' %}" class="btn btn-outline-success mt-auto stretched-link">Explorar</a>
+                    <a href="{% url 'my_tables' %}" class="btn btn-outline-success mt-auto stretched-link">Entrar</a>
                 </div>
             </div>
         </div>
@@ -94,14 +94,51 @@
         <div class="col-md-6 col-lg-3">
             <div class="card h-100 text-center action-card border-0 shadow-sm">
                 <div class="card-body d-flex flex-column justify-content-center p-4">
-                    <div class="mb-3 text-warning"> <i class="fas fa-search fa-3x"></i>
+                    <div class="mb-3 text-success"> 
+						<i class="fas fa-search fa-3x"></i>
                     </div>
                     <h5 class="card-title">Buscar Mesas</h5>
                     <p class="card-text text-muted small">Encuentra partidas públicas y únete</p>
-                    <a href="{% url 'find_table' %}" class="btn btn-outline-warning mt-auto stretched-link">Buscar</a>
+                    <a href="{% url 'find_table' %}" class="btn btn-outline-success mt-auto stretched-link">Buscar</a>
                 </div>
             </div>
         </div>
+		
+		<div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-wine">
+						<i class="fas fa-users-cog fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Comunidades</h5>
+                    <p class="card-text text-muted small">Crea y gestiona tus comunidades. Organiza eventos exclusivos.</p>
+                    <a href="{% url 'my_communities' %}" class="btn btn-outline-dark mt-auto stretched-link"
+                        style="border-color: #800020; color: #800020;"
+                        onmouseover="this.style.backgroundColor='#800020'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#800020';">
+                        Entrar
+                    </a>
+                </div>
+            </div>
+        </div>		
+		
+		<div class="col-md-6 col-lg-3">
+            <div class="card h-100 text-center action-card border-0 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center p-4">
+                    <div class="mb-3 text-wine">
+						<i class="fas fa-search-location fa-3x"></i>
+                    </div>
+                    <h5 class="card-title">Explorar Comunidades</h5>
+                    <p class="card-text text-muted small">Encuentra nuevos grupos de rol, hermandades y clubes que compartan tus sistemas favoritos.</p>
+                    <a href="{% url 'find_community' %}" class="btn btn-outline-dark mt-auto stretched-link"
+                        style="border-color: #800020; color: #800020;"
+                        onmouseover="this.style.backgroundColor='#800020'; this.style.color='white';"
+                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#800020';">
+                        Explorar
+                    </a>
+                </div>
+            </div>
+        </div>			
 
         <div class="col-md-6 col-lg-3">
             <div class="card h-100 text-center action-card border-0 shadow-sm">
@@ -149,22 +186,22 @@
     </div>
 
     {% else %}
-    <div class="p-5 mb-4 bg-light rounded-3 text-center border shadow-sm">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold text-dark">Waypoint TTRPG</h1>
-            <p class="col-md-8 fs-4 mx-auto text-secondary">
-                Gestiona tus personajes, crea mesas de juego y encuentra tu camino en tu próxima aventura de rol.
-            </p>
-            <div class="mt-4">
-                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 me-2">
-                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                </a>
-                <a href="{% url 'register' %}" class="btn btn-secondary btn-lg px-4">
-                    <i class="fas fa-user-plus"></i> Registrarse
-                </a>
-            </div>
-        </div>
-    </div>
+		<div class="p-5 mb-4 bg-light rounded-3 text-center border shadow-sm">
+			<div class="container-fluid py-5">
+				<h1 class="display-5 fw-bold text-dark">Waypoint TTRPG</h1>
+				<p class="col-md-8 fs-4 mx-auto text-secondary">
+					Gestiona tus personajes, crea mesas de juego y encuentra tu camino en tu próxima aventura de rol.
+				</p>
+				<div class="mt-4">
+					<a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 me-2">
+						<i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+					</a>
+					<a href="{% url 'register' %}" class="btn btn-secondary btn-lg px-4">
+						<i class="fas fa-user-plus"></i> Registrarse
+					</a>
+				</div>
+			</div>
+		</div>
     {% endif %}
 
 </div>
@@ -223,6 +260,16 @@
         color: #17a2b8 !important;
         /* Un tono un poco más oscuro al pasar el mouse */
     }
+	
+	/* NUEVO ESTILO PARA LA TARJETA VINO */
+    .text-wine {
+        color: #800020 !important;
+    }
+
+    .action-card:hover .text-wine {
+        color: #4a0012 !important;
+    }
+	
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

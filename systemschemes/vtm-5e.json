@@ -31,7 +31,8 @@
                     "chronicle",
                     "ambition",
                     "desire",
-                    "sire"
+                    "sire",
+                    "experience"
                 ]
             },
             {
@@ -39,9 +40,10 @@
                 "label": "Vampire Nature",
                 "icon": "fa-tint",
                 "fields": [
-                    "predator_type",
                     "clan",
+                    "predator_type",
                     "generation",
+                    "clan_bane",
                     "blood_potency",
                     "bane_severity",
                     "hunger",
@@ -89,6 +91,33 @@
                 ]
             },
             {
+                "section": "touchstones_convictions",
+                "label": "Touchstones & Convictions",
+                "icon": "fa-star",
+                "fields": [
+                    "touchstones",
+                    "convictions"
+                ]
+            },
+            {
+                "section": "disciplines",
+                "label": "Disciplines",
+                "icon": "fa-diamond",
+                "fields": [
+                    "disciplines"
+                ]
+            },
+            {
+                "section": "advantages",
+                "label": "Advantages",
+                "icon": "fa-crown",
+                "fields": [
+                    "backgrounds",
+                    "merits",
+                    "flaws"
+                ]
+            },
+            {
                 "section": "trackers",
                 "label": "Health & Willpower",
                 "icon": "fa-heart-pulse",
@@ -113,19 +142,19 @@
                     "remorse_dice",
                     "blood_surge_bonus"
                 ]
+            }
+        ],
+        "actions": [
+            {
+                "action": "weapon",
+                "label": "Weapon",
+                "type": "str",
+                "required": true
             },
             {
-                "section": "disciplines",
-                "label": "Disciplines & Backgrounds",
-                "icon": "fa-star-of-david",
-                "fields": [
-                    "disciplines",
-                    "touchstones",
-                    "haven",
-                    "mawla",
-                    "herd",
-                    "notes"
-                ]
+                "action": "damage",
+                "label": "Damage",
+                "type": "str"
             }
         ]
     },
@@ -150,51 +179,11 @@
         "type": "str",
         "label": "Desire"
     },
-    "predator_type": {
-        "type": "choice",
-        "label": "Predator Type",
-        "choices": [
-            [
-                "alleycat",
-                "Alleycat"
-            ],
-            [
-                "bagger",
-                "Bagger"
-            ],
-            [
-                "blood_leech",
-                "Blood Leech"
-            ],
-            [
-                "cleaver",
-                "Cleaver"
-            ],
-            [
-                "consensualist",
-                "Consensualist"
-            ],
-            [
-                "farmer",
-                "Farmer"
-            ],
-            [
-                "osiris",
-                "Osiris"
-            ],
-            [
-                "sandman",
-                "Sandman"
-            ],
-            [
-                "scene_queen",
-                "Scene Queen"
-            ],
-            [
-                "siren",
-                "Siren"
-            ]
-        ]
+    "experience": {
+        "type": "int",
+        "label": "Experience Points",
+        "min_value": 0,
+        "default": 0
     },
     "clan": {
         "type": "choice",
@@ -266,6 +255,52 @@
             ]
         ]
     },
+    "predator_type": {
+        "type": "choice",
+        "label": "Predator Type",
+        "choices": [
+            [
+                "alleycat",
+                "Alleycat"
+            ],
+            [
+                "bagger",
+                "Bagger"
+            ],
+            [
+                "blood_leech",
+                "Blood Leech"
+            ],
+            [
+                "cleaver",
+                "Cleaver"
+            ],
+            [
+                "consensualist",
+                "Consensualist"
+            ],
+            [
+                "farmer",
+                "Farmer"
+            ],
+            [
+                "osiris",
+                "Osiris"
+            ],
+            [
+                "sandman",
+                "Sandman"
+            ],
+            [
+                "scene_queen",
+                "Scene Queen"
+            ],
+            [
+                "siren",
+                "Siren"
+            ]
+        ]
+    },
     "generation": {
         "type": "int",
         "label": "Generation",
@@ -273,6 +308,11 @@
         "max_value": 16,
         "default": 12,
         "help_text": "Tu generación vampírica"
+    },
+    "clan_bane": {
+        "type": "str",
+        "label": "Clan Bane",
+        "help_text": "La debilidad específica de tu clan (Ej: Brujah son vulnerables al frío)"
     },
     "sire": {
         "type": "str",
@@ -493,11 +533,6 @@
         ],
         "help_text": "Dice rolled for Remorse check — reduces by Stains"
     },
-    "disciplines": {
-        "type": "str",
-        "label": "Disciplines & Powers",
-        "help_text": "Anota tus disciplinas y los poderes que has desbloqueado (Ej: Celerity 2, Auspex 1)."
-    },
     "skills_physics": {
         "type": "skill_list",
         "label": "Physical Skills",
@@ -627,6 +662,118 @@
             {
                 "id": "technology",
                 "label": "Technology"
+            }
+        ]
+    },
+    "touchstones": {
+        "type": "str_list",
+        "label": "Touchstones",
+        "help_text": "Personas, lugares o cosas que te conectan con tu humanidad",
+        "columns_fields": [
+            {
+                "key": "touchstone_name",
+                "label": "Name",
+                "type": "str"
+            },
+            {
+                "key": "touchstone_description",
+                "label": "Description",
+                "type": "str"
+            }
+        ]
+    },
+    "convictions": {
+        "type": "str_list",
+        "label": "Convictions",
+        "help_text": "Tus principios morales y éticos",
+        "columns_fields": [
+            {
+                "key": "conviction_name",
+                "label": "Name"
+            },
+            {
+                "key": "conviction_description",
+                "label": "Description"
+            }
+        ]
+    },
+    "disciplines": {
+        "type": "str_list",
+        "label": "Disciplines & Powers",
+        "help_text": "Anota tus disciplinas y los poderes que has desbloqueado (Ej: Celerity 2, Auspex 1)",
+        "columns_fields": [
+            {
+                "key": "discipline_name",
+                "label": "Discipline"
+            },
+            {
+                "key": "discipline_level",
+                "label": "Level"
+            },
+            {
+                "key": "discipline_power",
+                "label": "Power"
+            },
+            {
+                "key": "discipline_description",
+                "label": "Description"
+            }
+        ]
+    },
+    "backgrounds": {
+        "type": "str_list",
+        "label": "Backgrounds",
+        "help_text": "Anota tus antecedentes (Ej: Allies 2, Contacts 1)",
+        "columns_fields": [
+            {
+                "key": "background_name",
+                "label": "Background"
+            },
+            {
+                "key": "background_level",
+                "label": "Level"
+            },
+            {
+                "key": "background_description",
+                "label": "Description"
+            }
+        ]
+    },
+    "merits": {
+        "type": "str_list",
+        "label": "Merits",
+        "help_text": "Anota tus méritos (Ej: Iron Gullet 2, Eidetic Memory 1)",
+        "columns_fields": [
+            {
+                "key": "merit_name",
+                "label": "Merit"
+            },
+            {
+                "key": "merit_level",
+                "label": "Level"
+            },
+            {
+                "key": "merit_description",
+                "label": "Description"
+            }
+        ]
+    },
+    "flaws": {
+        "type": "str_list",
+        "label": "Flaws",
+        "help_text": "Anota tus defectos (Ej: Dark Secret, Enemy)",
+        "columns_fields": [
+            {
+                "key": "flaw_name",
+                "label": "Flaw"
+            },
+            {
+                "key": "flaw_level",
+                "label": "Level"
+            },
+            {
+                "key": "flaw_description",
+                "label": "Description"
             }
         ]
     }

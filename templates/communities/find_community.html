@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+	<div class="container-fluid" style="padding: 20px;">
+		<div class="row">
+			
+			<div class="col-md-3 mb-4">
+				<div class="card shadow-sm border-0">
+					<div class="card-header bg-white">
+						<h4 class="mb-0"><i class="fas fa-search"></i> Explorar</h4>
+					</div>
+					<div class="card-body bg-light">
+						<p class="text-muted small">Próximamente: Filtros por ubicación, juegos populares y tipo de comunidad.</p>
+						<hr>
+						<a href="{% url 'find_community' %}" class="btn btn-outline-secondary btn-sm w-100">Limpiar búsqueda</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-9">
+				<div class="d-flex justify-content-between align-items-center mb-4">
+					<h2 style="color: #2c3e50; margin: 0;">Descubrir Gremios</h2>
+					<span class="badge bg-dark">{{ page_obj.paginator.count }} Comunidades encontradas</span>
+				</div>
+
+				{% if page_obj %}
+					<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+						{% for community in page_obj %}
+							<div class="col">
+								<div class="card h-100 shadow-sm border-0" style="border-top: 5px solid {{ community.color }} !important;">
+									<div class="card-body d-flex flex-column">
+										<h5 class="card-title fw-bold">{{ community.name }}</h5>
+										
+										<div class="mb-2">
+											<small class="text-muted">
+												<i class="fas fa-users"></i> {{ community.members.count }} miembros
+											</small>
+										</div>
+
+										<p class="card-text text-secondary small" style="flex-grow: 1;">
+											{{ community.description|truncatewords:20 }}
+										</p>
+
+										{% if community.location %}
+											<div class="mb-3 small">
+												<i class="fas fa-map-marker-alt text-danger"></i> {{ community.location }}
+											</div>
+										{% endif %}
+
+										<a href="{% url 'community_detail' community.slug %}" class="btn btn-outline-dark btn-sm w-100">
+											Ver Gremio
+										</a>
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+
+					{% if page_obj.has_other_pages %}
+					<nav class="mt-5">
+						<ul class="pagination justify-content-center">
+							{% if page_obj.has_previous %}
+								<li class="page-item">
+									<a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+								</li>
+							{% endif %}
+
+							<li class="page-item active">
+								<span class="page-link">{{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+							</li>
+
+							{% if page_obj.has_next %}
+								<li class="page-item">
+									<a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+								</li>
+							{% endif %}
+						</ul>
+					</nav>
+					{% endif %}
+
+				{% else %}
+					<div class="text-center py-5">
+						<i class="fas fa-ghost fa-3x text-muted mb-3"></i>
+						<p class="lead text-muted">No se encontraron comunidades en este momento.</p>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

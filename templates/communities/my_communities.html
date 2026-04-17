@@ -2,11 +2,11 @@
 
 {% block content %}
 	<div style="padding: 20px;">
-
+	
 		<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
 			<div style="display: flex; align-items: center; gap: 15px;">
 				<h2 style="color: #2c3e50; border-bottom: 2px solid #34495e; padding-bottom: 5px; margin: 0;">
-					Mesas
+					Comunidades
 				</h2>
 				<button onclick="history.back()" class="btn-back">
 					<i class="fas fa-arrow-left"></i> Volver
@@ -15,97 +15,107 @@
 
 			<form method="GET" style="margin: 0;">
 				<select name="sort" onchange="this.form.submit()" class="sort-select">
-					<option value="default" {% if current_sort == 'default' %}selected{% endif %}>Predeterminado</option>
-					<option value="system" {% if current_sort == 'system' %}selected{% endif %}>Sistema</option>
+					<option value="default" {% if current_sort == 'default' %}selected{% endif %}>Nombre</option>
+					<option value="role" {% if current_sort == 'role' %}selected{% endif %}>Mi Rol</option>
+					<option value="dm_official" {% if current_sort == 'dm_official' %}selected{% endif %}>DMs Oficiales</option>
 					<option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Más recientes</option>
-					<option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Más antiguos</option>
 				</select>
 			</form>
 		</div>
-
+		
 		<div class="tables-grid">
-			
-			<a href="{% url 'create_table' %}" class="table-card create-card">
+		
+			<a href="{% url 'create_community' %}" class="table-card create-card">
 				<div class="create-card-content">
 					<i class="fas fa-plus-circle"></i>
-					<h3>Crear Mesa</h3>
-					<p>Inicia una nueva campaña</p>
+					<h3>Crear Comunidad</h3>
+					<p>Inicia una nueva comunidad</p>
 				</div>
 			</a>
-
-			{% for table in tables %}
-				<a href="{% url 'table_detail' table.pk %}" class="table-card card-link" style="--sys-color: {{ table.color|default:'#3498db' }};">
-
-					<div class="card-header" style="background-color: var(--sys-color);">
-						<span class="system-badge">{{ table.system.name }}</span>
+			
+			{% for community in communities %}
+				<a href="{% url 'community_detail' community.slug %}" class="table-card card-link" style="--comm-color: {{ community.color|default:'#6f42c1' }};">			
+					
+					<div class="card-header" style="background-color: var(--comm-color);">
+						<span class="system-badge">
+							<i class="fas fa-crown" style="margin-right: 5px;"></i> {{ community.founder }}
+						</span>
+						
+						{% if community.user_role == 'dm_official' %}
+							<span class="system-badge" style="background: #f1c40f; color: #2c3e50; margin-left: 5px;">
+								<i class="fas fa-check-circle"></i> DM Oficial
+							</span>
+						{% endif %}
 					</div>
-
+					
 					<div class="card-body">
-						<h3 class="table-name">{{ table.name }}</h3>
+						<h3 class="table-name" style="color: var(--comm-color); margin-top: 0; margin-bottom: 10px;">
+							{{ community.name }}
+						</h3>
+						
+						<p style="font-size: 0.85em; font-weight: bold; color: var(--comm-color); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+							{{ community.get_user_role_display|default:community.user_role }}
+						</p>
+						
+						<p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 15px; min-height: 45px;">
+							{{ community.description|truncatewords:12 }}
+						</p>
 
-						<div class="table-info">
+						<div class="table-info" style="margin-bottom: 15px;">
 							<div class="info-item">
-								<i class="fas fa-crown"></i>
-								<span>{{ table.dm.username }}</span>
-							</div>				
-							<div class="info-item">
-								<i class="fas fa-calendar-alt"></i>
-								<span>{{ table.play_days }}</span>
-							</div>
-							<div class="info-item">
-								<i class="fas fa-clock"></i>
-								<span>{{ table.start_time|time:"H:i" }} - {{ table.end_time|time:"H:i" }}</span>
-							</div>
-							<div class="info-item">
-								<i class="fas fa-sync-alt"></i>
-								<span style="text-transform: capitalize;">{{ table.frequency }}</span>
-							</div>
-							<div class="info-item">
-								<i class="fas fa-map-marker-alt"></i>
-								<span>{{ table.location|default:"No especificada" }}</span>
-							</div>
-							{% if table.address %}
-							<div class="info-item">
-								<i class="fas fa-directions"></i> {{ table.address }}
-							</div>
+								<i class="fas fa-globe-americas"></i>
+								<span>{{ community.location|default:"Ubicación no especificada" }}</span>
+							</div>	
+
+							{% if community.address %}			
+								<div class="info-item">
+									<i class="fas fa-map-marker-alt"></i>
+									<span>{{ community.address }}</span>
+								</div>
 							{% endif %}
+
+							<div class="info-item">
+								<i class="fas fa-users"></i>
+								<span>{{ community.members.count }} Miembro{{ community.members.count|pluralize:"s" }}</span>
+							</div>
 						</div>
 
 						<div class="btn-view">
-							Ver Mesa
+							Ver Comunidad
 						</div>
 					</div>
 				</a>
 			{% empty %}
 				<div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #7f8c8d;">
-					<h3>No tienes mesas activas</h3>
-					<p>¡Usa la tarjeta de Crear Mesa para comenzar tu primera aventura!</p>
+					<i class="fas fa-users-slash fa-4x mb-3" style="color: #bdc3c7;"></i>
+					<h3>Aún no perteneces a ninguna Comunidad</h3>
+					<p>¡Usa el botón de Crear Nueva para fundar tu propio gremio!</p>
 				</div>
 			{% endfor %}
+		
 		</div>
 
-		{% if tables.has_other_pages %}
+		{% if communities.has_other_pages %}
 			<div class="pagination-container">
-				{% if tables.has_previous %}
-					<a href="?page={{ tables.previous_page_number }}&sort={{ current_sort }}" class="btn-page">
+				{% if communities.has_previous %}
+					<a href="?page={{ communities.previous_page_number }}&sort={{ current_sort }}" class="btn-page">
 						&laquo; Anterior
 					</a>
 				{% endif %}
-
+				
 				<span class="page-indicator">
-					Página {{ tables.number }} de {{ tables.paginator.num_pages }}
+					Página {{ communities.number }} de {{ communities.paginator.num_pages }}
 				</span>
 
-				{% if tables.has_next %}
-					<a href="?page={{ tables.next_page_number }}&sort={{ current_sort }}" class="btn-page">
+				{% if communities.has_next %}
+					<a href="?page={{ communities.next_page_number }}&sort={{ current_sort }}" class="btn-page">
 						Siguiente &raquo;
 					</a>
 				{% endif %}
 			</div>
 		{% endif %}
-
 	</div>
-
+	
 <style>
     /* Cabecera y Filtros */
     .btn-back {
@@ -308,8 +318,8 @@
         margin-top: auto;
         display: block;
         padding: 10px;
-        border: 2px solid var(--sys-color);
-        color: var(--sys-color);
+        border: 2px solid var(--comm-color);
+        color: var(--comm-color);
         border-radius: 5px;
         text-decoration: none;
         font-weight: bold;
@@ -319,7 +329,7 @@
 
     /* Efecto visual unificado al pasar el cursor sobre la tarjeta */
     .table-card:hover .btn-view {
-        background-color: var(--sys-color);
+        background-color: var(--comm-color);
         color: white;
     }
 </style>

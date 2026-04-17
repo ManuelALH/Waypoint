@@ -90,9 +90,33 @@ class Table(models.Model):
         help_text="Personajes que participan en esta mesa"
     )
 
+    community = models.ForeignKey(
+        'communities.Community', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='community_tables'
+    )
+    event = models.ForeignKey(
+        'communities.Event', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='event_tables'
+    )
+
+    invite_only = models.BooleanField(
+        default=False, 
+        verbose_name="Solo invitación"
+    )
+
+    is_archived = models.BooleanField(
+        default=False, 
+        verbose_name="Archivada"
+    )
+
     def __str__(self):
         return f"{self.name} - DM: {self.dm}"
-
 
 class TableInvitation(models.Model):
     table = models.ForeignKey(Table, on_delete=models.CASCADE, related_name='invitations')

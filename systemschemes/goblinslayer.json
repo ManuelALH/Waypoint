@@ -73,8 +73,15 @@
                     "adventures_total",
                     "adventures_completed",
                     "adventurer_level",
-                    "class",
                     "advancement_points"
+                ]
+            },
+            {
+                "section": "classes",
+                "label": "Classes",
+                "icon": "fa-star",
+                "fields": [
+                    "class"
                 ]
             },
             {
@@ -100,6 +107,21 @@
                 ]
             },
             {
+                "section": "actions",
+                "label": "Actions",
+                "icon": "fa-khanda",
+                "type": "actions"
+            },
+            {
+                "section": "skills",
+                "label": "Skills",
+                "icon": "fa-book",
+                "fields": [
+                    "adventurer_skills",
+                    "general_skills"
+                ]
+            },
+            {
                 "section": "currency",
                 "label": "Currency",
                 "icon": "fa-coins",
@@ -108,6 +130,42 @@
                     "silver_pieces",
                     "gold_pieces"
                 ]
+            },
+            {
+                "section": "equipment",
+                "label": "Equipment",
+                "icon": "fa-person-hiking",
+                "fields": [
+                    "equipment"
+                ]
+            }
+        ],
+        "actions": [
+            {
+                "action": "action",
+                "label": "Name",
+                "type": "str",
+                "required": true
+            },
+            {
+                "action": "type",
+                "label": "Type",
+                "type": "str"
+            },
+            {
+                "action": "hit_score",
+                "label": "Total Hit Score",
+                "type": "int"
+            },
+            {
+                "action": "power",
+                "label": "Total Power",
+                "type": "int"
+            },
+            {
+                "action": "effect",
+                "label": "Effect",
+                "type": "str"
             }
         ]
     },
@@ -673,56 +731,33 @@
         "default": 1,
         "help_text": "Value between 1 and 20"
     },
-    "class": {
-        "type": "choice",
-        "label": "Class",
-        "choices": [
-            [
-                "fighter",
-                "Fighter"
-            ],
-            [
-                "monk",
-                "Monk"
-            ],
-            [
-                "ranger",
-                "Ranger"
-            ],
-            [
-                "scout",
-                "Scout"
-            ],
-            [
-                "sorcerer",
-                "Sorcerer"
-            ],
-            [
-                "priest",
-                "Priest"
-            ],
-            [
-                "dragon_priest",
-                "Dragon Priest"
-            ],
-            [
-                "shaman",
-                "Shaman"
-            ]
-        ]
-    },
     "advancement_points": {
         "type": "int",
         "label": "Advancement Points",
         "min_value": 0,
         "default": 0
     },
+    "class": {
+        "type": "str_list",
+        "label": "Class",
+        "help_text": "List of Classes for your Adventurer",
+        "columns_fields": [
+            {
+                "id": "class_name",
+                "label": "Class Name"
+            },
+            {
+                "id": "class_level",
+                "label": "Class Level"
+            }
+        ]
+    },
     "life_force_roll": {
         "type": "int",
         "label": "Life Force Roll",
         "min_value": 2,
         "max_value": 12,
-        "default": 0,
+        "default": 2,
         "help_text": "Value between 2 and 12 (2d6)"
     },
     "life_force": {
@@ -751,7 +786,7 @@
         "label": "Speed Roll",
         "min_value": 2,
         "max_value": 12,
-        "default": 0,
+        "default": 2,
         "help_text": "Value between 2 and 12 (2d6)"
     },
     "speed_bonus": {
@@ -787,7 +822,7 @@
         "label": "Spell Uses Roll",
         "min_value": 2,
         "max_value": 12,
-        "default": 0,
+        "default": 2,
         "help_text": "Value between 2 and 12 (2d6)"
     },
     "spells_uses": {
@@ -854,6 +889,52 @@
         "default": 0,
         "help_text": "Your current Attrition"
     },
+    "adventurer_skills": {
+        "type": "str_list",
+        "label": "Adventurer Skills",
+        "help_text": "List of Skills for your Adventurer",
+        "columns_fields": [
+            {
+                "id": "adv_skill_name",
+                "label": "Skill Name"
+            },
+            {
+                "id": "adv_skill_grade",
+                "label": "Mastery Grade"
+            },
+            {
+                "id": "adv_skill_effect",
+                "label": "Effect"
+            },
+            {
+                "id": "adv_skill_page",
+                "label": "Page"
+            }
+        ]
+    },
+    "general_skills": {
+        "type": "str_list",
+        "label": "General Skills",
+        "help_text": "List of General Skills",
+        "columns_fields": [
+            {
+                "id": "gral_skill_name",
+                "label": "Skill Name"
+            },
+            {
+                "id": "gral_skill_grade",
+                "label": "Mastery Grade"
+            },
+            {
+                "id": "gral_skill_effect",
+                "label": "Effect"
+            },
+            {
+                "id": "gral_skill_page",
+                "label": "Page"
+            }
+        ]
+    },
     "copper_pieces": {
         "type": "int",
         "label": "Copper Pieces",
@@ -874,5 +955,24 @@
         "min_value": 0,
         "default": 0,
         "help_text": "Currency in Gold"
+    },
+    "equipment": {
+        "type": "str_list",
+        "label": "Equipment",
+        "help_text": "Your character's actual equipment",
+        "columns_fields": [
+            {
+                "id": "item_name",
+                "label": "Item Name"
+            },
+            {
+                "id": "item_description",
+                "label": "Item Description"
+            },
+            {
+                "id": "item_slot",
+                "label": "Item Slot"
+            }
+        ]
     }
 }

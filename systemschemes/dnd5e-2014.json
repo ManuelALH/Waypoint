@@ -85,6 +85,22 @@
                 "type": "actions"
             },
             {
+                "section": "features_traits",
+                "label": "Features & Traits",
+                "icon": "fa-trophy",
+                "fields": [
+                    "features_traits"
+                ]
+            },
+            {
+                "section": "proficiencies_languages",
+                "label": "Proficiencies & Languages",
+                "icon": "fa-star",
+                "fields": [
+                    "proficiencies_languages"
+                ]
+            },
+            {
                 "section": "lists",
                 "label": "Saving Throws & Skills",
                 "icon": "fa-dice-d20",
@@ -103,6 +119,14 @@
                     "electrum_pieces",
                     "gold_pieces",
                     "platinum_pieces"
+                ]
+            },
+            {
+                "section": "equipment",
+                "label": "Equipment",
+                "icon": "fa-person-hiking",
+                "fields": [
+                    "equipment"
                 ]
             }
         ],
@@ -757,6 +781,36 @@
             }
         ]
     },
+    "features_traits": {
+        "type": "str_list",
+        "label": "Features & Traits",
+        "help_text": "Your character's Features and Traits",
+        "columns_fields": [
+            {
+                "id": "feature_trait_name",
+                "label": "Feature/Trait Name"
+            },
+            {
+                "id": "feature_trait_description",
+                "label": "Feature/Trait Description"
+            }
+        ]
+    },
+    "proficiencies_languages": {
+        "type": "str_list",
+        "label": "Other Proficiencies & Languages",
+        "help_text": "Your character's Other Proficiencies and Languages",
+        "columns_fields": [
+            {
+                "id": "others_name",
+                "label": "Name"
+            },
+            {
+                "id": "others_description",
+                "label": "Description"
+            }
+        ]
+    },
     "skills": {
         "type": "skill_list",
         "label": "Skills",
@@ -905,6 +959,25 @@
                     "mod_wisdom",
                     "proficiency_bonus"
                 ]
+            }
+        ]
+    },
+    "equipment": {
+        "type": "str_list",
+        "label": "Equipment",
+        "help_text": "Your character's actual equipment",
+        "columns_fields": [
+            {
+                "id": "item_name",
+                "label": "Item Name"
+            },
+            {
+                "id": "item_description",
+                "label": "Item Description"
+            },
+            {
+                "id": "item_slot",
+                "label": "Item Slot"
             }
         ]
     }

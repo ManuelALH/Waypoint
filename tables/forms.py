@@ -28,7 +28,7 @@ class TableForm(forms.ModelForm):
             'frequency', 'play_days', 
             'start_time', 'end_time',
             'experience_level', 'play_style', 'price_type', 
-            'is_private'
+            'is_private', 'invite_only' 
         ]
         
         widgets = {
@@ -45,6 +45,7 @@ class TableForm(forms.ModelForm):
             'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'is_private': forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'privacyToggle'}),
+            'invite_only': forms.CheckboxInput(attrs={'class': 'form-check-input', 'id': 'invitationToggle'}),
         }
 
     def clean_play_days(self):

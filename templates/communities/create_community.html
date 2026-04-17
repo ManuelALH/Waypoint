@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+	<div class="form-container">
+		<form method="post" id="communityForm">
+			{% csrf_token %}
+
+			<div class="header-row">
+				<div>
+					<h2 class="main-title">{% if is_edit %}Editar{% else %}Crear{% endif %} Comunidad</h2>
+					<p class="subtitle">Configura la sede de tu Comunidad</p>
+				</div>
+				
+			</div>
+
+			<h4 class="section-title">Identidad de la Comunidad</h4>
+			<div class="form-grid">
+				<div class="form-group">{{ form.name.label_tag }}{{ form.name }}</div>
+				<div class="form-group">{{ form.color.label_tag }}{{ form.color }}</div>
+				<div class="form-group full-width">{{ form.description.label_tag }}{{ form.description }}</div>
+			</div>
+
+			<h4 class="section-title">Ubicación y Sede</h4>
+			
+			{{ form.location }}
+			
+			<div class="location-grid">
+				<div class="form-group">
+					<label>País</label>
+					<select id="country-select" class="location-select" onchange="loadStates()">
+						<option value="">Selecciona País</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label>Estado/Provincia</label>
+					<select id="state-select" class="location-select" disabled onchange="loadCities()">
+						<option value="">Selecciona Estado</option>
+					</select>
+				</div>
+				<div class="form-group">
+					<label>Ciudad</label>
+					<select id="city-select" class="location-select" disabled onchange="updateFinalLocation()">
+						<option value="">Selecciona Ciudad</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="form-grid">
+				<div class="form-group">
+					{{ form.address.label_tag }}
+					{{ form.address }}
+				</div>
+			</div>
+
+			<div class="actions-row">
+				<a href="{% url 'my_communities' %}" class="btn-cancel">Cancelar</a>
+				<button type="submit" class="btn-save">
+					<i class="fas fa-save"></i> Guardar Comunidad
+				</button>
+			</div>
+		</form>
+	</div>
+
+<style>
+    /* Contenedor Principal */
+    .form-container {
+        max-width: 900px;
+        margin: 30px auto;
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    /* Header y Títulos */
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #f4f7f6;
+        padding-bottom: 20px;
+    }
+    .main-title { color: #2c3e50; margin: 0; font-size: 2rem; }
+    .subtitle { color: #7f8c8d; margin: 5px 0 0 0; }
+    .section-title {
+        color: #34495e;
+        margin: 30px 0 20px 0;
+        padding-left: 10px;
+        border-left: 4px solid #3498db;
+    }
+
+    /* Grid del Formulario */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .full-width { grid-column: span 2; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    /* Ubicación Grid */
+    .location-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .location-select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        background-color: #fff;
+    }
+    .info-text {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        margin-top: -10px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    /* Switch de Privacidad */
+    .privacy-wrapper {
+        background: #f8f9fa;
+        padding: 10px 20px;
+        border-radius: 50px;
+        border: 1px solid #dee2e6;
+    }
+    .privacy-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        color: #27ae60;
+        font-weight: bold;
+        margin: 0;
+    }
+    .privacy-label.is-private { color: #e74c3c; }
+
+    /* Botones */
+    .actions-row {
+        margin-top: 40px;
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+    }
+    .btn-save {
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: transform 0.2s;
+    }
+    .btn-save:hover { background: #219150; transform: translateY(-2px); }
+    .btn-cancel {
+        background: #95a5a6;
+        color: white;
+        text-decoration: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+    }
+
+    /* Input de Color Especial */
+    .form-control-color {
+        height: 45px;
+        width: 100%;
+        padding: 5px;
+    }
+</style>
+
+<script>
+    // --- LÓGICA DE API DE UBICACIÓN ---
+    const API_BASE = "https://countriesnow.space/api/v0.1/countries";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Cargar países al iniciar
+        fetch(API_BASE)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    const countrySelect = document.getElementById('country-select');
+                    const sortedCountries = data.data.sort((a, b) => a.country.localeCompare(b.country));
+
+                    sortedCountries.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.country;
+                        option.text = item.country;
+                        countrySelect.add(option);
+                    });
+                }
+            })
+            .catch(error => console.error('Error cargando países:', error));
+
+        // Inicializar UI (Modal y Privacidad)
+        const isSuccess = "{{ success|yesno:'true,false' }}" === "true";
+        if (isSuccess) document.getElementById('successModal').style.display = 'flex';
+        updatePrivacyUI();
+    });
+
+    function loadStates() {
+        const countryName = document.getElementById('country-select').value;
+        const stateSelect = document.getElementById('state-select');
+        const citySelect = document.getElementById('city-select');
+
+        stateSelect.innerHTML = '<option value="">Cargando...</option>';
+        stateSelect.disabled = true;
+        citySelect.innerHTML = '<option value="">Selecciona Ciudad</option>';
+        citySelect.disabled = true;
+
+        if (countryName) {
+            fetch(`${API_BASE}/states`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    stateSelect.innerHTML = '<option value="">Selecciona Estado</option>';
+                    if (!data.error && data.data.states.length > 0) {
+                        stateSelect.disabled = false;
+                        data.data.states.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state.name;
+                            option.text = state.name;
+                            stateSelect.add(option);
+                        });
+                    } else {
+                        stateSelect.innerHTML = '<option value="">Sin estados</option>';
+                        // Si no hay estados, podríamos intentar cargar ciudades directamente o permitir guardar solo país
+                        updateFinalLocation();
+                    }
+                });
+        }
+        updateFinalLocation();
+    }
+
+    function loadCities() {
+        const countryName = document.getElementById('country-select').value;
+        const stateName = document.getElementById('state-select').value;
+        const citySelect = document.getElementById('city-select');
+
+        citySelect.innerHTML = '<option value="">Cargando...</option>';
+        citySelect.disabled = true;
+
+        if (countryName && stateName) {
+            fetch(`${API_BASE}/state/cities`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: countryName, state: stateName })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    citySelect.innerHTML = '<option value="">Selecciona Ciudad</option>';
+                    if (!data.error && data.data.length > 0) {
+                        citySelect.disabled = false;
+                        data.data.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.text = city;
+                            citySelect.add(option);
+                        });
+                    } else {
+                        citySelect.innerHTML = '<option value="">Sin ciudades</option>';
+                        updateFinalLocation();
+                    }
+                });
+        }
+        updateFinalLocation();
+    }
+
+    function updateFinalLocation() {
+        const country = document.getElementById('country-select').value;
+        const state = document.getElementById('state-select').value;
+        const city = document.getElementById('city-select').value;
+
+        // El input oculto de Django suele tener el id "id_location" si el campo se llama "location"
+        const hiddenInput = document.getElementById('id_location');
+
+        if (hiddenInput) {
+            let finalString = "";
+            if (country) {
+                if (city) finalString = `${city}, ${state}, ${country}`;
+                else if (state) finalString = `${state}, ${country}`;
+                else finalString = country;
+            }
+            hiddenInput.value = finalString;
+            console.log("Ubicación guardada:", finalString);
+        }
+    }
+
+    // --- LÓGICA DE LA UI DE PRIVACIDAD ---
+    function updatePrivacyUI() {
+        const input = document.getElementById('privacyToggle');
+        const label = document.getElementById('privacyLabel');
+        const icon = document.getElementById('eyeIcon');
+        const text = document.getElementById('privacyText');
+
+        if (input && label && icon && text) {
+            const isPrivate = input.checked;
+            label.classList.toggle('is-private', isPrivate);
+            text.textContent = isPrivate ? "Privada" : "Pública";
+            icon.className = isPrivate ? 'fas fa-eye-slash' : 'fas fa-eye';
+        }
+    }
+</script>
+{% endblock %}

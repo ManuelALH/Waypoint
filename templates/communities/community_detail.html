@@ -1,0 +1,842 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    {% if access_denied %}
+		<div class="container d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh; text-align: center;">
+			<div style="position: relative; margin-bottom: 20px;">
+				<img src="{% static 'img/beholder_guardian.png' %}" alt="Beholder Guardián" style="max-width: 300px; filter: drop-shadow(0 0 10px rgba(255,0,0,0.5));">
+			</div>
+
+			<h1 style="font-family: 'Cinzel', serif; color: #c0392b; font-size: 3rem;">
+				ALTO AHÍ, VIAJERO
+			</h1>
+
+			<div class="alert alert-dark mt-3" style="max-width: 500px;">
+				<p class="lead mb-0">
+					Has llegado a las puertas de un <strong> GREMIO CERRADO</strong>,
+					solo los miembros autorizados pueden pasar.
+				</p>
+				<hr>
+				<p class="small text-muted">Esta es una comunidad privada.</p>
+			</div>
+
+			<a href="{% url 'community_list' %}" class="btn-dungeon-back mt-4">
+				<i class="fas fa-arrow-left"></i> Volver a Explorar Comunidades
+			</a>
+		</div>
+
+	{% else %}
+
+<div class="detail-container">
+
+    <div class="detail-header">
+        <div class="title-section">
+            <a href="{% url 'my_communities' %}" class="btn-back">&larr; Volver</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h1 style="color: {{ community.color }}; margin: 10px 0;">{{ community.name }}</h1>
+                {% if community.is_private %}
+                <i class="fas fa-lock" title="Comunidad Privada" style="color: #95a5a6; font-size: 1.2rem;"></i>
+                {% endif %}
+            </div>
+            <span class="system-tag" style="background: {{ community.color }};">Comunidad de Rol</span>
+        </div>
+
+        <div class="header-actions">
+            {% if not user_member %}
+				<form action="{% url 'join_community' community.slug %}" method="post" style="display:inline;">
+					{% csrf_token %}
+					<button type="submit" class="btn btn-success">
+						<i class="fas fa-user-plus"></i> Unirse a la Comunidad
+					</button>
+				</form>
+
+			{% else %}
+				{% if user_member.role == 'founder' or user_member.role == 'moderator' %}
+					<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventModal">
+						<i class="fas fa-calendar-plus"></i> Agregar Evento
+					</button>
+				{% endif %}
+
+				{% if user_member.role == 'founder' %}
+					<a href="{% url 'edit_community' community.slug %}" class="btn btn-warning text-white">
+						<i class="fas fa-edit"></i> Editar Comunidad
+					</a>
+					
+					<form action="{% url 'delete_community' community.slug %}" method="post" style="display:inline;" 
+						  onsubmit="return confirm('¿Estás ABSOLUTAMENTE SEGURO? Se borrará todo lo relacionado a la comunidad.');">
+						{% csrf_token %}
+						<button type="submit" class="btn btn-danger">
+							<i class="fas fa-trash-alt"></i> Eliminar
+						</button>
+					</form>
+				{% endif %}
+				
+				{% if user_member.role == 'founder' or user_member.role == 'moderator' %}
+					<button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#appointmentModal">
+						<i class="fas fa-medal"></i> Nombramientos
+					</button>
+				{% endif %}
+
+				{% if user_member.role != 'founder' %}
+					<form action="{% url 'leave_community' community.slug %}" method="post" style="display:inline;">
+						{% csrf_token %}
+						<button type="submit" class="btn btn-outline-danger btn-sm ms-2">
+							Abandonar Gremio
+						</button>
+					</form>
+					
+					<div class="d-flex gap-2">
+						<a href="{% url 'create_table' %}?community_id={{ community.id }}" class="btn btn-primary">
+							<i class="fas fa-plus"></i> Agregar Mesa al Gremio
+						</a>
+					</div>
+					
+				{% endif %}
+			{% endif %}
+        </div>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0 25px 0;">
+
+    <div class="detail-grid">
+
+        <div class="info-sidebar">
+            <div class="info-card">
+                <h3>Detalles del Gremio</h3>
+
+                <div class="info-row">
+                    <i class="fas fa-globe-americas" style="color: {{ community.color }}"></i>
+                    <div>
+                        <strong>Ubicación General:</strong><br>
+                        {{ community.location|default:"Global / Virtual" }}
+                    </div>
+                </div>
+
+                {% if community.address %}
+                <div class="info-row">
+                    <i class="fas fa-map-marker-alt" style="color: {{ community.color }}"></i>
+                    <div>
+                        <strong>Sede Principal:</strong><br>
+                        {{ community.address }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="info-row">
+                    <i class="fas fa-users" style="color: {{ community.color }}"></i>
+                    <div>
+                        <strong>Población:</strong><br>
+                        {{ community.members.count }} Miembro{{ community.members.count|pluralize:"s" }}
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <i class="fas fa-calendar-alt" style="color: {{ community.color }}"></i>
+                    <div>
+                        <strong>Fundación:</strong><br>
+                        {{ community.created_at|date:"d M Y" }}
+                    </div>
+                </div>
+            </div>
+			
+			<div class="d-grid gap-2 mb-4">
+				<button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#shareCommunityModal">
+					<i class="fas fa-share-alt"></i> Compartir Comunidad
+				</button>
+			</div>
+
+            <div class="info-card">
+                <h4>Líderes del Gremio</h4>
+                <div class="dm-display">
+                    <i class="fas fa-crown" style="color: #f1c40f;" title="Fundador"></i>
+                    <a href="#" class="text-decoration-none" style="color: #2c3e50; font-weight: bold;">
+                        {{ community.founder }}
+                    </a>
+                </div>                
+            </div>
+        </div>
+
+        <div class="main-content">
+
+            <div class="description-section">
+                <h3>Sobre nosotros</h3>
+                <p>{{ community.description|linebreaks }}</p>
+
+                {% if is_member %}
+                <div class="player-actions">
+                    <h4 style="margin: 0; color: #2c3e50; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-id-badge" style="color: {{ community.color }}; font-size: 1.2rem;"></i> 
+                        Tu Rol: <strong style="text-transform: uppercase;">{{ user_role_display }}</strong>
+                    </h4>
+                    
+                    {% if user_role != 'founder' %}
+                    <form action="{% url 'leave_community' community.slug %}" method="POST" onsubmit="return confirm('¿Seguro que deseas abandonar la comunidad?');" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-action btn-delete btn-dynamic-hover" style="padding: 8px 15px; font-size: 0.9rem;">
+                            <i class="fas fa-sign-out-alt"></i> Abandonar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+			
+			<div class="card shadow-sm border-0 mb-4 text-center">
+				<div class="card-body bg-light">
+					<h5 class="card-title text-muted">¿Buscas una partida en este gremio?</h5>
+					<p class="small text-secondary">Explora todas las aventuras activas organizadas por miembros de {{ community.name }}.</p>
+					<a href="{% url 'find_table' %}?community={{ community.slug }}" class="btn btn-outline-dark">
+						<i class="fas fa-dice-d20"></i> Ver mesas de esta comunidad
+					</a>
+				</div>
+			</div>
+
+            <h3 class="mt-5 mb-4"><i class="fas fa-stream"></i> Próximos Eventos</h3>
+			<div class="timeline">
+				{% for event in community.events.all|dictsort:"date" %}
+					<div class="timeline-item shadow-sm p-3 mb-3 bg-white rounded border-start border-4 border-primary">
+						<a href="{% url 'event_detail' event.id %}" class="text-decoration-none text-dark">
+							<div class="d-flex justify-content-between align-items-start">
+								<div>
+									<h5 class="mb-1 text-primary">{{ event.title }}</h5>
+									<small class="text-muted"><i class="far fa-clock"></i> {{ event.date|date:"d M Y - H:i" }}</small>
+									<p class="mt-2 mb-0">{{ event.description }}</p>
+								</div>
+						</a>	
+								{% if user_member.role == 'founder' or user_member.role == 'moderator' %}
+									<div class="btn-group">
+										<button type="button" 
+												class="btn btn-sm btn-outline-secondary edit-event-btn"
+												data-id="{{ event.id }}"
+												data-title="{{ event.title }}"
+												data-description="{{ event.description }}"
+												data-date="{{ event.date|date:'Y-m-d\TH:i' }}">
+											<i class="fas fa-edit"></i>
+										</button>
+										<a href="{% url 'delete_event' event.id %}" class="btn btn-sm btn-outline-danger" 
+										   onclick="return confirm('¿Seguro que quieres borrar este evento?')">
+											<i class="fas fa-trash"></i>
+										</a>
+									</div>
+								{% endif %}
+							</div>
+					</div>
+				{% empty %}
+					<p class="text-muted italic">No hay eventos programados en el horizonte...</p>
+				{% endfor %}
+			</div>
+			
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if user_role == 'founder' %}
+<div id="deleteModal1" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+        <div style="font-size: 45px; margin-bottom: 15px;">⚠️</div>
+        <h3 style="color: #f39c12; margin-top: 0;">¿Eliminar Comunidad?</h3>
+        <p style="color: #555;">Estás a punto de disolver la comunidad <strong>{{ community.name }}</strong>.</p>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 25px;">
+            <button onclick="document.getElementById('deleteModal1').style.display='none'" class="modal-btn" style="background: #95a5a6; color: white;">Cancelar</button>
+            <button onclick="document.getElementById('deleteModal1').style.display='none'; document.getElementById('deleteModal2').style.display='flex';" class="modal-btn" style="background: #f39c12; color: white;">Sí, continuar</button>
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal2" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="border: 3px solid #c0392b;">
+        <div style="font-size: 45px; margin-bottom: 15px;">🛑</div>
+        <h3 style="color: #c0392b; margin-top: 0;">Acción Irreversible</h3>
+        <p style="color: #555;">Todos los miembros serán expulsados y los datos eliminados.</p>
+
+        <form action="{% url 'delete_community' community.slug %}" method="POST" style="margin-top: 25px;">
+            {% csrf_token %}
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button type="button" onclick="document.getElementById('deleteModal2').style.display='none'" class="modal-btn" style="background: #95a5a6; color: white;">Me arrepentí</button>
+                <button type="submit" class="modal-btn" style="background: #c0392b; color: white;">CONFIRMAR ELIMINACIÓN</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel">Agregar Evento</h5> 
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="eventForm" action="{% url 'add_event' community.slug %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {{ event_form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="color: #2c3e50;"><i class="fas fa-users-cog"></i> Gestión de Miembros y Rangos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'manage_member' community.slug %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p class="small" style="color: #7f8c8d;">Ingresa el nombre de usuario exacto del miembro que deseas gestionar.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: bold; color: #34495e;">Nombre de Usuario</label>
+                        <input type="text" name="username" class="form-control" placeholder="Ej: legolas22" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: bold; color: #34495e;">Acción a realizar</label>
+                        <select name="action" class="form-select" required>
+                            
+                            {% if user_member.role == 'founder' %}
+                                <optgroup label="Moderación">
+                                    <option value="grant_mod">Nombrar Moderador</option>
+                                    <option value="revoke_mod">Degradar Moderador a Miembro</option>
+                                </optgroup>
+                            {% endif %}
+                            
+                            <optgroup label="Dungeon Masters">
+                                <option value="grant_dm">Nombrar DM Oficial</option>
+                                <option value="revoke_dm">Revocar rol de DM Oficial</option>
+                            </optgroup>
+                            
+                            <optgroup label="Administración">
+                                <option value="kick">Expulsar de la Comunidad</option>
+                            </optgroup>
+
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background-color: #f8f9fa;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="background-color: #2c3e50; border: none;">Aplicar Acción</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="shareCommunityModal" tabindex="-1" aria-labelledby="shareCommunityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareCommunityModalLabel">Compartir {{ community.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrcode-container" class="mb-4 p-3 bg-white d-inline-block shadow-sm rounded">
+                    <img id="community-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={{ request.build_absolute_uri }}" alt="QR Code" class="img-fluid">
+                </div>
+                
+                <p class="text-muted small">Escanea para unirte a la comunidad</p>
+
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <button id="copy-link-btn" class="btn btn-light border">
+                        <i class="fas fa-copy"></i> Copiar Enlace
+                    </button>
+                    <button id="download-qr-btn" class="btn btn-dark">
+                        <i class="fas fa-download"></i> Descargar Imagen con Detalles
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<canvas id="share-canvas" style="display:none;"></canvas>
+
+<style>
+    /* =========================================
+       ESTILOS GENERALES Y GRID
+       ========================================= */
+    .detail-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 30px;
+        margin-top: 25px;
+        align-items: start;
+    }
+
+    @media (max-width: 992px) {
+        .detail-grid {
+            grid-template-columns: 1fr; /* Responsivo para móviles/tablets */
+        }
+    }
+
+    /* =========================================
+       CABECERA (HEADER)
+       ========================================= */
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .title-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-back {
+        color: #7f8c8d;
+        text-decoration: none;
+        font-weight: bold;
+        margin-bottom: 10px;
+        transition: color 0.2s;
+    }
+    .btn-back:hover {
+        color: #2c3e50;
+    }
+
+    .system-tag {
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        margin-top: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* =========================================
+       BOTONES Y ACCIONES
+       ========================================= */
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .btn-action {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-delete {
+        background-color: #e74c3c;
+        color: white;
+    }
+    .btn-delete:hover {
+        background-color: #c0392b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-edit {
+        background-color: #34495e;
+        color: white;
+    }
+    .btn-edit:hover {
+        background-color: #2c3e50;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(52, 73, 94, 0.3);
+    }
+
+    .btn-dynamic-hover {
+        transition: transform 0.2s, filter 0.2s;
+        border: none;
+    }
+    .btn-dynamic-hover:hover {
+        transform: translateY(-2px);
+        filter: brightness(0.9);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    /* =========================================
+       PANEL LATERAL (SIDEBAR)
+       ========================================= */
+    .info-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .info-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border: 1px solid #f0f2f5;
+    }
+
+    .info-card h3 {
+        margin-top: 0;
+        color: #2c3e50;
+        border-bottom: 2px solid #f4f7f6;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+    }
+
+    .info-card h4 {
+        margin: 0 0 15px 0;
+        color: #7f8c8d;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .info-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        align-items: flex-start;
+    }
+
+    .info-row i {
+        margin-top: 4px;
+        width: 20px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .info-row div {
+        color: #34495e;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .info-row strong {
+        color: #7f8c8d;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .dm-display {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* =========================================
+       CONTENIDO PRINCIPAL
+       ========================================= */
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 35px;
+    }
+
+    .description-section h3 {
+        margin-top: 0;
+        color: #2c3e50;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .description-section p {
+        color: #4a5568;
+        line-height: 1.7;
+        font-size: 1.05rem;
+    }
+
+    .player-actions {
+        margin-top: 25px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .section-title {
+        color: #2c3e50;
+        font-size: 1.4rem;
+        border-bottom: 2px solid #f4f7f6;
+        padding-bottom: 10px;
+        margin: 0;
+    }
+
+    /* =========================================
+       TIMELINE (MESAS DEL GREMIO)
+       ========================================= */
+    .timeline-container {
+        border-left: 2px solid #e0e0e0;
+        padding-left: 25px;
+        margin-top: 20px;
+    }
+
+    .timeline-item {
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        left: -34px;
+        top: 5px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #e0e0e0;
+    }
+
+    .timeline-content {
+        background: #fcfcfc;
+        padding: 15px 20px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        transition: transform 0.2s;
+    }
+    .timeline-content:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    }
+
+    /* =========================================
+       MODALES Y ALERTAS
+       ========================================= */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 1000;
+        display: none; /* Se activa por JS */
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(3px);
+    }
+
+    .modal-box {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        text-align: center;
+        position: relative;
+    }
+
+    .modal-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .modal-btn:hover {
+        filter: brightness(0.9);
+        transform: translateY(-1px);
+    }
+
+    .btn-dungeon-back {
+        background-color: #c0392b;
+        border-color: #c0392b;
+        color: white;
+        transition: all 0.3s ease;
+        padding: 12px 25px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: bold;
+    }
+    .btn-dungeon-back:hover {
+        background-color: #922b21;
+        border-color: #80261d;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(192, 57, 43, 0.4);
+    }
+	.timeline-item {
+        transition: transform 0.2s;
+        border-left-color: {{ community.color }} !important; /* Usa el color de la comunidad */
+    }
+    .timeline-item:hover {
+        transform: translateX(5px);
+    }
+	#qrcode-container {
+    border: 1px solid #dee2e6;
+    transition: transform 0.3s ease;
+	}	
+	#qrcode-container:hover {
+		transform: scale(1.02);
+	}
+</style>
+
+<script>
+    function openDeleteModal1() {
+        const modal = document.getElementById('deleteModal1');
+        if(modal) {
+            modal.style.display = 'flex';
+        }
+    }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const eventModal = document.getElementById('eventModal');
+    const eventForm = document.getElementById('eventForm');
+    const modalTitle = document.getElementById('eventModalLabel');    
+    const createUrl = eventForm.action;
+
+    document.querySelectorAll('.edit-event-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const title = this.dataset.title;
+            const desc = this.dataset.description;
+            const date = this.dataset.date;
+
+            modalTitle.textContent = 'Editar Evento';
+            eventForm.action = `/communities/event/edit/${id}/`; 
+            eventForm.querySelector('[name="title"]').value = title;
+            eventForm.querySelector('[name="description"]').value = desc;
+            eventForm.querySelector('[name="date"]').value = date;
+
+            const modalInstance = new bootstrap.Modal(eventModal);
+            modalInstance.show();
+        });
+    });
+
+    const btnAdd = document.querySelector('[data-bs-target="#eventModal"]');
+    if (btnAdd) {
+        btnAdd.addEventListener('click', function() {
+            if (!this.classList.contains('edit-event-btn')) {
+                modalTitle.textContent = 'Agregar Evento';
+                eventForm.action = createUrl;
+                eventForm.reset();
+            }
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const copyBtn = document.getElementById('copy-link-btn');
+    const downloadBtn = document.getElementById('download-qr-btn');
+    const communityUrl = "{{ request.build_absolute_uri }}";
+    const communityName = "{{ community.name }}";
+    const communityAddress = "{{ community.address|default:'' }}";
+    const communityLocation = "{{ community.location|default:'' }}";
+
+    // 1. Copiar Enlace al Portapapeles
+    copyBtn.addEventListener('click', function() {
+        navigator.clipboard.writeText(communityUrl).then(() => {
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check text-success"></i> ¡Enlace Copiado!';
+            setTimeout(() => { copyBtn.innerHTML = originalText; }, 2000);
+        });
+    });
+
+    // 2. Descargar Imagen con Detalles (Generando Canvas)
+    downloadBtn.addEventListener('click', function() {
+        const canvas = document.getElementById('share-canvas');
+        const ctx = canvas.getContext('2d');
+        const qrImg = document.getElementById('community-qr');
+
+        // Configuración de dimensiones
+        canvas.width = 500;
+        canvas.height = 750;
+
+        // Dibujar Fondo
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dibujar Encabezado (Color de la comunidad si existe, sino oscuro)
+        ctx.fillStyle = "{{ community.color|default:'#2c3e50' }}";
+        ctx.fillRect(0, 0, canvas.width, 100);
+
+        // Texto: Nombre de la Comunidad
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 28px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(communityName.toUpperCase(), canvas.width / 2, 60);
+
+        // Dibujar el Código QR (Esperar a que se cargue la imagen de la API)
+        // Usamos una imagen temporal para asegurar que no haya problemas de CORS
+        const tempImg = new Image();
+        tempImg.crossOrigin = "anonymous";
+        tempImg.src = qrImg.src;
+        
+        tempImg.onload = function() {
+            // Centrar QR
+            ctx.drawImage(tempImg, 100, 150, 300, 300);
+
+            // Detalles debajo del QR
+            ctx.fillStyle = "#2c3e50";
+            ctx.textAlign = "center";
+            
+            ctx.font = "bold 22px sans-serif";
+            ctx.fillText("Detalles del Gremio", canvas.width / 2, 500);
+            
+            ctx.font = "18px sans-serif";
+            ctx.fillStyle = "#7f8c8d";
+            ctx.fillText("Sede:", canvas.width / 2, 540);
+            ctx.fillStyle = "#34495e";
+            ctx.fillText(communityAddress || "No especificada", canvas.width / 2, 565);
+
+            ctx.fillStyle = "#7f8c8d";
+            ctx.fillText("Ubicación:", canvas.width / 2, 610);
+            ctx.fillStyle = "#34495e";
+            ctx.fillText(communityLocation || "No especificada", canvas.width / 2, 635);
+
+            // Pie de página
+            ctx.fillStyle = "#ecf0f1";
+            ctx.fillRect(0, 700, canvas.width, 50);
+            ctx.fillStyle = "#bdc3c7";
+            ctx.font = "italic 16px sans-serif";
+            ctx.fillText("Escanea para unirte", canvas.width / 2, 730);
+
+            // Descargar la imagen
+            const link = document.createElement('a');
+            link.download = `QR_Comunidad_${communityName.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+    });
+});
+</script>
+
+{% endblock %}

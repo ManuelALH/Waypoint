@@ -25,6 +25,7 @@ urlpatterns = [
     path('characters/', include('characters.urls')),
     path('tables/', include('tables.urls')),
     path('messages/', include('messaging.urls')),
+    path('communities/', include('communities.urls')),
     path('manifest.json', TemplateView.as_view(
         template_name='manifest.json', 
         content_type='application/json'

@@ -13,6 +13,7 @@ from .forms import TableForm
 from .models import Table, TableInvitation, CampaignLog, TableNote
 from characters.models import Character
 from gamesystems.models import GameSystem
+from communities.models import Event
 
 MAX_TABLES_PER_PAGE = 15
 TABLE_MAX_PLAYERS = 8
@@ -22,6 +23,15 @@ SEARCH_PAGE_SIZE = 9
 @login_required
 def create_table(request):
     success = False
+    community_id = request.GET.get('community_id')
+    event_id = request.GET.get('event')
+    event = None
+    if event_id:
+        event = get_object_or_404(Event, id=event_id)
+        member = event.community.get_member(request.user)
+        if not member or (member.role not in ['founder', 'moderator'] and not member.is_official_dm):
+            messages.error(request, "No tienes el rango necesario en esta comunidad para crear mesas en este evento.")
+            return redirect('community_detail', slug=event.community.slug)
     
     if request.method == 'POST':
         form = TableForm(request.POST)
@@ -29,6 +39,12 @@ def create_table(request):
             new_table = form.save(commit=False)
             new_table.dm = request.user
             new_table.max_players = TABLE_MAX_PLAYERS
+            c_id = request.POST.get('community_id_hidden')
+            if c_id:
+                new_table.community_id = c_id
+            if event:
+                new_table.community = event.community
+                new_table.event = event
             new_table.save()
             success = True
             form = TableForm()            
@@ -38,6 +54,8 @@ def create_table(request):
 
     return render(request, 'tables/create_table.html', {
         'form': form, 
+        'event': event,
+        'community_id': community_id,
         'success': success
     })
 
@@ -169,26 +187,47 @@ def leave_table_character(request, pk):
 @login_required
 @require_POST
 def delete_table(request, pk):
-    table = get_object_or_404(Table, pk=pk, dm=request.user)
+    table = get_object_or_404(Table, pk=pk)
+    can_delete = False
+
+    if request.user == table.dm:
+        can_delete = True
+    
+    elif table.community:
+        if table.community.can_manage_events(request.user):
+            can_delete = True
+
+    if not can_delete:
+        messages.error(request, "No tienes permisos para eliminar esta mesa.")
+        return redirect('table_detail', pk=table.pk)
+
     table.delete()
+    messages.success(request, "La mesa ha sido eliminada correctamente.")
     return redirect('my_tables')
 
 @login_required
 def edit_table(request, pk):
-    table = get_object_or_404(Table, pk=pk, dm=request.user)
+    table = get_object_or_404(Table, pk=pk)
+
+    if request.user != table.dm:
+        messages.error(request, "No tienes permiso para editar esta mesa. Solo el DM puede hacerlo.")
+        return redirect('table_detail', pk=table.pk)
+
+    if table.is_archived and 'is_archived' not in request.POST:
+        messages.warning(request, "Esta mesa está congelada debido a que el evento terminó. Debes desarchivarla para editarla.")
     
     if request.method == 'POST':
         form = TableForm(request.POST, instance=table)
         if form.is_valid():
             form.save()
+            messages.success(request, "Mesa actualizada correctamente.")
             return redirect('table_detail', pk=table.pk)
     else:
-        initial_days = table.play_days.split(', ') if table.play_days else []
-        form = TableForm(instance=table, initial={'play_days': initial_days})
-
+        form = TableForm(instance=table)
+    
     return render(request, 'tables/create_table.html', {
         'form': form,
-        'is_edit': True, 
+        'is_edit': True,
         'table': table
     })
 

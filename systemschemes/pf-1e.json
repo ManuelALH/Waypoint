@@ -56,12 +56,6 @@
                 ]
             },
             {
-                "section": "actions",
-                "label": "Actions",
-                "icon": "fa-khanda",
-                "type": "actions"
-            },
-            {
                 "section": "combat_stats",
                 "label": "Combat Stats",
                 "icon": "fa-shield-alt",
@@ -83,6 +77,12 @@
                     "dodge_armor",
                     "misc_armor"
                 ]
+            },
+            {
+                "section": "actions",
+                "label": "Actions",
+                "icon": "fa-khanda",
+                "type": "actions"
             },
             {
                 "section": "saving_throws",
@@ -114,6 +114,22 @@
                 ]
             },
             {
+                "section": "feats",
+                "label": "Feats",
+                "icon": "fa-trophy",
+                "fields": [
+                    "feats"
+                ]
+            },
+            {
+                "section": "special_abilities",
+                "label": "Special Abilities",
+                "icon": "fa-bolt",
+                "fields": [
+                    "special_abilities"
+                ]
+            },
+            {
                 "section": "currency",
                 "label": "Currency",
                 "icon": "fa-coins",
@@ -131,6 +147,37 @@
                 "fields": [
                     "skills"
                 ]
+            },
+            {
+                "section": "equipment",
+                "label": "Equipment",
+                "icon": "fa-person-hiking",
+                "fields": [
+                    "equipment"
+                ]
+            }
+        ],
+        "actions": [
+            {
+                "action": "name",
+                "label": "Action",
+                "type": "str",
+                "required": true
+            },
+            {
+                "action": "attack",
+                "label": "Attack Bonus",
+                "type": "int"
+            },
+            {
+                "action": "damage",
+                "label": "Damage",
+                "type": "dice"
+            },
+            {
+                "action": "notes",
+                "label": "Notes",
+                "type": "str"
             }
         ]
     },
@@ -927,6 +974,40 @@
         "label": "Miscelaneous Modifier",
         "default": 0
     },
+    "feats": {
+        "type": "str_list",
+        "label": "Feats",
+        "help_text": "Your character Skill",
+        "columns_fields": [
+            {
+                "id": "feat_name",
+                "label": "Feat Name"
+            },
+            {
+                "id": "feat_prerequisites",
+                "label": "Feat Prerequisites"
+            },
+            {
+                "id": "feat_desc",
+                "label": "Feat Description"
+            }
+        ]
+    },
+    "special_abilities": {
+        "type": "str_list",
+        "label": "Special Abilities",
+        "help_text": "Your character Special Abilities",
+        "columns_fields": [
+            {
+                "id": "ability_name",
+                "label": "Ability Name"
+            },
+            {
+                "id": "ability_description",
+                "label": "Ability Description"
+            }
+        ]
+    },
     "copper_pieces": {
         "type": "int",
         "label": "Copper Pieces",
@@ -1207,6 +1288,25 @@
                 "sources": [
                     "mod_charisma"
                 ]
+            }
+        ]
+    },
+    "equipment": {
+        "type": "str_list",
+        "label": "Equipment",
+        "help_text": "Your character's actual equipment",
+        "columns_fields": [
+            {
+                "id": "item_name",
+                "label": "Item Name"
+            },
+            {
+                "id": "item_description",
+                "label": "Item Description"
+            },
+            {
+                "id": "item_slot",
+                "label": "Item Slot"
             }
         ]
     }

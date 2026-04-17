@@ -17,6 +17,7 @@
                 </h2>
                 <p class="subtitle">Agenda tu campaña y gestiona a tus jugadores</p>
             </div>
+			<!--
             <div class="privacy-wrapper">
                 <label for="{{ form.is_private.id_for_label }}" class="privacy-label" id="privacyLabel">
                     <span id="privacyText">Pública</span>
@@ -27,7 +28,52 @@
                     {{ form.is_private }}
                 </div>
             </div>
+			-->
         </div>
+		
+		{% if community_id %}
+			<input type="hidden" name="community_id_hidden" value="{{ community_id }}">
+		{% endif %}
+		
+		{% if event %}
+			<div class="alert alert-info border-0 shadow-sm mb-4" style="border-left: 5px solid {{ event.community.color }} !important;">
+				<div class="d-flex align-items-center">
+					<div class="me-3">
+						<i class="fas fa-calendar-check fa-2x text-primary"></i>
+					</div>
+					<div>
+						<h5 class="mb-0">Mesa para Evento Oficial</h5>
+						<p class="mb-0 small text-muted">
+							Comunidad: <strong>{{ event.community.name }}</strong> | 
+							Evento: <strong>{{ event.title }}</strong>
+						</p>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+
+		<h4 class="section-title">Ajustes de Acceso</h4>
+		<div class="row mb-4">
+			<div class="col-md-6">
+				<div class="d-flex align-items-center p-3 border rounded bg-light">
+					<div class="form-check form-switch mb-0">
+						{{ form.invite_only }}
+						<label class="form-check-label fw-bold" for="invitationToggle">Solo por invitación</label>
+					</div>
+					<small class="ms-auto text-muted">
+						<i class="fas fa-info-circle" title="Si se activa, los jugadores no podrán unirse libremente."></i>
+					</small>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="d-flex align-items-center p-3 border rounded bg-light">
+					<div class="form-check form-switch mb-0">
+						{{ form.is_private }}
+						<label class="form-check-label fw-bold" for="{{ form.is_private.id_for_label }}">Mesa Privada</label>
+					</div>
+				</div>
+			</div>
+		</div>
 
         <h4 class="section-title">Información General</h4>
         <div class="form-grid">
@@ -455,6 +501,16 @@
         border: 1px solid #ced4da;
         border-radius: .25rem;
     }
+	
+	.form-check-input:checked {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+	}
+
+	.form-switch .form-check-input {
+		width: 2.5em;
+		cursor: pointer;
+	}
 </style>
 
 <script>
